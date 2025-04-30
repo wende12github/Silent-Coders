@@ -15,7 +15,7 @@ function AppRoutes() {
             <Route path="/register" element={<Register />} />
             <Route path="/" element={<LandingPage />} />
             <Route element={<ProtectedRoute />}>
-                <Route path="/dshboard" element={<Dashboard />} />
+                <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/profile" element={<Profile />} />
                 {/* <Route path="/bookings" element={<MyBookings />} /> */}
                 <Route path="/leaderboard" element={<Leaderboard />} />
