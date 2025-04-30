@@ -1,13 +1,28 @@
-import React from 'react';
-import GroupsPage from './pages/GroupsPage';
+import { BrowserRouter, useLocation } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
 
-const App: React.FC = () => {
+function Layout() {
+  const location = useLocation();
+
+  const hideLayout = location.pathname.includes("/dashboard");
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Optional Global Navbar/Header can go here */}
-      <GroupsPage />
-    </div>
+    <>
+      {!hideLayout && <Header />}
+      <AppRoutes />
+      {!hideLayout && <Footer />}
+    </>
   );
-};
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Layout />
+    </BrowserRouter>
+  );
+}
 
 export default App;
