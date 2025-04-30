@@ -250,14 +250,14 @@ const MySkills = () => {
               <Card key={skill.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
-                    <div>
+                    <div className="space-y-1">
                       <CardTitle className="flex items-center text-2xl font-semibold">
                         <BookOpen className="mr-2 h-4 w-4 text-blue-600" />
 
                         {skill.name}
                       </CardTitle>
                       <CardDescription>
-                        Added on
+                        Added on{" "}
                         {format(new Date(skill.created_at), "MMM d, yyyy")}
                       </CardDescription>
                     </div>

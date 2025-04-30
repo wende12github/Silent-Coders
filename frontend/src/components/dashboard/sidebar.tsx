@@ -1,7 +1,7 @@
 "use client"
 
 import { Link, useLocation } from "react-router-dom" 
-import { Clock, LayoutDashboard, Calendar, Users, Award, Settings, LogOut, BookOpen, Wallet } from "lucide-react"
+import { Clock, LayoutDashboard, Calendar, Award, Settings, LogOut, BookOpen, Wallet } from "lucide-react"
 import Button from "../ui/Button"
 import { useAuthStore } from "../../store/authStore"
 
@@ -47,7 +47,7 @@ export default function DashboardSidebar() {
   ]
 
   return (
-    <div className="hidden border-r border-border bg-background md:block md:w-64 md:flex-shrink-0 max-h-screen">
+    <div className="hidden border-r border-border bg-background md:block md:w-64 md:flex-shrink-0 max-h-screen sticky top-0">
       <div className="flex h-full flex-col">
         <div className="flex h-14 items-center border-b border-border px-4">
           <Link to="/" className="flex items-center gap-2">
