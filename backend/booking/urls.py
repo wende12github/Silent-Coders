@@ -4,7 +4,7 @@ from .views import BookingCreateView, BookingDetailView, BookingListView, Bookin
 
 
 urlpatterns = [
-    path('booking/', BookingCreateView.as_view(), name='booking-request'),
+    path('', BookingCreateView.as_view(), name='booking-request'),
     path('bookings/list/', BookingListView.as_view(), name='booking-list'),
     path('my/bookings/', MyBookingsView.as_view(), name='my-bookings'),
     path('bookings/<int:pk>/', BookingDetailView.as_view(), name='booking-detail'),
