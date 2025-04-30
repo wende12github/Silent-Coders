@@ -1,7 +1,7 @@
 # 🛠️ TimeBank Backend – Django + DRF
-
 # 🚀 Git Branching Instructions for Backend Team
 ## 📚 Branching Strategy Overview
+
 We will have one main branch for deployment: main
 
 We will have one working branch: development
@@ -48,6 +48,7 @@ After your PR is approved and merged into development, you can delete your featu
 # Starting a new feature? Always pull development again first before starting.
 
 ## 💥 Important Rules
+
 ✅ Always branch off of development, NOT main.
 
 ✅ One feature per branch. Don’t mix multiple tasks.
@@ -63,6 +64,7 @@ After your PR is approved and merged into development, you can delete your featu
 ❌ Never push directly to main or development without a PR.
 
 ✨ Example Workflow
+
 # 1. Start
 ```bash
 git checkout development

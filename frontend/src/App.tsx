@@ -1,15 +1,28 @@
+import { BrowserRouter, useLocation } from "react-router-dom";
+import AppRoutes from "./routes/AppRoutes";
+import Header from "./components/layout/Header";
+import Footer from "./components/layout/Footer";
 
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import HomePage from './Pages/HomePage.tsx';
+function Layout() {
+  const location = useLocation();
+
+  const hideLayout = location.pathname.includes("/dashboard");
+
+  return (
+    <>
+      {!hideLayout && <Header />}
+      <AppRoutes />
+      {!hideLayout && <Footer />}
+    </>
+  );
+}
 
 function App() {
   return (
-    <Router>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-      </Routes>
-    </Router>
-  )
+    <BrowserRouter>
+      <Layout />
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
