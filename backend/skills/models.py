@@ -1,9 +1,29 @@
 from django.db import models
 from django.conf import settings
-
-
+from django.core.exceptions import ValidationError
 class Skill(models.Model):
+    REMOTE = 'remote'
+    LOCAL = 'local'
+    MODE_CHOICES = [
+        (REMOTE, 'Remote'),
+        (LOCAL, 'Local'),
+    ]
+
     name = models.CharField(max_length=100, unique=True)
+    mode = models.CharField(max_length=10, choices=MODE_CHOICES, default=REMOTE)
+    city = models.CharField(max_length=100, blank=True, null=True)
+    address = models.CharField(max_length=255, blank=True, null=True)
+
+    def clean(self):
+        if self.mode == self.LOCAL and not self.city:
+            raise ValidationError("City is required for local skills.")
+        if self.mode == self.REMOTE:
+            self.city = None
+            self.address = None
+
+    def __str__(self):
+        return self.name
+
 
     def __str__(self):
         return self.name

@@ -17,8 +17,13 @@ class ServiceOfferingSerializer(serializers.ModelSerializer):
 class SkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
-        fields = ['id', 'name']
-        read_only_fields = ['id']
+        fields = ['id', 'name', 'mode', 'city', 'address']
+
+    def validate(self, data):
+        if data.get('mode') == Skill.LOCAL and not data.get('city'):
+            raise serializers.ValidationError("City is required for local skills.")
+        return data
+
         
         
 class ServiceRequestSerializer(serializers.ModelSerializer):
