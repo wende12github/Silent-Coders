@@ -1,7 +1,7 @@
 
 import { BrowserRouter, useLocation } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
-import Header from "./Components/layout/Header";
+import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 
 function Layout() {
