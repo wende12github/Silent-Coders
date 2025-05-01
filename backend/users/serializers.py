@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-
+from .models import UserSkill, User
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -20,5 +20,11 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'bio', 'profile_picture')
+        fields = ('id', 'username', 'bio', 'profile_picture','user_skills',
+            'availability', 'is_provider')
         read_only_fields = ('id',)
+class UserSkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserSkill
+        fields = ['id', 'user', 'skill', 'level', 'endorsements', 'experience_hours']
+        read_only_fields = ['endorsements', 'user']
