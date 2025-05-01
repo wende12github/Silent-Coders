@@ -1,17 +1,27 @@
-"use client"
+"use client";
 
-import { Link, useLocation } from "react-router-dom" 
-import { Clock, LayoutDashboard, Calendar, Award, Settings, LogOut, BookOpen, Wallet } from "lucide-react"
-import Button from "../ui/Button"
-import { useAuthStore } from "../../store/authStore"
+import { Link, useLocation } from "react-router-dom";
+import {
+  Clock,
+  LayoutDashboard,
+  Calendar,
+  Award,
+  Settings,
+  LogOut,
+  BookOpen,
+  Wallet,
+} from "lucide-react";
+import Button from "../ui/Button";
+import { useAuthStore } from "../../store/authStore";
+import clsx from "clsx";
 
-export default function DashboardSidebar() {
-  const location = useLocation()
-  const { logout } = useAuthStore()
+export default function DashboardSidebar({ visible }: { visible?: boolean }) {
+  const location = useLocation();
+  const { logout } = useAuthStore();
 
   const isActive = (path: string) => {
-    return location.pathname === path
-  }
+    return location.pathname === path;
+  };
 
   const navItems = [
     {
@@ -44,11 +54,16 @@ export default function DashboardSidebar() {
       href: "/dashboard/settings",
       icon: Settings,
     },
-  ]
+  ];
 
   return (
-    <div className="hidden border-r border-border bg-background md:block md:w-64 md:flex-shrink-0 max-h-screen sticky top-0">
-      <div className="flex h-full flex-col">
+    <div
+      className={clsx(
+        " border-r border-border bg-background md:block xsm:w-64 w-50 md:flex-shrink-0 min-h-full md:max-h-screen md:sticky md:top-0",
+        visible ? "" : "hidden"
+      )}
+    >
+      <div className="flex h-screen flex-col">
         <div className="flex h-14 items-center border-b border-border px-4">
           <Link to="/" className="flex items-center gap-2">
             <Clock className="h-6 w-6 text-primary" />
@@ -74,12 +89,16 @@ export default function DashboardSidebar() {
           </nav>
         </div>
         <div className="border-t border-border p-4">
-          <Button variant="outline" className="w-full justify-start gap-2" onClick={logout}>
+          <Button
+            variant="outline"
+            className="w-full justify-start gap-2"
+            onClick={logout}
+          >
             <LogOut className="h-4 w-4" />
             Logout
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }
