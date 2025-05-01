@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from rest_framework import permissions
 from django.urls import path, include
@@ -18,6 +19,7 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('', include('skills.urls')), 
     path('admin/', admin.site.urls),
     path('api/wallet/', include('wallet.urls')),
 
