@@ -42,3 +42,31 @@ class BookingActionSerializer(serializers.ModelSerializer):
         instance.status = validated_data['status']
         instance.save()
         return instance
+
+class BookingDetailSerializer(serializers.ModelSerializer):
+    requester = serializers.StringRelatedField()
+    provider = serializers.StringRelatedField()
+    service_offering = serializers.StringRelatedField()
+
+    class Meta:
+        model = Booking
+        fields = '__all__'
+
+
+class BookingRescheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['scheduled_time', 'duration']
+
+    def validate(self, data):
+        if self.instance.status not in [BookingStatus.PENDING, BookingStatus.CONFIRMED]:
+            raise serializers.ValidationError("Only pending or confirmed bookings can be rescheduled.")
+        if data['scheduled_time'] <= timezone.now():
+            raise serializers.ValidationError("Scheduled time must be in the future.")
+        return data
+
+    def update(self, instance, validated_data):
+        instance.scheduled_time = validated_data.get('scheduled_time', instance.scheduled_time)
+        instance.duration = validated_data.get('duration', instance.duration)
+        instance.save()
+        return instance
