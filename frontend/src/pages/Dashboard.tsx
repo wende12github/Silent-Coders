@@ -362,9 +362,9 @@ export default function DashboardPage() {
                         {transaction.amount}
                       </p>
                     </div>
-                    <p className="text-xs text-gray-600">
-                      {formatDistanceToNow(new Date(transaction.timestamp), { addSuffix: true })}
-                    </p>
+                    {/* <p className="text-xs text-gray-600">
+                      {formatDistanceToNow (new Date(transaction.timestamp), { addSuffix: true })}
+                    </p> */}
                   </div>
                 </div>
               ))}
