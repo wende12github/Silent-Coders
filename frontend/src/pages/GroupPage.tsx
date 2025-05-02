@@ -9,9 +9,9 @@ import {
   mockLeaderboard,
 } from "../store/types";
 import Avatar from "../components/ui/Avatar";
-import { Announcement } from "../services/api";
+import { Announcement } from "../store/types";
 
-const GroupsPage: React.FC = () => {
+const GroupPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -309,4 +309,4 @@ const GroupsPage: React.FC = () => {
   );
 };
 
-export default GroupsPage;
+export default GroupPage;
