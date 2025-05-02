@@ -1,6 +1,9 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from .models import UserSkill, User
+from django.contrib.auth import get_user_model, authenticate
+
 User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
@@ -17,6 +20,23 @@ class UserSerializer(serializers.ModelSerializer):
         return user
  
 
+class LoginSerializer(serializers.Serializer):
+    email = serializers.EmailField() # Use email for authentication
+    password = serializers.CharField(write_only=True)
+
+    def validate(self, data):
+        email = data.get('email', '')
+        password = data.get('password', '')
+
+        if email and password:
+            user = authenticate(email=email, password=password) # Use email for authentication
+            if user:
+                return user
+            else:
+                raise serializers.ValidationError('Invalid credentials')
+        else:
+            raise serializers.ValidationError('Must include "email" and "password".')
+
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -28,3 +48,7 @@ class UserSkillSerializer(serializers.ModelSerializer):
         model = UserSkill
         fields = ['id', 'user', 'skill', 'level', 'endorsements', 'experience_hours']
         read_only_fields = ['endorsements', 'user']
+
+
+class TokenObtainPairSerializer(TokenObtainPairSerializer):
+    pass

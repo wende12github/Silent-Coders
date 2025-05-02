@@ -4,8 +4,8 @@ from rest_framework.routers import DefaultRouter
 from .views import LeaderboardViewSet
 
 router = DefaultRouter()
-router.register(r'leaderboard', LeaderboardViewSet, basename='leaderboard')
+router.register(r'', LeaderboardViewSet, basename='leaderboard')
 
 urlpatterns = [
-    path('api/', include(router.urls)),  # Include the automatically generated URLs for the leaderboard
+    path('', include(router.urls)),  # Include the automatically generated URLs for the leaderboard
 ]

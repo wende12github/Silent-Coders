@@ -47,7 +47,7 @@ class BookingActionSerializer(serializers.ModelSerializer):
 class BookingDetailSerializer(serializers.ModelSerializer):
     requester = serializers.StringRelatedField()
     provider = serializers.StringRelatedField()
-    # service_offering = serializers.StringRelatedField()
+    service_offering = serializers.StringRelatedField()
 
     class Meta:
         model = Booking
