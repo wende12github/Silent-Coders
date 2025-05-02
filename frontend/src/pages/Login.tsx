@@ -1,9 +1,14 @@
-import {Eye,EyeOff,Mail,Lock} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
 
-import React,{useState} from 'react'
+import React, { useState } from "react";
+import Button from "../components/ui/Button";
+import { Input } from "../components/ui/Form";
+// import { useAuthStore } from "../store/authStore";
 
 const Login: React.FC = () => {
+  // const {login} = useAuthStore()
+  // login("john.doe@example.com", "123456")
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
@@ -62,7 +67,7 @@ const Login: React.FC = () => {
   };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
+      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             Welcome back
@@ -72,57 +77,48 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <div className="mt-8 bg-white py-8 px-6 shadow-md rounded-lg">
+        <div className="bg-white py-8 px-6 ">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            <div className="space-y-2">
-              <div className="relative ">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-
-                <input
+            <div className="space-y-2 w-full">
+                <Input
                   id="email"
+                  icon={<Mail className="h-5 w-5 text-gray-400" />}
                   name="email"
                   type="email"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  className={`${
                     errors.email ? "border-red-500" : "border-gray-300"
                   }`}
                 />
-              </div>
               {errors.email && (
                 <p className="text-xs text-red-500">{errors.email}</p>
               )}
             </div>
 
-            <div className="space-y-2 ">
-              <div className="relative ">
-                <div className="absolute  inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5  text-gray-400" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors.password ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
-                <div
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </div>
+            <div>
+              <Input
+                id="password"
+                icon={<Lock className="h-5 w-5  text-gray-400" />}
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400" />
+                )}
               </div>
               {errors.password && (
                 <p className="text-xs text-red-500">{errors.password}</p>
@@ -149,12 +145,9 @@ const Login: React.FC = () => {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link 
-                to="/SignUp" 
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Sign Up
+              Don't have an account?{" "}
+              <Link to="/signup">
+                <Button variant="link">Sign Up</Button>
               </Link>
             </p>
           </div>
