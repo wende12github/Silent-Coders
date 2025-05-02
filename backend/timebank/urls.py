@@ -1,3 +1,4 @@
+
 from django.contrib import admin
 from rest_framework import permissions
 from django.urls import path, include
@@ -18,9 +19,11 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
+    path('skill', include('skills.urls')), 
     path('admin/', admin.site.urls),
     path('api/wallet/', include('wallet.urls')),
     path('api/bookings/', include('bookings.urls')),
+    path('api/leaderboard/', include('leaderboard.urls')),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),

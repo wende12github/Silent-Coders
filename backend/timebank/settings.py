@@ -31,7 +31,11 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
+
 DEBUG = env.bool('DEBUG', default=True)
+
+EMAIL_HOST_USER = env('EMAIL_HOST_USER')
+
 
 ALLOWED_HOSTS = []
 
@@ -45,16 +49,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    
+     'skills', 
+
     'rest_framework',
     'corsheaders',
     'drf_yasg',
-
+    'django_filters',
     'bookings',
     'chat',
     'users',
     'wallet',
-    'skills'
+    'skills',
+    'leaderboard',
+
 ]
 
 MIDDLEWARE = [
@@ -155,6 +162,9 @@ REST_FRAMEWORK = {
     # ],
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',]
 }
 
 # Email settings

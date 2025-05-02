@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
+import SignUp from "../pages/signUp";
 import Register from "../pages/Register";
 import ProtectedRoute from "./ProtectedRoute";
 import Profile from "../pages/Profile";
@@ -12,10 +13,12 @@ import MySkills from "../components/dashboard/MySkills";
 import Sessions from "../components/dashboard/Sessions";
 import TimeWalet from "../components/dashboard/TimeWalet";
 
+
 function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/SignUp" element={<SignUp />} />
       <Route path="/register" element={<Register />} />
       <Route path="/" element={<LandingPage />} />
       <Route element={<ProtectedRoute />}>
