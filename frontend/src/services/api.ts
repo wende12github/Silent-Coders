@@ -1,11 +1,14 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import {
+    Announcement,
+    Group,
   LeaderboardEntry,
   Session,
   Skill,
   User,
   WalletTransaction,
 } from "../store/types";
+
 import { API_BASE_URL } from "../utils/constants";
 
 interface AuthResponse {
@@ -21,21 +24,6 @@ interface TransferResponse {
   transaction: WalletTransaction;
 }
 
-interface Group {
-  id: string;
-  name: string;
-  description: string;
-  // Add other group properties
-}
-
-export interface Announcement {
-  id: string;
-  title: string;
-  content: string;
-  author: User;
-  timestamp: string;
-  // Add other announcement properties
-}
 
 // Interface for admin dashboard data (example)
 interface AdminDashboardData {

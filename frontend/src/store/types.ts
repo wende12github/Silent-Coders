@@ -58,6 +58,23 @@ export interface ChatMessage {
   timestamp: string;
 }
 
+export interface Group {
+  id: string;
+  name: string;
+  description: string;
+  memberCount: number;
+  // Add other group properties as needed (e.g., image, tags, etc.)
+}
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  author: User;
+  timestamp: string;
+  // Add other announcement properties
+}
+
 export const initialMockMessages: ChatMessage[] = [
   {
     id: 1,
@@ -249,7 +266,7 @@ export const mockSkills: Skill[] = [
     name: "Beginner Piano Lessons",
     description: "Learn the fundamentals of playing the piano.",
     user: allUsers[3],
-    is_offered: true, 
+    is_offered: true,
     created_at: "2024-02-15T14:00:00Z",
     updated_at: "2024-02-15T14:00:00Z",
     tags: ["Music", "Arts", "Learning"],
@@ -409,5 +426,43 @@ export const mockLeaderboard: LeaderboardEntry[] = [
     score: 10.0,
     timestamp: "2024-04-07T00:00:00Z",
     user: findUserById(5)!, // Emily Davis
+  },
+];
+
+export const mockGroups: Group[] = [
+  {
+    id: "grp-1",
+    name: "React Developers Community",
+    description:
+      "A community for React enthusiasts to share knowledge and collaborate.",
+    memberCount: 1500,
+  },
+  {
+    id: "grp-2",
+    name: "Tailwind CSS Users",
+    description:
+      "Discuss and get help with building beautiful designs using Tailwind CSS.",
+    memberCount: 2100,
+  },
+  {
+    id: "grp-3",
+    name: "TypeScript Enthusiasts",
+    description:
+      "Deep dive into the world of TypeScript and its advanced features.",
+    memberCount: 950,
+  },
+  {
+    id: "grp-4",
+    name: "Web Development Beginners",
+    description:
+      "Learn the basics of HTML, CSS, and JavaScript. Ask questions and get started!",
+    memberCount: 3000,
+  },
+  {
+    id: "grp-5",
+    name: "Open Source Contributors",
+    description:
+      "Find projects to contribute to and collaborate with other open source developers.",
+    memberCount: 700,
   },
 ];

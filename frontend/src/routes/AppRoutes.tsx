@@ -13,6 +13,11 @@ import Sessions from "../components/dashboard/Sessions";
 import Walet from "../components/dashboard/Wallet";
 // import { useAuthStore } from "../store/authStore";
 import HomePage from "../pages/HomePage";
+import SignUp from "../pages/SignUp";
+import GroupPage from "../pages/GroupPage";
+import UserProfilePage from "../pages/UserProfilePage";
+import GroupsPage from "../pages/GroupsPage";
+
 function AppRoutes() {
   const isAuthenticated = true;
   // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -20,12 +25,15 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/SignUp" element={<SignUp />} />
+      <Route path="/signup" element={<SignUp />} />
       <Route path="/register" element={<Register />} />
       <Route
         path="/"
         element={isAuthenticated ? <HomePage /> : <LandingPage />}
       />
+      <Route path="/groups" element={<GroupsPage />} />
+      <Route path="/groups/:groupId" element={<GroupPage />} />
+      <Route path="/user/:userId" element={<UserProfilePage />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboarLayot />}>
           <Route path="/dashboard" element={<Dashboard />} />
