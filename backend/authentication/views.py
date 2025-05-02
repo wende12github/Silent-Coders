@@ -16,6 +16,7 @@ User = get_user_model()
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
+    @swagger_auto_schema(request_body=UserSerializer)
 
     def post(self, request):
         data = request.data
