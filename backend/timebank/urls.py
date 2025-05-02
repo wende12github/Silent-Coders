@@ -21,6 +21,8 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('skill', include('skills.urls')), 
     path('admin/', admin.site.urls),
+    path('', include('users.urls')),
+
     path('api/wallet/', include('wallet.urls')),
     path('api/bookings/', include('bookings.urls')),
     path('api/leaderboard/', include('leaderboard.urls')),
@@ -29,4 +31,6 @@ urlpatterns = [
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
 ]
+
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
