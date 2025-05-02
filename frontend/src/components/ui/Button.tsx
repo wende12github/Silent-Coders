@@ -66,4 +66,4 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   }
 );
 
-export default  Button ;
+export default Button;
