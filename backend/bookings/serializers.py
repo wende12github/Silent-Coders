@@ -5,7 +5,8 @@ from rest_framework import serializers
 class BookingCreateSerializer(serializers.ModelSerializer):
   class Meta:
     model = Booking
-    fields = ['id', 'provider', 'service_offering', 'scheduled_time', 'duration']
+    fields = ['id', 'provider', 'scheduled_time', 'duration']
+    #'service_offering',
 
   def validate(self, data):
     if data['scheduled_time'] <= timezone.now():
@@ -46,7 +47,7 @@ class BookingActionSerializer(serializers.ModelSerializer):
 class BookingDetailSerializer(serializers.ModelSerializer):
     requester = serializers.StringRelatedField()
     provider = serializers.StringRelatedField()
-    service_offering = serializers.StringRelatedField()
+    # service_offering = serializers.StringRelatedField()
 
     class Meta:
         model = Booking
