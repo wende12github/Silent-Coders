@@ -1,6 +1,7 @@
 import {Eye,EyeOff,Mail,Lock} from 'lucide-react';
 import { Link } from 'react-router-dom';
-
+import Button from "../components/ui/Button";
+import SignUp from "../pages/SignUp";
 import React,{useState} from 'react'
 
 const Login :React.FC = () => {
@@ -65,7 +66,7 @@ const Login :React.FC = () => {
         }
       };
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
       <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome back</h1>
@@ -143,9 +144,9 @@ const Login :React.FC = () => {
             </div>
 
             <div>
-              <button type="submit" className="w-full p-2 rounded-lg border-2 border-blue-500 bg-blue-500 hover:bg-blue-400">
+              <Button type="submit" className="w-full ">
                 Login
-              </button>
+              </Button>
             </div>
         </form>
 
@@ -153,7 +154,7 @@ const Login :React.FC = () => {
             <p className="text-gray-600">
               Don't have an account?{' '}
               <Link 
-                to="/signup" 
+                to="/SignUp" 
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 Sign Up
