@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'drf_yasg',
     'django_filters',
+    'channels',
 
     'authentication',
     'bookings',
@@ -99,6 +100,8 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'timebank.wsgi.application'
+
+ASGI_APPLICATION = 'timebank.asgi.application'
 
 
 # Database
