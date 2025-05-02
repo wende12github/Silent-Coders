@@ -20,6 +20,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/SignUp" element={<SignUp />} />
       <Route path="/register" element={<Register />} />
       <Route
         path="/"

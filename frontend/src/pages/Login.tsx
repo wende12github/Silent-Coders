@@ -1,8 +1,7 @@
-import { Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { Link } from "react-router-dom";
+import {Eye,EyeOff,Mail,Lock} from 'lucide-react';
+import { Link } from 'react-router-dom';
 
-import React, { useState } from "react";
-import Button from "../components/ui/Button";
+import React,{useState} from 'react'
 
 const Login: React.FC = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -62,7 +61,7 @@ const Login: React.FC = () => {
     }
   };
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
@@ -142,7 +141,7 @@ const Login: React.FC = () => {
             </div>
 
             <div>
-              <Button type="submit" className="w-full">
+              <Button type="submit" className="w-full ">
                 Login
               </Button>
             </div>
@@ -150,9 +149,9 @@ const Login: React.FC = () => {
 
           <div className="mt-6 text-center text-sm">
             <p className="text-gray-600">
-              Don't have an account?{" "}
-              <Link
-                to="/signup"
+              Don't have an account?{' '}
+              <Link 
+                to="/SignUp" 
                 className="font-medium text-blue-600 hover:text-blue-500"
               >
                 Sign Up
