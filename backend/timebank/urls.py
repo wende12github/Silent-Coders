@@ -4,6 +4,8 @@ from rest_framework import permissions
 from django.urls import path, include
 from drf_yasg import openapi
 from drf_yasg.views import get_schema_view
+from django.conf.urls.static import static
+from django.conf import settings
 
 schema_view = get_schema_view(
    openapi.Info(
@@ -19,13 +21,14 @@ schema_view = get_schema_view(
 )
 
 urlpatterns = [
-    path('skill', include('skills.urls')), 
+    path('skill/', include('skills.urls')), 
     path('admin/', admin.site.urls),
     path('', include('users.urls')),
 
-    path('api/wallet/', include('wallet.urls')),
-    path('api/bookings/', include('bookings.urls')),
-    path('api/leaderboard/', include('leaderboard.urls')),
+    path('wallet/', include('wallet.urls')),
+    path('bookings/', include('bookings.urls')),
+    path('leaderboard/', include('leaderboard.urls')),
+    path('groups/', include('groups.urls')),
 
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('swagger.json', schema_view.without_ui(cache_timeout=0), name='schema-json'),

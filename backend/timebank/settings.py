@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'wallet',
     'skills',
     'leaderboard',
+    'groups',
 
 ]
 
