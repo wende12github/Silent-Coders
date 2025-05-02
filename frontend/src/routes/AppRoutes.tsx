@@ -34,6 +34,7 @@ function AppRoutes() {
       <Route path="/groups" element={<GroupsPage />} />
       <Route path="/groups/:groupId" element={<GroupPage />} />
       <Route path="/user/:userId" element={<UserProfilePage />} />
+      <Route path="/leaderboard" element={<Leaderboard />} />
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboarLayot />}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -44,7 +45,6 @@ function AppRoutes() {
           <Route path="/dashboard/wallet" element={<Walet />} />
           <Route path="/dashboard/leaderboard" element={<Leaderboard />} />
         </Route>
-        <Route path="/leaderboard" element={<Leaderboard />} />
       </Route>
     </Routes>
   );
