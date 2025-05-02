@@ -10,6 +10,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .models import Booking, BookingStatus
 from .serializers import BookingCreateSerializer, BookingActionSerializer, BookingDetailSerializer, BookingRescheduleSerializer
+from wallet.utils import process_booking_confirmation, process_booking_completion
 
 
 class BookingCreateView(generics.CreateAPIView):
@@ -59,6 +60,9 @@ class BookingConfirmView(generics.UpdateAPIView):
             raise PermissionDenied("Only provider can confirm the booking.")
         if booking.status != BookingStatus.PENDING:
             raise ValidationError("Booking must be pending to confirm.")
+        
+        # Wallet deduction (requester pays at confirmation)
+        process_booking_confirmation(booking)
         serializer.save(status=BookingStatus.CONFIRMED)
 
 
@@ -101,6 +105,10 @@ class BookingCompleteView(generics.UpdateAPIView):
             raise PermissionDenied("Only provider can complete the session.")
         if booking.status != BookingStatus.CONFIRMED:
             raise ValidationError("Booking must be confirmed before completing.")
+        
+        # Wallet credit (provider receives points on completion)
+        process_booking_completion(booking)
+
         serializer.save(status=BookingStatus.COMPLETED)
         
         update_user_stats(booking.provider) #Update user stats
