@@ -9,28 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/DropdownMenu";
+import Sidebar from "./sidebar";
+import { AnimatePresence, motion } from "framer-motion";
+import Avatar from "../ui/Avatar";
+import { useAuthStore } from "../../store/authStore";
 
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  profile_picture?: string;
-}
-
-const useAuth = () => {
-  const user: User | null = {
-    id: "user-123",
-    name: "John Doe",
-    username: "johndoe",
-    profile_picture: "https://placehold.co/100x100/4f46e5/ffffff?text=JD",
-  };
-
-  const logout = () => {
-    console.log("Mock logout called");
-  };
-
-  return { user, logout };
-};
 
 const ThemeToggle: React.FC = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -40,9 +23,7 @@ const ThemeToggle: React.FC = () => {
       onClick={() => setIsDarkMode(!isDarkMode)}
       aria-label="Toggle theme"
     >
-      <span
-      className="w-5 h-5 rounded-full" 
-      >
+      <span className="w-5 h-5 rounded-full">
         {isDarkMode ? <Moon /> : <Sun />}
       </span>
     </button>
@@ -51,75 +32,49 @@ const ThemeToggle: React.FC = () => {
 
 const MobileNav: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+
   return (
     <div>
       <button
-        className="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 sm:hidden"
+        className="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 md:hidden"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle mobile navigation"
       >
-        <Menu/>
+        <Menu />
       </button>
 
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/50 sm:hidden"
-          onClick={() => setIsOpen(false)}
-        >
-          <div className="w-64 bg-white h-full p-4">
-            <p className="text-gray-900">Mobile Menu</p>
-          </div>
-        </div>
-      )}
+      <AnimatePresence>
+        {isOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-40 bg-black/50 md:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsOpen(false)}
+            />
+            <motion.div
+              className="fixed left-0 top-0 z-50 h-full bg-white md:hidden"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            >
+              <Sidebar visible />
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
-
-interface AvatarProps {
-  src?: string;
-  alt?: string;
-  fallback: string;
-  className?: string;
-  fallbackClassName?: string;
-}
-
-const Avatar: React.FC<AvatarProps> = ({
-  src,
-  alt,
-  fallback,
-  className,
-  fallbackClassName,
-}) => (
-  <div
-    className={`relative flex shrink-0 overflow-hidden rounded-full h-10 w-10 ${
-      className || ""
-    }`}
-  >
-    {src ? (
-      <img
-        src={src}
-        alt={alt}
-        className="aspect-square h-full w-full object-cover"
-      />
-    ) : (
-      <div
-        className={`flex items-center justify-center h-full w-full bg-gray-200 text-sm font-semibold text-gray-700 ${
-          fallbackClassName || ""
-        }`}
-      >
-        {fallback.charAt(0)}
-      </div>
-    )}
-  </div>
-);
-
 export default function DashboardHeader() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuthStore();
 
   if (!user) return null;
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b border-border bg-white px-4 sm:px-6 ">
+    <header className="sticky top-0 z-30 flex min-h-14 items-center gap-4 border-b border-border bg-white px-4 sm:px-6 ">
       <MobileNav />
       <div className="flex-1" />
       <div className="flex items-center gap-4">

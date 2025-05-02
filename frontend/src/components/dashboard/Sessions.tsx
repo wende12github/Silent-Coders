@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Calendar, Clock, Video, MapPin, Check, X } from "lucide-react";
 import { format, isPast } from "date-fns";
 import Tabs, { TabItem } from "../ui/Tabs";
@@ -12,176 +12,33 @@ import {
 import { Badge } from "../ui/Badge";
 import Button from "../ui/Button";
 import { Select, SelectItem } from "../ui/Select";
-
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  email: string;
-  bio?: string;
-  profile_picture?: string;
-  time_wallet: number;
-}
-
-interface Skill {
-  id: string;
-  name: string;
-  is_offered: boolean;
-}
-
-interface Booking {
-  id: number;
-  skill: Skill;
-  requester: User;
-  provider: User;
-  scheduled_time: string;
-  duration: number;
-  status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
-}
-
-const useAuth = () => {
-  const user: User = {
-    id: "user-123",
-    name: "John Doe",
-    username: "johndoe",
-    email: "john.doe@example.com",
-    time_wallet: 120,
-    profile_picture: "https://placehold.co/100x100/4f46e5/ffffff?text=JD",
-  };
-
-  const initialBookings: Booking[] = [
-    {
-      id: 1,
-      skill: { id: "skill-1", name: "Web Development", is_offered: true },
-      requester: user,
-      provider: {
-        id: "user-456",
-        name: "Jane Smith",
-        username: "janesmith",
-        email: "jane.smith@example.com",
-        time_wallet: 200,
-      },
-      scheduled_time: new Date(
-        Date.now() + 1000 * 60 * 60 * 24 * 2
-      ).toISOString(),
-      duration: 60,
-      status: "Confirmed",
-    },
-    {
-      id: 2,
-      skill: { id: "skill-2", name: "Graphic Design", is_offered: true },
-      requester: {
-        id: "user-789",
-        name: "Peter Jones",
-        username: "peterj",
-        email: "peter.jones@example.com",
-        time_wallet: 50,
-      },
-      provider: user,
-      scheduled_time: new Date(Date.now() + 1000 * 60 * 60 * 3).toISOString(),
-      duration: 30,
-      status: "Pending",
-    },
-    {
-      id: 3,
-      skill: { id: "skill-3", name: "Spanish Tutoring", is_offered: false },
-      requester: user,
-      provider: {
-        id: "user-101",
-        name: "Maria Garcia",
-        username: "mariag",
-        email: "maria.garcia@example.com",
-        time_wallet: 150,
-      },
-      scheduled_time: new Date(
-        Date.now() - 1000 * 60 * 60 * 24 * 7
-      ).toISOString(),
-      duration: 45,
-      status: "Completed",
-    },
-    {
-      id: 4,
-      skill: { id: "skill-4", name: "Photography", is_offered: true },
-      requester: {
-        id: "user-202",
-        name: "David Lee",
-        username: "davidl",
-        email: "david.lee@example.com",
-        time_wallet: 80,
-      },
-      provider: user,
-      scheduled_time: new Date(
-        Date.now() - 1000 * 60 * 60 * 24 * 1
-      ).toISOString(),
-      duration: 90,
-      status: "Cancelled",
-    },
-  ];
-
-  return { user, bookings: initialBookings };
-};
-
-interface AvatarProps {
-  src?: string;
-  alt?: string;
-  fallback: string;
-  className?: string;
-  fallbackClassName?: string;
-}
-
-const Avatar: React.FC<AvatarProps> = ({
-  src,
-  alt,
-  fallback,
-  className,
-  fallbackClassName,
-}) => (
-  <div
-    className={`relative flex shrink-0 overflow-hidden rounded-full h-10 w-10 ${
-      className || ""
-    }`}
-  >
-    {src ? (
-      <img
-        src={src}
-        alt={alt}
-        className="aspect-square h-full w-full object-cover"
-      />
-    ) : (
-      <div
-        className={`flex items-center justify-center h-full w-full bg-gray-200 text-sm font-semibold text-gray-700 ${
-          fallbackClassName || ""
-        }`}
-      >
-        {fallback.charAt(0)}
-      </div>
-    )}
-  </div>
-);
+import Avatar from "../ui/Avatar";
+import { useAuthStore } from "../../store/authStore";
+import { Session } from "../../store/types";
 
 export default function Sessions() {
-  const { bookings: initialBookings, user } = useAuth();
-  const [bookings, setBookings] = useState(initialBookings);
+  const { sessions: initialSessions, user } = useAuthStore();
+  const [sessions, setSessions] = useState(initialSessions);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const filteredBookings = bookings.filter((booking) => {
-    if (statusFilter !== "all" && booking.status !== statusFilter) {
+  const filteredSessions = sessions.filter((session) => {
+    if (statusFilter !== "all" && session.status !== statusFilter) {
       return false;
     }
     return true;
   });
 
-  const upcomingBookings = filteredBookings.filter(
-    (booking) => !isPast(new Date(booking.scheduled_time))
+  const upcomingSessions = filteredSessions.filter(
+    (session) => !isPast(new Date(session.scheduled_time))
   );
-  const pastBookings = filteredBookings.filter((booking) =>
-    isPast(new Date(booking.scheduled_time))
+  const pastSessions = filteredSessions.filter((session) =>
+    isPast(new Date(session.scheduled_time))
   );
 
-  const getOtherParticipant = (booking: Booking) => {
-    return booking.provider.id === user?.id
-      ? booking.requester
-      : booking.provider;
+  const getOtherParticipant = (session: Session) => {
+    return session.provider.id === user?.id
+      ? session.requester
+      : session.provider;
   };
 
   const formatDate = (dateString: string) => {
@@ -211,16 +68,16 @@ export default function Sessions() {
     }
   };
 
-  const handleStatusChange = (bookingId: number, newStatus: string) => {
-    setBookings(
-      bookings.map((booking) =>
-        booking.id === bookingId
-          ? { ...booking, status: newStatus as any }
-          : booking
+  const handleStatusChange = (sessionId: number, newStatus: string) => {
+    setSessions(
+      sessions.map((session) =>
+        session.id === sessionId
+          ? { ...session, status: newStatus as any }
+          : session
       )
     );
 
-    console.log(`Booking ${bookingId} status changed to ${newStatus}`);
+    console.log(`Session ${sessionId} status changed to ${newStatus}`);
   };
 
   const sessionTabs: TabItem[] = [
@@ -228,20 +85,20 @@ export default function Sessions() {
       value: "upcoming",
       label: "Upcoming",
       content:
-        upcomingBookings.length > 0 ? (
+        upcomingSessions.length > 0 ? (
           <div className="space-y-4">
-            {upcomingBookings.map((booking) => {
-              const otherParticipant = getOtherParticipant(booking);
-              const isProvider = booking.provider.id === user?.id;
+            {upcomingSessions.map((session) => {
+              const otherParticipant = getOtherParticipant(session);
+              const isProvider = session.provider.id === user?.id;
               return (
-                <Card key={booking.id} className="space-y-1">
+                <Card key={session.id} className="space-y-1">
                   <CardHeader className="pb-2">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center text-lg font-semibold">
-                          {booking.skill.name}
+                          {session.skill.name}
                           <span className="ml-2">
-                            {getStatusBadge(booking.status)}
+                            {getStatusBadge(session.status)}
                           </span>
                         </CardTitle>
                         <CardDescription>
@@ -254,12 +111,12 @@ export default function Sessions() {
                       <div className="flex flex-col items-start sm:items-end">
                         <div className="flex items-center text-sm text-gray-600">
                           <Calendar className="mr-1 h-4 w-4 text-gray-600" />
-                          {formatDate(booking.scheduled_time)}
+                          {formatDate(session.scheduled_time)}
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <Clock className="mr-1 h-4 w-4 text-gray-600" />
-                          {formatTime(booking.scheduled_time)} (
-                          {booking.duration} min)
+                          {formatTime(session.scheduled_time)} (
+                          {session.duration} min)
                         </div>
                       </div>
                     </div>
@@ -283,13 +140,13 @@ export default function Sessions() {
                       </div>
                       <div className="flex-1" />
                       <div className="flex flex-wrap gap-2">
-                        {booking.status === "Pending" && isProvider && (
+                        {session.status === "Pending" && isProvider && (
                           <>
                             <Button
                               size="sm"
                               className="bg-green-500 hover:bg-green-600 text-white"
                               onClick={() =>
-                                handleStatusChange(booking.id, "Confirmed")
+                                handleStatusChange(session.id, "Confirmed")
                               }
                             >
                               <Check className="mr-2 h-4 w-4" />
@@ -300,7 +157,7 @@ export default function Sessions() {
                               size="sm"
                               className="text-red-500 border-red-500 hover:bg-red-50"
                               onClick={() =>
-                                handleStatusChange(booking.id, "Cancelled")
+                                handleStatusChange(session.id, "Cancelled")
                               }
                             >
                               <X className="mr-2 h-4 w-4" />
@@ -308,13 +165,13 @@ export default function Sessions() {
                             </Button>
                           </>
                         )}
-                        {booking.status === "Confirmed" && (
+                        {session.status === "Confirmed" && (
                           <Button
                             variant="outline"
                             size="sm"
                             className="text-red-500 border-red-500 hover:bg-red-50"
                             onClick={() =>
-                              handleStatusChange(booking.id, "Cancelled")
+                              handleStatusChange(session.id, "Cancelled")
                             }
                           >
                             <X className="mr-2 h-4 w-4" />
@@ -322,7 +179,7 @@ export default function Sessions() {
                           </Button>
                         )}
 
-                        {booking.status === "Confirmed" && (
+                        {session.status === "Confirmed" && (
                           <>
                             <Button variant="outline" size="sm">
                               <Video className="mr-2 h-4 w-4" />
@@ -344,7 +201,7 @@ export default function Sessions() {
           </div>
         ) : (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-10">
+            <CardContent className="flex flex-col items-center justify-center py-10 pt-10">
               <Calendar className="h-10 w-10 text-gray-600 mb-4" />
               <p className="text-center text-gray-600 mb-4">
                 You don't have any upcoming sessions.
@@ -358,20 +215,20 @@ export default function Sessions() {
       value: "past",
       label: "Past",
       content:
-        pastBookings.length > 0 ? (
+        pastSessions.length > 0 ? (
           <div className="space-y-4">
-            {pastBookings.map((booking) => {
-              const otherParticipant = getOtherParticipant(booking);
-              const isProvider = booking.provider.id === user?.id;
+            {pastSessions.map((session) => {
+              const otherParticipant = getOtherParticipant(session);
+              const isProvider = session.provider.id === user?.id;
               return (
-                <Card key={booking.id} className="space-y-1">
+                <Card key={session.id} className="space-y-1">
                   <CardHeader className="pb-2">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center text-lg font-semibold">
-                          {booking.skill.name}
+                          {session.skill.name}
                           <span className="ml-2">
-                            {getStatusBadge(booking.status)}
+                            {getStatusBadge(session.status)}
                           </span>
                         </CardTitle>
                         <CardDescription>
@@ -384,12 +241,12 @@ export default function Sessions() {
                       <div className="flex flex-col items-start sm:items-end">
                         <div className="flex items-center text-sm text-gray-600">
                           <Calendar className="mr-1 h-4 w-4 text-gray-600" />
-                          {formatDate(booking.scheduled_time)}
+                          {formatDate(session.scheduled_time)}
                         </div>
                         <div className="flex items-center text-sm text-gray-600">
                           <Clock className="mr-1 h-4 w-4 text-gray-600" />
-                          {formatTime(booking.scheduled_time)} (
-                          {booking.duration} min)
+                          {formatTime(session.scheduled_time)} (
+                          {session.duration} min)
                         </div>
                       </div>
                     </div>
@@ -413,7 +270,7 @@ export default function Sessions() {
                       </div>
                       <div className="flex-1" />
 
-                      {booking.status === "Completed" && (
+                      {session.status === "Completed" && (
                         <div className="flex flex-wrap gap-2">
                           <Button variant="outline" size="sm">
                             Leave Review
@@ -423,7 +280,7 @@ export default function Sessions() {
                           </Button>
                         </div>
                       )}
-                      {booking.status === "Cancelled" && (
+                      {session.status === "Cancelled" && (
                         <div className="flex flex-wrap gap-2">
                           <Button variant="outline" size="sm">
                             View Details
@@ -450,7 +307,7 @@ export default function Sessions() {
   ];
 
   return (
-    <div className="p-6 space-y-6 min-h-screen w-full">
+    <div className="p-6 space-y-6 h-full w-full">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
