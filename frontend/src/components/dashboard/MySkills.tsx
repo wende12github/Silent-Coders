@@ -21,106 +21,52 @@ import {
   DialogTitle,
 } from "../ui/Dialog";
 import { Input, Label, Textarea } from "../ui/Form";
-
-interface User {
-  id: string;
-  name: string;
-  username: string;
-  email: string;
-  bio?: string;
-  profile_picture?: string;
-  time_wallet: number;
-}
-
-interface Skill {
-  id: number;
-  name: string;
-  description: string | null;
-  is_offered: boolean;
-  created_at: string;
-  updated_at: string;
-}
-
-const useAuth = () => {
-  const user: User = {
-    id: "user-123",
-    name: "John Doe",
-    username: "johndoe",
-    email: "john.doe@example.com",
-    time_wallet: 120,
-    profile_picture: "https://placehold.co/100x100/4f46e5/ffffff?text=JD",
-  };
-
-  const initialSkills: Skill[] = [
-    {
-      id: 1,
-      name: "Web Development",
-      description: "Building responsive websites.",
-      is_offered: true,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(),
-    },
-    {
-      id: 2,
-      name: "Graphic Design",
-      description: "Creating visual concepts.",
-      is_offered: true,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString(),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 20).toISOString(),
-    },
-    {
-      id: 3,
-      name: "Spanish Tutoring",
-      description: "Helping others learn Spanish.",
-      is_offered: false,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(),
-    },
-    {
-      id: 4,
-      name: "Photography",
-      description: "Capturing moments.",
-      is_offered: true,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
-    },
-    {
-      id: 5,
-      name: "Cooking",
-      description: "Learning to cook Italian food.",
-      is_offered: false,
-      created_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-      updated_at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-    },
-  ];
-
-  return { user, skills: initialSkills };
-};
+import { useAuthStore } from "../../store/authStore";
+import { Skill } from "../../store/types";
+import { TagInput } from "../skills/TagSelectInput";
 
 const MySkills = () => {
-  const { skills: initialSkills } = useAuth();
+  const { skills: initialSkills } = useAuthStore();
   const [skills, setSkills] = useState(initialSkills);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
-  const [newSkill, setNewSkill] = useState({
+  const [newSkill, setNewSkill] = useState<Partial<Skill>>({
     name: "",
     description: "",
     is_offered: true,
+    tags: [],
   });
+
+  const initialTags = [
+    "All",
+    "Tech",
+    "Fitness",
+    "Music",
+    "Languages",
+    "Design",
+    "Business",
+    "Art",
+    "Cooking",
+    "Health",
+  ];
 
   const offeredSkills = skills.filter((skill) => skill.is_offered);
   const wantedSkills = skills.filter((skill) => !skill.is_offered);
 
+  const { user } = useAuthStore();
   const handleAddSkill = () => {
-    if (!newSkill.name.trim()) return;
+    if (!newSkill.name?.trim()) return;
 
     const skill: Skill = {
       id: skills.length > 0 ? Math.max(...skills.map((s) => s.id)) + 1 : 1,
       name: newSkill.name,
+      user: user,
       description: newSkill.description || null,
-      is_offered: newSkill.is_offered,
+      is_offered: newSkill.is_offered || true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
+      tags: [],
+      location: "local",
     };
 
     setSkills([...skills, skill]);
@@ -128,6 +74,7 @@ const MySkills = () => {
       name: "",
       description: "",
       is_offered: true,
+      tags: [],
     });
     setIsDialogOpen(false);
   };
@@ -150,6 +97,7 @@ const MySkills = () => {
   };
 
   const handleDeleteSkill = (id: number) => {
+    // send api request to delete skill
     setSkills(skills.filter((skill) => skill.id !== id));
   };
 
@@ -164,6 +112,7 @@ const MySkills = () => {
       name: "",
       description: "",
       is_offered: true,
+      tags: [],
     });
     setIsDialogOpen(true);
   };
@@ -314,7 +263,7 @@ const MySkills = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6 bg-white min-h-screen w-full">
+    <div className="p-6 space-y-6 bg-white h-full w-full">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">
@@ -373,7 +322,7 @@ const MySkills = () => {
               value={
                 editingSkill
                   ? editingSkill.description || ""
-                  : newSkill.description
+                  : newSkill.description || ""
               }
               onChange={(e) =>
                 editingSkill
@@ -382,6 +331,20 @@ const MySkills = () => {
                       description: e.target.value,
                     })
                   : setNewSkill({ ...newSkill, description: e.target.value })
+              }
+            />
+          </div>
+          <div className="">
+            <Label htmlFor="tags">Tags</Label>
+            <TagInput
+              initialTags={initialTags}
+              selectedTags={
+                editingSkill ? editingSkill.tags : newSkill.tags || []
+              }
+              onSelectedTagsChange={(tags: string[]) =>
+                editingSkill
+                  ? setEditingSkill({ ...editingSkill, tags })
+                  : setNewSkill({ ...newSkill, tags })
               }
             />
           </div>
