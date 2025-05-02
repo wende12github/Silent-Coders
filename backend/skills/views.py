@@ -1,5 +1,6 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import viewsets,filters
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.permissions import IsAuthenticatedOrReadOnly,IsAdminUser
 from .models import ServiceOffering, Skill, ServiceRequest
 from rest_framework.decorators import action
@@ -24,6 +25,11 @@ class SkillViewSet(viewsets.ModelViewSet):
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
     permission_classes = [IsAuthenticatedOrReadOnly]  # Anyone can read; only logged-in users can modify
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter]
+    filterset_fields = ['mode','name']          
+    search_fields = ['name','description']           
+
+
 
 
 class ServiceRequestViewSet(viewsets.ModelViewSet):
