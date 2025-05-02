@@ -1,0 +1,413 @@
+export type User = {
+  id: number;
+  email: string;
+  username: string;
+  bio: string | null;
+  profile_picture: string | null;
+  time_wallet: number;
+  is_active: boolean;
+  is_admin: boolean;
+  date_joined: string;
+  name: string; // Added based on signup signature
+};
+
+export type Skill = {
+  id: number;
+  name: string;
+  description: string | null;
+  user: User | null;
+  is_offered: boolean;
+  created_at: string;
+  updated_at: string;
+  tags: string[];
+  location: "local" | "remote";
+};
+
+export type Session = {
+  id: number;
+  scheduled_time: string;
+  duration: number;
+  status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
+  created_at: string;
+  skill: Skill;
+  requester: User;
+  provider: User;
+};
+
+export type WalletTransaction = {
+  id: number;
+  amount: number;
+  reason: string;
+  timestamp: string;
+};
+
+export type LeaderboardEntry = {
+  id: number;
+  week: number;
+  score: number;
+  timestamp: string;
+  user: User;
+};
+
+export interface ChatMessage {
+  id: number;
+  senderId: number;
+  senderName: string;
+  senderAvatar: string;
+  text: string;
+  timestamp: string;
+}
+
+export const initialMockMessages: ChatMessage[] = [
+  {
+    id: 1,
+    senderId: 4,
+    senderName: "Alice Johnson",
+    senderAvatar: "https://placehold.co/100x100/ff7f7f/ffffff?text=AJ",
+    text: "Welcome to the community chat!",
+    timestamp: new Date(Date.now() - 600000).toISOString(),
+  },
+  {
+    id: 2,
+    senderId: 2,
+    senderName: "Bob Williams",
+    senderAvatar: "https://placehold.co/100x100/7fb2ff/ffffff?text=BW",
+    text: "Hey everyone!",
+    timestamp: new Date(Date.now() - 300000).toISOString(),
+  },
+  {
+    id: 3,
+    senderId: 3,
+    senderName: "Diana Miller",
+    senderAvatar: "https://placehold.co/100x100/7fffb2/ffffff?text=DM",
+    text: "Looking for someone to help with graphic design!",
+    timestamp: new Date(Date.now() - 120000).toISOString(),
+  },
+];
+
+// Mock data based on the database schema
+export const mockUser: User = {
+  id: 1,
+  email: "john.doe@example.com",
+  username: "johndoe",
+  name: "John Doe",
+  bio: "Computer Science student passionate about web development and machine learning.",
+  profile_picture: "/placeholder.svg?height=200&width=200",
+  time_wallet: 15.5,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-09-15T10:30:00Z",
+};
+
+// Existing Users
+const saraAhmed: User = {
+  id: 2,
+  email: "sara@example.com",
+  username: "saradev",
+  name: "Sara Ahmed",
+  bio: "Frontend developer specializing in React",
+  profile_picture: null,
+  time_wallet: 22.5,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-08-10T08:45:00Z",
+};
+
+const michaelJohnson: User = {
+  id: 3,
+  email: "michael@example.com",
+  username: "michaelj",
+  name: "Michael Johnson",
+  bio: "Beginner programmer looking to improve",
+  profile_picture: null,
+  time_wallet: 5.0,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-10-05T14:20:00Z",
+};
+
+const alexChen: User = {
+  id: 4,
+  email: "alex@example.com",
+  username: "alextech",
+  name: "Alex Chen",
+  bio: "Teaching programming for 3 years",
+  profile_picture: null,
+  time_wallet: 45.0,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-07-15T10:30:00Z",
+};
+
+// New Users
+const emilyDavis: User = {
+  id: 5,
+  email: "emily.davis@example.com",
+  username: "emilyd",
+  name: "Emily Davis",
+  bio: "Graphic designer with a passion for illustration.",
+  profile_picture: null,
+  time_wallet: 10.0,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-01-20T11:00:00Z",
+};
+
+const davidWilson: User = {
+  id: 6,
+  email: "david.w@example.com",
+  username: "davidw",
+  name: "David Wilson",
+  bio: "Musician and music theory tutor.",
+  profile_picture: null,
+  time_wallet: 8.75,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-02-10T09:30:00Z",
+};
+
+const oliviaMartinez: User = {
+  id: 7,
+  email: "olivia.m@example.com",
+  username: "oliviam",
+  name: "Olivia Martinez",
+  bio: "Yoga instructor and mindfulness coach.",
+  profile_picture: null,
+  time_wallet: 18.0,
+  is_active: true,
+  is_admin: false,
+  date_joined: "2024-03-01T13:15:00Z",
+};
+export const allUsers = [
+  mockUser,
+  saraAhmed,
+  michaelJohnson,
+  alexChen,
+  emilyDavis,
+  davidWilson,
+  oliviaMartinez,
+];
+export const mockSkills: Skill[] = [
+  {
+    id: 1,
+    name: "JavaScript Programming",
+    user: allUsers[0],
+    description:
+      "Modern JavaScript including ES6+ features, async/await, and frameworks",
+    is_offered: false,
+    created_at: "2024-09-20T14:30:00Z",
+    updated_at: "2024-09-20T14:30:00Z",
+    tags: ["Tech", "Programming", "Web"],
+    location: "local",
+  },
+  {
+    id: 2,
+    name: "Python Data Analysis",
+    user: allUsers[2],
+    description: "Data analysis using pandas, numpy, and matplotlib",
+    is_offered: true,
+    created_at: "2024-10-05T09:15:00Z",
+    updated_at: "2024-10-05T09:15:00Z",
+    tags: ["Data", "Science", "Python"],
+    location: "local",
+  },
+  {
+    id: 3,
+    name: "UI/UX Design",
+    description: "Learn UI/UX Design",
+    user: allUsers[1],
+    is_offered: false,
+    created_at: "2024-10-10T16:45:00Z",
+    updated_at: "2024-10-10T16:45:00Z",
+    tags: ["Design", "Creative", "Business"],
+    location: "local",
+  },
+  {
+    id: 4,
+    name: "React Development",
+    description: "Building web applications with React",
+    user: allUsers[4],
+    is_offered: true,
+    created_at: "2024-10-15T11:30:00Z",
+    updated_at: "2024-10-15T11:30:00Z",
+    tags: ["Tech", "Programming", "Web"],
+    location: "remote",
+  },
+  {
+    id: 5,
+    name: "Illustration Basics",
+    description: "Introduction to digital illustration techniques.",
+    user: allUsers[3],
+    is_offered: true,
+    created_at: "2024-01-25T10:00:00Z",
+    updated_at: "2024-01-25T10:00:00Z",
+    tags: ["Design", "Creative", "Business"],
+    location: "remote",
+  },
+  {
+    id: 6,
+    name: "Beginner Piano Lessons",
+    description: "Learn the fundamentals of playing the piano.",
+    user: allUsers[3],
+    is_offered: true, 
+    created_at: "2024-02-15T14:00:00Z",
+    updated_at: "2024-02-15T14:00:00Z",
+    tags: ["Music", "Arts", "Learning"],
+    location: "remote",
+  },
+  {
+    id: 7,
+    name: "Mindfulness Meditation",
+    description: "Guided meditation sessions for stress reduction.",
+    user: allUsers[2],
+    is_offered: true, // Assuming Olivia offers this
+    created_at: "2024-03-05T09:00:00Z",
+    updated_at: "2024-03-05T09:00:00Z",
+    tags: ["Fitness", "Wellness", "Health"],
+    location: "remote",
+  },
+];
+
+// Helper to find a skill by ID
+const findSkillById = (id: number) =>
+  mockSkills.find((skill) => skill.id === id);
+// Helper to find a user by ID (including the new ones)
+
+const findUserById = (id: number) => allUsers.find((user) => user.id === id);
+
+export const mockSessions: Session[] = [
+  {
+    id: 1,
+    scheduled_time: "2024-11-25T15:00:00Z",
+    duration: 60,
+    status: "Confirmed",
+    created_at: "2024-11-20T10:30:00Z",
+    skill: findSkillById(4)!, // React Development
+    requester: findUserById(1)!, // John Doe
+    provider: findUserById(2)!, // Sara Ahmed
+  },
+  {
+    id: 2,
+    scheduled_time: "2024-11-28T14:00:00Z",
+    duration: 90,
+    status: "Pending",
+    created_at: "2024-11-22T09:15:00Z",
+    skill: findSkillById(1)!, // JavaScript Programming
+    requester: findUserById(3)!, // Michael Johnson
+    provider: findUserById(1)!, // John Doe
+  },
+  {
+    // New Booking 1
+    id: 3,
+    scheduled_time: "2024-04-10T11:00:00Z",
+    duration: 45,
+    status: "Completed",
+    created_at: "2024-04-05T15:00:00Z",
+    skill: findSkillById(5)!, // Illustration Basics
+    requester: findUserById(1)!, // John Doe
+    provider: findUserById(5)!, // Emily Davis
+  },
+  {
+    // New Booking 2
+    id: 4,
+    scheduled_time: "2024-04-12T16:00:00Z",
+    duration: 60,
+    status: "Confirmed",
+    created_at: "2024-04-08T10:00:00Z",
+    skill: findSkillById(6)!, // Beginner Piano Lessons
+    requester: findUserById(3)!, // Michael Johnson
+    provider: findUserById(6)!, // David Wilson
+  },
+  {
+    // New Booking 3
+    id: 5,
+    scheduled_time: "2024-04-15T09:30:00Z",
+    duration: 30,
+    status: "Pending",
+    created_at: "2024-04-10T14:00:00Z",
+    skill: findSkillById(7)!, // Mindfulness Meditation
+    requester: findUserById(2)!, // Sara Ahmed
+    provider: findUserById(7)!, // Olivia Martinez
+  },
+];
+
+export const mockTransactions: WalletTransaction[] = [
+  {
+    id: 1,
+    amount: 2.5, // Positive amount means earned
+    reason: "Session Completed: JavaScript Programming",
+    timestamp: "2025-11-15T16:30:00Z",
+  },
+  {
+    id: 2,
+    amount: -1.5, // Negative amount means spent
+    reason: "Session Completed: UI/UX Design Basics",
+    timestamp: "2025-01-10T14:45:00Z",
+  },
+  {
+    id: 3,
+    amount: 1.0,
+    reason: "Reward: First Session Completed",
+    timestamp: "2025-02-25T11:20:00Z",
+  },
+  {
+    // New Transaction 1 (from new booking 3)
+    id: 4,
+    amount: -0.75, // Spent 45 mins / 60 mins/hour = 0.75 hours
+    reason: "Session Completed: Illustration Basics",
+    timestamp: "2025-03-10T12:00:00Z", // After the session time
+  },
+  {
+    // New Transaction 2 (from new booking 3)
+    id: 5,
+    amount: 0.75, // Earned 45 mins / 60 mins/hour = 0.75 hours
+    reason: "Session Completed: Illustration Basics",
+    timestamp: "2025-04-10T12:00:00Z", // After the session time
+  },
+  {
+    // New Transaction 3 (from new booking 4)
+    id: 6,
+    amount: -1.0, // Spent 60 mins / 60 mins/hour = 1 hour
+    reason: "Session Completed: Beginner Piano Lessons",
+    timestamp: "2025-04-12T17:00:00Z", // After the session time
+  },
+  {
+    // New Transaction 4 (from new booking 4)
+    id: 7,
+    amount: 1.0, // Earned 60 mins / 60 mins/hour = 1 hour
+    reason: "Session Completed: Beginner Piano Lessons",
+    timestamp: "2025-04-22T17:00:00Z", // After the session time
+  },
+];
+
+export const mockLeaderboard: LeaderboardEntry[] = [
+  {
+    id: 1,
+    week: 45,
+    score: 22.5,
+    timestamp: "2024-11-12T00:00:00Z", // Start of the week timestamp
+    user: findUserById(4)!, // Alex Chen
+  },
+  {
+    id: 2,
+    week: 45,
+    score: 82.5,
+    timestamp: "2024-11-12T00:00:00Z",
+    user: findUserById(2)!, // Sara Ahmed
+  },
+  {
+    id: 3,
+    week: 45,
+    score: 5.5,
+    timestamp: "2024-11-12T00:00:00Z",
+    user: findUserById(1)!, // John Doe
+  },
+  {
+    // New Leaderboard Entry 2 (different week)
+    id: 5,
+    week: 15,
+    score: 10.0,
+    timestamp: "2024-04-07T00:00:00Z",
+    user: findUserById(5)!, // Emily Davis
+  },
+];
