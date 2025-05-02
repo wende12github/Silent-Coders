@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'chat',
     'users',
     'wallet',
+    'leaderboard',
 ]
 
 MIDDLEWARE = [

@@ -62,6 +62,9 @@ class BookingCompleteView(generics.UpdateAPIView):
         if booking.status != BookingStatus.CONFIRMED:
             raise ValidationError("Booking must be confirmed before completing.")
         serializer.save(status=BookingStatus.COMPLETED)
+        
+        update_user_stats(booking.provider) #Update user stats
+
 
 class MyBookingsView(APIView):
     permission_classes = [IsAuthenticated]
