@@ -18,7 +18,7 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick }) => {
   const isOffering = skill.type === 'offering';
   
   return (
-    <div 
+    <div
       className="p-4 border border-gray-200 rounded-lg hover:shadow-md transition-shadow duration-200 cursor-pointer"
       onClick={onClick}
     >

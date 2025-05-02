@@ -1,36 +1,36 @@
-import {Eye,EyeOff,Mail,Lock} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Eye, EyeOff, Mail, Lock } from "lucide-react";
+import { Link } from "react-router-dom";
+
+import React, { useState } from "react";
 import Button from "../components/ui/Button";
-import SignUp from "../pages/SignUp";
-import React,{useState} from 'react'
+import { Input } from "../components/ui/Form";
+// import { useAuthStore } from "../store/authStore";
 
-const Login :React.FC = () => {
-  const [formData,setFormData]= useState({email:"",password:"",});
-  const[errors,setErrors]=useState({email:"",password:""});
-  const [showPassword,setShowPassword]=useState(false);
+const Login: React.FC = () => {
+  // const {login} = useAuthStore()
+  // login("john.doe@example.com", "123456")
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [errors, setErrors] = useState({ email: "", password: "" });
+  const [showPassword, setShowPassword] = useState(false);
 
-
-  const validateEmail=(email:string)=>{
-    const reg=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if(!email)
-        return "Email is required";
-      if(!reg.test(email))
-         return "Please enter a vaild email address";
-        return "";
+  const validateEmail = (email: string) => {
+    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email) return "Email is required";
+    if (!reg.test(email)) return "Please enter a vaild email address";
+    return "";
   };
 
-  const validatePassword=(password:string)=>{
-    if(!password)
-       return "Password is required";
-       return "";
-  }
+  const validatePassword = (password: string) => {
+    if (!password) return "Password is required";
+    return "";
+  };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const { name, value } = e.target;
-        setFormData({
-          ...formData,
-          [name]: value,
-        });
- // Real-time validation
+    const { name, value } = e.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+    // Real-time validation
     let error = "";
     switch (name) {
       case "email":
@@ -47,85 +47,78 @@ const Login :React.FC = () => {
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-    
-        // Validate all fields
-        const emailError = validateEmail(formData.email);
-        const passwordError = validatePassword(formData.password);
-    
-        const newErrors = {
-          email: emailError,
-          password: passwordError,
-        };
-        setErrors(newErrors);
+    e.preventDefault();
 
-        // Proceed if no errors
-        if (!emailError && !passwordError) {
-          console.log("Form submitted:", formData);
-          // submit logic here
-        }
-      };
+    // Validate all fields
+    const emailError = validateEmail(formData.email);
+    const passwordError = validatePassword(formData.password);
+
+    const newErrors = {
+      email: emailError,
+      password: passwordError,
+    };
+    setErrors(newErrors);
+
+    // Proceed if no errors
+    if (!emailError && !passwordError) {
+      console.log("Form submitted:", formData);
+      // submit logic here
+    }
+  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8">
-      <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">Welcome back</h1>
-         <p className="mt-2 text-sm text-gray-600">
+      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-8">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+            Welcome back
+          </h1>
+          <p className="mt-2 text-sm text-gray-600">
             Sign in to continue to your account
-           </p>      
+          </p>
         </div>
 
-        <div className="mt-8 bg-white py-8 px-6 shadow-md rounded-lg">
-           <form className="space-y-6" onSubmit={handleSubmit}>
-             <div className="space-y-2">
-               <div className="relative ">
-                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                   <Mail className="h-5 w-5 text-gray-400" />
-                 </div>
-
-                 <input
+        <div className="bg-white py-8 px-6 ">
+          <form className="space-y-6" onSubmit={handleSubmit}>
+            <div className="space-y-2 w-full">
+                <Input
                   id="email"
+                  icon={<Mail className="h-5 w-5 text-gray-400" />}
                   name="email"
                   type="email"
                   placeholder="Email address"
                   value={formData.email}
                   onChange={handleChange}
-                  className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-    errors.password ? "border-red-500" : "border-gray-300"}`}
+                  className={`${
+                    errors.email ? "border-red-500" : "border-gray-300"
+                  }`}
                 />
-              </div>
               {errors.email && (
                 <p className="text-xs text-red-500">{errors.email}</p>
               )}
             </div>
 
-
-<div className="space-y-2 ">
-              <div className="relative ">
-                 <div className="absolute  inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5  text-gray-400" />
-                </div>
-                <input 
-                  id="password"
-                  name="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={formData.password}
-                  onChange={handleChange}
-                 
-                  className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-    errors.password ? "border-red-500" : "border-gray-300"}`}
-                />
-                <div 
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
-                  onClick={() => setShowPassword(!showPassword)}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-5 w-5 text-gray-400" />
-                  ) : (
-                    <Eye className="h-5 w-5 text-gray-400" />
-                  )}
-                </div>
+            <div>
+              <Input
+                id="password"
+                icon={<Lock className="h-5 w-5  text-gray-400" />}
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  errors.password ? "border-red-500" : "border-gray-300"
+                }`}
+              />
+              <div
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? (
+                  <EyeOff className="h-5 w-5 text-gray-400" />
+                ) : (
+                  <Eye className="h-5 w-5 text-gray-400" />
+                )}
               </div>
               {errors.password && (
                 <p className="text-xs text-red-500">{errors.password}</p>
@@ -134,8 +127,8 @@ const Login :React.FC = () => {
 
             <div className="flex items-center justify-end">
               <div className="text-sm">
-                <Link 
-                  to="/forgot-password" 
+                <Link
+                  to="/forgot-password"
                   className="font-medium text-blue-600 hover:text-blue-500"
                 >
                   Forgot Password?
@@ -148,16 +141,13 @@ const Login :React.FC = () => {
                 Login
               </Button>
             </div>
-        </form>
+          </form>
 
-        <div className="mt-6 text-center text-sm">
+          <div className="mt-6 text-center text-sm">
             <p className="text-gray-600">
-              Don't have an account?{' '}
-              <Link 
-                to="/SignUp" 
-                className="font-medium text-blue-600 hover:text-blue-500"
-              >
-                Sign Up
+              Don't have an account?{" "}
+              <Link to="/signup">
+                <Button variant="link">Sign Up</Button>
               </Link>
             </p>
           </div>
@@ -166,9 +156,4 @@ const Login :React.FC = () => {
     </div>
   );
 };
-export default Login
-
-
-
-
-
+export default Login;
