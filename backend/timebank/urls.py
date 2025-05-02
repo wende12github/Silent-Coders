@@ -15,7 +15,15 @@ schema_view = get_schema_view(
    openapi.Info(
       title="TimeBank API",
       default_version='v1',
-      description="TimeBank API documentation",
+      description="""Welcome to the **TimeBank API** documentation!
+
+This API allows students to exchange skills and services using **time as currency**. Below you'll find all available endpoints categorized by functionality.
+
+### Features:
+- Skill offering and booking
+- Wallet management
+- Group collaboration
+- Authentication & token-based security""",
       terms_of_service="https://www.google.com/policies/terms/",
       contact=openapi.Contact(email="contact@timebank.com"),
       license=openapi.License(name="MIT License"),
