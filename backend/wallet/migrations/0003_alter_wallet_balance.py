@@ -1,0 +1,17 @@
+
+from django.db import migrations, models
+
+
+class Migration(migrations.Migration):
+
+    dependencies = [
+        ('wallet', '0002_transaction_status_alter_wallet_balance'),
+    ]
+
+    operations = [
+        migrations.AlterField(
+            model_name='wallet',
+            name='balance',
+            field=models.DecimalField(decimal_places=2, default=10.0, max_digits=10),
+        ),
+    ]
