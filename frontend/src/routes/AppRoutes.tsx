@@ -10,22 +10,29 @@ import Settings from "../components/dashboard/Settings";
 import DashboarLayot from "../components/dashboard/DashboarLayot";
 import MySkills from "../components/dashboard/MySkills";
 import Sessions from "../components/dashboard/Sessions";
-import TimeWalet from "../components/dashboard/TimeWalet";
-
+import Walet from "../components/dashboard/Wallet";
+// import { useAuthStore } from "../store/authStore";
+import HomePage from "../pages/HomePage";
 function AppRoutes() {
+  const isAuthenticated = true;
+  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/" element={<LandingPage />} />
+      <Route
+        path="/"
+        element={isAuthenticated ? <HomePage /> : <LandingPage />}
+      />
       <Route element={<ProtectedRoute />}>
         <Route element={<DashboarLayot />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/myskills" element={<MySkills />} />
           <Route path="/dashboard/sessions" element={<Sessions />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/dashboard/wallet" element={<TimeWalet />} />
+          <Route path="/dashboard/profile" element={<Profile />} />
+          <Route path="/dashboard/wallet" element={<Walet />} />
           <Route path="/dashboard/leaderboard" element={<Leaderboard />} />
         </Route>
         <Route path="/leaderboard" element={<Leaderboard />} />
