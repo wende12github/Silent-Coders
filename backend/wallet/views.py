@@ -4,6 +4,7 @@ from rest_framework import status, permissions
 from django.db import transaction
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.generics import ListAPIView
+from rest_framework.permissions import IsAdminUser
 from .models import Wallet, Transaction
 from .serializers import WalletSerializer, TransactionSerializer
 from .permissions import IsSender
@@ -27,9 +28,9 @@ class WalletView(APIView):
         serializers = WalletSerializer(wallet)
         return Response(serializers.data)
 
-# /Transfer Time View (making the tansaction)
-class TransferTimeView(APIView):
-    permission_classes = [IsSender]
+# Transfer Time View (making the tansaction Manually)
+class AdminTransferTimeView(APIView):
+    permission_classes = [IsAdminUser]
 
     def post(self, request):
         sender = request.user
@@ -43,30 +44,26 @@ class TransferTimeView(APIView):
         except User.DoesNotExist:
             return Response({"error": "Receiver not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        if sender.wallet.balance < float(amount):
-            return Response({"error": "Insufficient balance."}, status=status.HTTP_400_BAD_REQUEST)
 
         # Transaction is wrapped in atomic to ensure consistency
         try:
             with transaction.atomic():
-                 # Lock the rows for updating
+                 # Lock sender and receiver wallets for update
                 sender_wallet = Wallet.objects.select_for_update().get(user=sender)
                 receiver_wallet = Wallet.objects.select_for_update().get(user=receiver)
                 
-                # Udate the Wallet balances
-                sender_wallet.balance -= float(amount)
-                sender_wallet.save()
+                amount = float(amount)
+                if not sender_wallet.has_sufficient_balance(amount):
+                    return Response({"error": "Insufficient balance."}, status=status.HTTP_400_BAD_REQUEST)
 
-                receiver_wallet.balance += float(amount)
-                receiver_wallet.save()
+                # Udate the Wallet balances and Perform the transfer
+                sender_wallet.deduct(amount)
+                receiver_wallet.credit(amount)
 
                 # Create a new transaction record
-                Transaction.objects.create(
-                    sender=sender,
-                    receiver=receiver,
-                    amount=amount,
-                    reason=reason
-                )
+                Transaction.objects.create(wallet=sender_wallet, amount=amount, transaction_type='debit', reason=reason, sender=sender, receiver=receiver)
+                Transaction.objects.create(wallet=receiver_wallet, amount=amount, transaction_type='credit', reason=reason, sender=sender, receiver=receiver)
+
         except Exception as e:
             return Response({"error": "Transaction failed.", "details": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
