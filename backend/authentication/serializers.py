@@ -43,7 +43,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'bio', 'email','full_name','profile_picture','user_skills',
-            'availability', 'is_provider', 'full_name']
+            'availability', 'is_booked_for', 'full_name']
         read_only_fields = ('id',)
 
     def get_user(self, obj):
