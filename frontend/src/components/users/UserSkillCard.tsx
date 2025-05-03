@@ -6,22 +6,6 @@ import { Badge } from "../ui/Badge";
 import clsx from "clsx";
 import { Skill } from "../../store/types";
 import Avatar from "../ui/Avatar";
-// interface User {
-//   id: string;
-//   name: string;
-//   profilePicture: string;
-// }
-
-// export interface Skill {
-//   id: string;
-//   user: User;
-//   title: string;
-//   description: string;
-//   is_offered: boolean;
-//   credits: number;
-//   location: string;
-//   tags: string[];
-// }
 
 interface UserSkillCardProps {
   skill: Skill;
