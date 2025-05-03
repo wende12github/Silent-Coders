@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import AvailabilitySlot, Booking, BookingStatus
+from .models import AvailabilitySlot, Booking, BookingStatus, Review
 from .serializers import AvailabilitySlotSerializer, BookingCreateSerializer, BookingActionSerializer, BookingDetailSerializer, BookingRescheduleSerializer, ReviewSerializer
 from wallet.utils import process_booking_confirmation, process_booking_completion
 
@@ -170,6 +170,7 @@ class BookingRescheduleView(UpdateAPIView):
 
 
 class SubmitReviewView(generics.CreateAPIView):
+    queryset = Review.objects.all() 
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
 

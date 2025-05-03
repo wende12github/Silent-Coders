@@ -1,6 +1,15 @@
 from rest_framework import serializers
 from .models import Group, GroupMembership
 from django.core.exceptions import ValidationError
+from django.contrib.auth import get_user_model
+from drf_yasg.utils import swagger_serializer_method
+
+User = get_user_model()
+
+class GroupMemberSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    name = serializers.CharField()
+    status = serializers.CharField()
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,13 +31,16 @@ class GroupDetailSerializer(GroupSerializer):
     class Meta(GroupSerializer.Meta):
         fields = GroupSerializer.Meta.fields + ['members']
 
+    @swagger_serializer_method(serializer_or_field=GroupMemberSerializer(many=True))
     def get_members(self, obj):
-        # You can return more details like the role of each member
-        return [
+        return GroupMemberSerializer([
             {
                 "email": member.email,
                 "name": member.get_full_name(),
-                "status": member.membership.status  # Assuming 'membership' is a related name from GroupMembership
+                "status": member.groupmembership.status  # note this access
             }
             for member in obj.members.all()
-        ]
+        ], many=True).data
+
+class EmptySerializer(serializers.Serializer):
+    pass
