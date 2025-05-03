@@ -52,3 +52,4 @@ htmlcov/
 # Other
 *.swp
 
+db.sqlite3
