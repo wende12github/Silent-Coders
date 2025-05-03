@@ -9,7 +9,7 @@ User = get_user_model()
 class GroupMemberSerializer(serializers.Serializer):
     email = serializers.EmailField()
     name = serializers.CharField()
-    status = serializers.CharField()
+
 
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,7 +22,7 @@ class GroupSerializer(serializers.ModelSerializer):
         group = Group.objects.create(owner=self.context['request'].user, **validated_data)
         
         # Add owner as a member of the group with the 'accepted' status
-        GroupMembership.objects.create(user=self.context['request'].user, group=group, status='accepted')
+        GroupMembership.objects.create(user=self.context['request'].user, group=group)
         return group
 
 class GroupDetailSerializer(GroupSerializer):
@@ -37,7 +37,7 @@ class GroupDetailSerializer(GroupSerializer):
             {
                 "email": member.email,
                 "name": member.get_full_name(),
-                "status": member.groupmembership.status  # note this access
+
             }
             for member in obj.members.all()
         ], many=True).data
