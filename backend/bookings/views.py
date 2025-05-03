@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from leaderboard.services import update_user_stats
 from rest_framework import generics
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import PermissionDenied, ValidationError
@@ -8,8 +9,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import Booking, BookingStatus
-from .serializers import BookingCreateSerializer, BookingActionSerializer, BookingDetailSerializer, BookingRescheduleSerializer
+from .models import AvailabilitySlot, Booking, BookingStatus
+from .serializers import AvailabilitySlotSerializer, BookingCreateSerializer, BookingActionSerializer, BookingDetailSerializer, BookingRescheduleSerializer, ReviewSerializer
 from wallet.utils import process_booking_confirmation, process_booking_completion
 
 
@@ -166,3 +167,33 @@ class BookingRescheduleView(UpdateAPIView):
         if self.request.user != booking.requester:
             raise PermissionDenied("Only the requester can reschedule the booking.")
         serializer.save()
+
+
+class SubmitReviewView(generics.CreateAPIView):
+    serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        booking_id = self.kwargs.get('pk')
+        try:
+            booking = Booking.objects.get(pk=booking_id)
+        except Booking.DoesNotExist:
+            raise ValidationError("Booking not found.")
+
+        if booking.user != self.request.user:
+            raise ValidationError("You can only review your own bookings.")
+
+        if booking.status != 'completed':
+            raise ValidationError("You can only review completed bookings.")
+
+        if hasattr(booking, 'review'):
+            raise ValidationError("This booking already has a review.")
+
+        serializer.save(reviewer=self.request.user, booking=booking)
+
+class AvailabilitySlotListCreateView(generics.ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvailabilitySlotSerializer
+
+    def get_queryset(self):
+        return AvailabilitySlot.objects.filter(provider=self.request.user)
