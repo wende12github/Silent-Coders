@@ -12,13 +12,13 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'email', 'username', 'password', 'bio', 'profile_picture', 
-                  'date_joined')
+        'date_joined', 'first_name', 'last_name')
         read_only_fields = ('id', 'date_joined')
         
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
- 
+
 
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField() # Use email for authentication
@@ -38,11 +38,15 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Must include "email" and "password".')
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
     class Meta:
         model = User
-        fields = ('id', 'username', 'bio', 'profile_picture','user_skills',
-            'availability', 'is_provider')
+        fields = ('id', 'username', 'bio', 'email','full_name','profile_picture','user_skills',
+            'availability', 'is_provider', 'full_name')
         read_only_fields = ('id',)
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}".strip()
+
 class UserSkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSkill

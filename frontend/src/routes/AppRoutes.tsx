@@ -11,7 +11,7 @@ import DashboarLayot from "../components/dashboard/DashboarLayot";
 import MySkills from "../components/dashboard/MySkills";
 import Sessions from "../components/dashboard/Sessions";
 import Walet from "../components/dashboard/Wallet";
-// import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../store/authStore";
 
 import HomePage from "../pages/HomePage";
 import SignUp from "../pages/SignUp";
@@ -20,8 +20,7 @@ import UserProfilePage from "../pages/UserProfilePage";
 import GroupsPage from "../pages/GroupsPage";
 
 function AppRoutes() {
-  const isAuthenticated = true;
-  // const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   return (
     <Routes>

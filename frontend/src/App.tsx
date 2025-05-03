@@ -1,6 +1,5 @@
 import { BrowserRouter, useLocation } from "react-router-dom";
 import AppRoutes from "./routes/AppRoutes";
-// src/main.jsx or App.jsx
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { far } from '@fortawesome/free-regular-svg-icons'
@@ -8,18 +7,20 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 
 library.add(fas, far, fab) // Add all icons or specific ones
 import Header from "./components/layout/Header";
-import Footer from "./components/layout/Footer";
-import Leaderbord from "./pages/Leaderboard";
+import { useAuthStore } from "./store/authStore";
+import { LandingHeader } from "./components/landing/LandingHeader";
+import { LandingFooter } from "./components/landing/LandingFooter";
+
 function Layout() {
   const location = useLocation();
-
+  const { isAuthenticated } = useAuthStore();
   const hideLayout = location.pathname.includes("/dashboard");
 
   return (
     <>
-      {!hideLayout && <Header />}
+      {!hideLayout && (isAuthenticated ? <Header /> : <LandingHeader />)}
       <AppRoutes />
-      {!hideLayout && <Footer />}
+      {!hideLayout && isAuthenticated && <LandingFooter />}
     </>
   );
 }
@@ -27,7 +28,6 @@ function Layout() {
 function App() {
   return (
     <BrowserRouter>
-    <Leaderbord/>
       <Layout />
     </BrowserRouter>
   );
