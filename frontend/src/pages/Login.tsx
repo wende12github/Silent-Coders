@@ -90,8 +90,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-8">
+    <div className="py-10 flex-grow flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-10">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             Welcome back
