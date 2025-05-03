@@ -53,3 +53,4 @@ htmlcov/
 *.swp
 *.swo
 
+db.sqlite3
