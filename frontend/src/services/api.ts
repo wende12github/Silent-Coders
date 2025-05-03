@@ -1,7 +1,7 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import {
-    Announcement,
-    Group,
+  Announcement,
+  Group,
   LeaderboardEntry,
   Session,
   Skill,
@@ -9,11 +9,11 @@ import {
   WalletTransaction,
 } from "../store/types";
 
-import { API_BASE_URL } from "../utils/constants";
-
-interface AuthResponse {
-  token: string;
-  user: User;
+import { API_BASE_URL, REFRESH_TOKEN_STORAGE_KEY } from "../utils/constants";
+import { useAuthStore } from "../store/authStore";
+export interface AuthResponse {
+  refresh: string;
+  access: string;
 }
 
 interface WalletBalanceResponse {
@@ -23,7 +23,6 @@ interface WalletBalanceResponse {
 interface TransferResponse {
   transaction: WalletTransaction;
 }
-
 
 // Interface for admin dashboard data (example)
 interface AdminDashboardData {
@@ -40,27 +39,64 @@ const apiClient: AxiosInstance = axios.create({
   },
 });
 
-// --- Authentication Endpoints ---
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const refreshToken = localStorage.getItem("refresh_token");
+
+      if (!refreshToken) {
+        console.error("No refresh token found, user must log in again.");
+        return Promise.reject(error);
+      }
+
+      try {
+        refreshAccessToken();
+
+        const newAccessToken = useAuthStore.getState().accessToken;
+
+        error.config.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        return apiClient(error.config);
+      } catch (refreshError) {
+        console.error("Failed to refresh token:", refreshError);
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export const setAuthToken = (token: string) => {
+  if (token) {
+    apiClient.defaults.headers["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers["Authorization"];
+  }
+};
+
+const storeRefreshToken = (refreshToken: string) => {
+  localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
+};
 
 /**
  * Mock API call to register a new user.
  * @param {object} userData - User registration data (e.g., { email, password, name, username })
  * @returns {Promise<AuthResponse>} - The response data from the API.
  */
-
-export const registerUser = async (userData: {
+export interface RegisterUserData {
   email: string;
   password: string;
-  name: string;
   username: string;
-}): Promise<AuthResponse> => {
+  bio: string | null;
+  // name: string;
+}
+export const registerUser = async (
+  userData: RegisterUserData
+): Promise<void> => {
   try {
-    const response: AxiosResponse<AuthResponse> = await apiClient.post(
-      "/auth/register/",
-      userData
-    );
+    const response = await apiClient.post("/auth/register/", userData);
     console.log("Register user response:", response.data);
-    return response.data;
   } catch (error: any) {
     // Use 'any' or a more specific error type if available
     console.error("Error registering user:", error);
@@ -74,6 +110,7 @@ export const registerUser = async (userData: {
  * @returns {Promise<AuthResponse>} - The response data from the API (e.g., { token, user }).
  */
 export const loginUser = async (credentials: {
+  // done
   email: string;
   password: string;
 }): Promise<AuthResponse> => {
@@ -83,6 +120,8 @@ export const loginUser = async (credentials: {
       credentials
     );
     console.log("Login user response:", response.data);
+    storeRefreshToken(response.data.refresh);
+    setAuthToken(response.data.access);
     return response.data;
   } catch (error: any) {
     console.error("Error logging in user:", error);
@@ -94,12 +133,24 @@ export const loginUser = async (credentials: {
  * Mock API call to log out the current user.
  * @returns {Promise<object>} - The response data from the API.
  */
-export const logoutUser = async (): Promise<object> => {
-  // Return type can be more specific if the API returns data
+
+export interface LogoutResponse {
+  refresh: string;
+}
+
+export const logoutUser = async (): Promise<LogoutResponse> => {
+  const { setTokens } = useAuthStore();
+
+  const storedRefreshToken = localStorage.getItem(REFRESH_TOKEN_STORAGE_KEY);
+
   try {
-    const response: AxiosResponse<object> = await apiClient.post(
-      "/auth/logout/"
+    const response: AxiosResponse<LogoutResponse> = await apiClient.post(
+      "/auth/logout/",
+      {
+        refresh_token: storedRefreshToken,
+      }
     );
+    setTokens("", "");
     console.log("Logout user response:", response.data);
     return response.data;
   } catch (error: any) {
@@ -113,6 +164,32 @@ export const logoutUser = async (): Promise<object> => {
  * @param {object} data - Password reset request data (e.g., { email })
  * @returns {Promise<object>} - The response data from the API.
  */
+
+export const refreshAccessToken = async () => {
+  const { setTokens } = useAuthStore();
+
+  const { refreshToken } = useAuthStore.getState();
+  if (!refreshToken) return;
+
+  try {
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+      refresh_token: refreshToken,
+    });
+
+    const data = await response.data();
+    if (data.access_token) {
+      setTokens(data.access_token, data.refresh_token);
+      apiClient.defaults.headers[
+        "Authorization"
+      ] = `Bearer ${data.access_token}`;
+    } else {
+      setTokens("", "");
+      localStorage.removeItem("refresh_token");
+    }
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+  }
+};
 
 export const requestPasswordReset = async (data: {
   email: string;
@@ -139,7 +216,7 @@ export const requestPasswordReset = async (data: {
  */
 export const fetchCurrentUser = async (): Promise<User> => {
   try {
-    const response: AxiosResponse<User> = await apiClient.get("/users/me/");
+    const response: AxiosResponse<User> = await apiClient.get("/auth/me/");
     console.log("Fetch current user response:", response.data);
     return response.data;
   } catch (error: any) {

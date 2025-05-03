@@ -18,8 +18,6 @@ venv/
 myenv/
 my_env/
 ENV/
-../env/
-
 env/
 .venv/
 .Python
@@ -52,4 +50,3 @@ htmlcov/
 # Other
 *.swp
 *.swo
-
