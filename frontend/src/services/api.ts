@@ -31,8 +31,8 @@ interface AdminDashboardData {
   // Add other admin stats
 }
 
-export const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+const apiClient: AxiosInstance = axios.create({
+  baseURL: "http://127.0.0.1:8000/swagger/",
   headers: {
     "Content-Type": "application/json",
   },
@@ -548,6 +548,49 @@ export const createUser = async (userData: {
     return response.data;
   } catch (error: any) {
     console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
+// --- Bookings Endpoints ---
+
+// Create a new booking
+export const createBooking = async (bookingData: {
+  skill_id: number;
+  provider_id: number;
+  scheduled_time: string;
+  duration: number;
+}): Promise<Booking> => {
+  try {
+    const response = await apiClient.post("/bookings/", bookingData);
+    console.log("Create booking response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    throw error;
+  }
+};
+
+// Fetch all bookings
+export const fetchAllBookings = async (): Promise<Booking[]> => {
+  try {
+    const response = await apiClient.get("/bookings/");
+    console.log("Fetch all bookings response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    throw error;
+  }
+};
+
+// Cancel a booking
+export const cancelBooking = async (bookingId: number): Promise<Booking> => {
+  try {
+    const response = await apiClient.patch(`/bookings/${bookingId}/cancel/`);
+    console.log(`Cancel booking ${bookingId} response:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error canceling booking ${bookingId}:`, error);
     throw error;
   }
 };
