@@ -1,36 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
-  Session,
-  LeaderboardEntry,
-  mockSessions,
-  mockLeaderboard,
-  mockSkills,
-  mockTransactions,
-  mockUser,
-  Skill,
-  User,
-  WalletTransaction,
-} from "./types";
-import {
   AuthResponse,
   loginUser,
-  LogoutResponse,
-  logoutUser,
   refreshAccessToken,
   registerUser,
   RegisterUserData,
 } from "../services/api";
+import { LogoutResponse, useLogout } from "../hooks/hooks";
+import { User } from "./types";
 
-// Define the store state and actions
 interface AuthState {
   user: User | null;
-  isLoading: boolean;
   isAuthenticated: boolean;
-  skills: Skill[];
-  sessions: Session[];
-  transactions: WalletTransaction[];
-  leaderboard: LeaderboardEntry[];
   login: ({
     email,
     password,
@@ -39,7 +21,7 @@ interface AuthState {
     password: string;
   }) => Promise<AuthResponse>;
   signup: (userData: RegisterUserData) => Promise<void>;
-  logout: () => Promise<LogoutResponse>;
+  logout: () => Promise<LogoutResponse | null>;
   setAuthenticated: (isAuthenticated: boolean) => void;
   refreshToken: string | null;
   setTokens: (accessToken: string, refreshToken: string) => void;
@@ -52,16 +34,11 @@ interface AuthState {
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
-      user: mockUser,
-      isLoading: false,
+      user: null,
       isAuthenticated: false,
-      skills: mockSkills,
-      sessions: mockSessions,
-      transactions: mockTransactions,
-      leaderboard: mockLeaderboard,
       login: loginUser,
       signup: registerUser,
-      logout: logoutUser,
+      logout: () => useLogout().logoutUser(),
       setAuthenticated: (isAuthenticated: boolean) => {
         set({ isAuthenticated });
       },
@@ -74,14 +51,13 @@ export const useAuthStore = create<AuthState>()(
         set({ accessToken: null, refreshToken: null });
         localStorage.removeItem("refresh_token");
       },
-
       refreshAccessToken: refreshAccessToken,
     }),
     {
       name: "timebank-auth-storage",
       partialize: (state) => ({
         user: state.user,
-        isAuthenticated: state.isAuthenticated,
+        isAuthenticated: state.isAuthenticated || !!state.accessToken,
       }),
     }
   )

@@ -1,29 +1,43 @@
-export type User = {
+/* UPDATED TYPES */
+export interface User {
   id: number;
   email: string;
   username: string;
-  bio: string | null;
-  profile_picture: string | null;
-  time_wallet: number;
-  is_active: boolean;
-  is_admin: boolean;
-  date_joined: string;
-  name: string; // Added based on signup signature
-  user_skills: number[];
-  availability?: string;
-};
-
-export type Skill = {
-  id: number;
   name: string;
-  description: string | null;
-  user: User | null;
+  bio?: string | null;
+  profile_picture?: string | null; // URI
+  user_skills: number[]; // unique integers
+  availability?: string | null;
+  // is_provider: boolean;
+}
+
+export interface Skill {
+  id: number;
+  user: number;
+  name: string;
+  description: string;
   is_offered: boolean;
-  created_at: string;
-  updated_at: string;
-  tags: string[];
   location: "local" | "remote";
-};
+  address?: string | null;
+  tags: string[];
+  is_visible?: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/* OLD TYPES */
+
+// export type Skill = {
+//   id: number;
+//   name: string;
+//   description: string | null;
+//   user: User | null;
+//   is_offered: boolean;
+//   created_at: string;
+//   updated_at: string;
+//   tags: string[];
+//   location: "local" | "remote";
+// };
 
 export type Session = {
   id: number;
@@ -112,11 +126,7 @@ export const mockUser: User = {
   name: "John Doe",
   bio: "Computer Science student passionate about web development and machine learning.",
   profile_picture: "/placeholder.svg?height=200&width=200",
-  time_wallet: 15.5,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-09-15T10:30:00Z",
-  user_skills: []
+  user_skills: [],
 };
 
 // Existing Users
@@ -127,11 +137,7 @@ const saraAhmed: User = {
   name: "Sara Ahmed",
   bio: "Frontend developer specializing in React",
   profile_picture: null,
-  time_wallet: 22.5,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-08-10T08:45:00Z",
-  user_skills: []
+  user_skills: [],
 };
 
 const michaelJohnson: User = {
@@ -141,11 +147,7 @@ const michaelJohnson: User = {
   name: "Michael Johnson",
   bio: "Beginner programmer looking to improve",
   profile_picture: null,
-  time_wallet: 5.0,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-10-05T14:20:00Z",
-  user_skills: []
+  user_skills: [],
 };
 
 const alexChen: User = {
@@ -155,11 +157,7 @@ const alexChen: User = {
   name: "Alex Chen",
   bio: "Teaching programming for 3 years",
   profile_picture: null,
-  time_wallet: 45.0,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-07-15T10:30:00Z",
-  user_skills: []
+  user_skills: [],
 };
 
 // New Users
@@ -170,11 +168,7 @@ const emilyDavis: User = {
   name: "Emily Davis",
   bio: "Graphic designer with a passion for illustration.",
   profile_picture: null,
-  time_wallet: 10.0,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-01-20T11:00:00Z",
-  user_skills: []
+  user_skills: [],
 };
 
 const davidWilson: User = {
@@ -184,11 +178,7 @@ const davidWilson: User = {
   name: "David Wilson",
   bio: "Musician and music theory tutor.",
   profile_picture: null,
-  time_wallet: 8.75,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-02-10T09:30:00Z",
-  user_skills: []
+  user_skills: [],
 };
 
 const oliviaMartinez: User = {
@@ -198,11 +188,7 @@ const oliviaMartinez: User = {
   name: "Olivia Martinez",
   bio: "Yoga instructor and mindfulness coach.",
   profile_picture: null,
-  time_wallet: 18.0,
-  is_active: true,
-  is_admin: false,
-  date_joined: "2024-03-01T13:15:00Z",
-  user_skills: []
+  user_skills: [],
 };
 export const allUsers = [
   mockUser,
@@ -213,11 +199,12 @@ export const allUsers = [
   davidWilson,
   oliviaMartinez,
 ];
+
 export const mockSkills: Skill[] = [
   {
     id: 1,
     name: "JavaScript Programming",
-    user: allUsers[0],
+    user: 0,
     description:
       "Modern JavaScript including ES6+ features, async/await, and frameworks",
     is_offered: false,
@@ -229,7 +216,7 @@ export const mockSkills: Skill[] = [
   {
     id: 2,
     name: "Python Data Analysis",
-    user: allUsers[2],
+    user: 2,
     description: "Data analysis using pandas, numpy, and matplotlib",
     is_offered: true,
     created_at: "2024-10-05T09:15:00Z",
@@ -241,7 +228,7 @@ export const mockSkills: Skill[] = [
     id: 3,
     name: "UI/UX Design",
     description: "Learn UI/UX Design",
-    user: allUsers[1],
+    user: 1,
     is_offered: false,
     created_at: "2024-10-10T16:45:00Z",
     updated_at: "2024-10-10T16:45:00Z",
@@ -252,7 +239,7 @@ export const mockSkills: Skill[] = [
     id: 4,
     name: "React Development",
     description: "Building web applications with React",
-    user: allUsers[4],
+    user: 4,
     is_offered: true,
     created_at: "2024-10-15T11:30:00Z",
     updated_at: "2024-10-15T11:30:00Z",
@@ -263,7 +250,7 @@ export const mockSkills: Skill[] = [
     id: 5,
     name: "Illustration Basics",
     description: "Introduction to digital illustration techniques.",
-    user: allUsers[3],
+    user: 3,
     is_offered: true,
     created_at: "2024-01-25T10:00:00Z",
     updated_at: "2024-01-25T10:00:00Z",
@@ -274,7 +261,7 @@ export const mockSkills: Skill[] = [
     id: 6,
     name: "Beginner Piano Lessons",
     description: "Learn the fundamentals of playing the piano.",
-    user: allUsers[3],
+    user: 3,
     is_offered: true,
     created_at: "2024-02-15T14:00:00Z",
     updated_at: "2024-02-15T14:00:00Z",
@@ -285,7 +272,7 @@ export const mockSkills: Skill[] = [
     id: 7,
     name: "Mindfulness Meditation",
     description: "Guided meditation sessions for stress reduction.",
-    user: allUsers[2],
+    user: 0,
     is_offered: true, // Assuming Olivia offers this
     created_at: "2024-03-05T09:00:00Z",
     updated_at: "2024-03-05T09:00:00Z",

@@ -72,3 +72,8 @@
   background-size: 100px 10px;
 }
 @custom-variant dark (&:where(.dark, .dark *));
+
+
+html {
+  scrollbar-gutter: stable;
+}

@@ -16,16 +16,6 @@ class GroupSerializer(serializers.ModelSerializer):
         GroupMembership.objects.create(user=self.context['request'].user, group=group, status='accepted')
         return group
 
-class GroupInviteSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-
-    def validate_email(self, value):
-        # Ensure the user is not already a member of the group
-        group = self.context.get('group')
-        if group.members.filter(email=value).exists():
-            raise ValidationError("User is already a member of this group.")
-        return value
-
 class GroupDetailSerializer(GroupSerializer):
     members = serializers.SerializerMethodField()
 
