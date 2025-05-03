@@ -1,16 +1,11 @@
-
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
-from .views import ServiceOfferingViewSet, SkillViewSet,ServiceRequestViewSet
-
-router = DefaultRouter()
-
-router.register(r'service-offerings', ServiceOfferingViewSet, basename='service-offering')
-router.register(r'', SkillViewSet, basename='skills')
-router.register(r'requests', ServiceRequestViewSet, basename='service-request')
-
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path('', include(router.urls)),
-    
+    path('skills/', views.SkillListCreateView.as_view(), name='skill-list-create'),
+    path('skills/<int:pk>/', views.SkillRetrieveUpdateDestroyView.as_view(), name='skill-detail'),
+    path('skills/offered/', views.OfferedSkillsView.as_view(), name='offered-skills'),
+    path('skills/requested/', views.RequestedSkillsView.as_view(), name='requested-skills'),
+    path('skills/me/', views.MySkillsView.as_view(), name='my-skills'),
+    path('skills/search/', views.SkillSearchView.as_view(), name='skill-search'),
 ]
