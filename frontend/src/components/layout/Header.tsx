@@ -3,19 +3,27 @@ import { useState } from "react";
 import { Clock, Menu } from "lucide-react";
 import Button from "../ui/Button";
 import { useLogout } from "../../hooks/hooks";
+import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const { logoutUser: onLogout } = useLogout();
+  const { logoutUser } = useLogout();
+  const navigate = useNavigate();
+
+  const onLogout = () => {
+    logoutUser().then(() => navigate("/"));
+  };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
     <div className="bg-white shadow-sm sticky top-0 z-50">
       <div className="mx-0 md:px-16 px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-[8px]">
-          <Clock className="text-[28px] text-primary" />
-          <h1 className="text-2xl font-bold text-primary">TimeBank</h1>
-        </div>
+        <Link to="/">
+          <div className="flex items-center gap-[8px]">
+            <Clock className="text-[28px] text-primary" />
+            <h1 className="text-2xl font-bold text-primary">TimeBank</h1>
+          </div>
+        </Link>
 
         <div className="hidden md:flex items-center gap-[16px]">
           <a
@@ -37,7 +45,7 @@ const Header = () => {
             Settings
           </a>
 
-          <Button onClick={onLogout} variant="destructive" className="">
+          <Button onClick={onLogout} variant="gradient" className="">
             Logout
           </Button>
         </div>
@@ -74,12 +82,9 @@ const Header = () => {
               Settings
             </a>
 
-            <button
-              onClick={onLogout}
-              className="text-left text-red-500 hover:text-red-700 transition duration-200 py-2"
-            >
+            <Button variant="destructive" size="lg">
               Logout
-            </button>
+            </Button>
           </div>
         </div>
       )}

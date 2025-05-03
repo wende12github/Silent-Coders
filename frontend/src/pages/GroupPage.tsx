@@ -34,7 +34,7 @@ const GroupPage: React.FC = () => {
     const newMessage: ChatMessage = {
       id: messages.length + 1,
       senderId: currentUser?.id || 0,
-      senderName: currentUser?.name || "Unknown User",
+      senderName: currentUser?.first_name || "Unknown User",
       senderAvatar:
         currentUser?.profile_picture ||
         "https://placehold.co/100x100/ff7f7f/ffffff?text=AJ",
@@ -117,7 +117,7 @@ const GroupPage: React.FC = () => {
                       dangerouslySetInnerHTML={{ __html: announcement.content }}
                     ></p>{" "}
                     <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>Posted by: {announcement.author.name}</span>
+                      <span>Posted by: {announcement.author.first_name}</span>
                       <span>{formatTimestamp(announcement.timestamp)}</span>
                     </div>
                   </div>
@@ -136,17 +136,17 @@ const GroupPage: React.FC = () => {
                   className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4 hover:shadow-md transition"
                 >
                   <Avatar
-                    fallback={member.name || "U"}
+                    fallback={member.first_name || "U"}
                     src={member.profile_picture}
-                    alt={member.name}
+                    alt={member.first_name}
                     className="w-14 h-14 rounded-full object-cover"
                   />
                   <div>
                     <p className="text-lg font-semibold text-gray-800">
-                      {member.name}
+                      {member.first_name}
                     </p>
                     <p className="text-sm text-gray-500">
-                      {member.time_wallet} Credits
+                      {member.id} Credits IDDD
                     </p>
                   </div>
                 </div>
@@ -265,17 +265,17 @@ const GroupPage: React.FC = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap flex items-center space-x-3">
                     <Avatar
-                      fallback={member.user.name || "U"}
+                      fallback={member.user.first_name || "U"}
                       src={member.user.profile_picture}
-                      alt={member.user.name}
+                      alt={member.user.first_name}
                       className="w-8 h-8 rounded-full"
                     />
                     <span className="text-sm font-medium text-gray-800">
-                      {member.user.name}
+                      {member.user.first_name}
                     </span>
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-600">
-                    {member.user.time_wallet} credits
+                    {member.user.id} credits IDDD
                   </td>
                 </tr>
               ))}
@@ -287,7 +287,7 @@ const GroupPage: React.FC = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6 min-h-screen">
+    <div className="p-6 space-y-6 flex-grow">
       <div className="max-w-7xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">
