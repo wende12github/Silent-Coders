@@ -1,188 +1,183 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
-// import { formatDate } from 'date-fns';
+import { z } from "zod";
+
 import Button from "../components/ui/Button";
 import { toast } from "sonner";
-import { ImageUpload } from "../components/ImageUpload";
+// import { ImageUpload } from "../components/ImageUpload";
 import { Checkbox } from "../components/ui/Checkbox";
-import { Input } from "../components/ui/Form";
+import { Input, Textarea } from "../components/ui/Form";
+import { useAuthStore } from "../store/authStore";
+
+// Zod schema
+const signupSchema = z
+  .object({
+    email: z.string().min(1, "Email is required").email("Invalid email"),
+    username: z
+      .string()
+      .min(3, "Username must be at least 3 characters")
+      .nonempty("Username is required"),
+    password: z
+      .string()
+      .min(4, "Password must be at least 4 characters")
+      .regex(/[a-z]/, "Must include a lowercase letter")
+      .regex(/[A-Z]/, "Must include an uppercase letter")
+      .regex(/[0-9]/, "Must include a number"),
+    confirmPassword: z.string().nonempty("Please confirm your password"),
+    agreedToTerms: z.boolean().refine((val) => val === true, {
+      message: "You must agree to the Terms & Conditions",
+    }),
+    bio: z.string().nullable(),
+    // profileImage: z.string().min(1, "Profile image is required"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    path: ["confirmPassword"],
+    message: "Passwords do not match",
+  });
+
+type SignupFormData = z.infer<typeof signupSchema>;
+
 const SignUp = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<SignupFormData>({
     email: "",
     username: "",
     password: "",
     confirmPassword: "",
+    agreedToTerms: false,
+    bio: "",
+    // profileImage: "",
   });
-  const [errors, setErrors] = useState({
-    email: "",
-    username: "",
-    password: "",
-    confirmPassword: "",
-    terms: "",
-  });
+  const navigate = useNavigate();
+
+  const [loading, setIsLoading] = useState(false);
+  const { signup } = useAuthStore();
+
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof SignupFormData, string>>
+  >({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [agreedToTerms, setAgreedToTerms] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-
-  const validateEmail = (email: string) => {
-    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) return "Email is required";
-    if (!reg.test(email)) return "Please enter a valid email address";
-    return "";
-  };
-
-  const validateUsername = (username: string) => {
-    if (!username) return "Username is required";
-    if (username.length < 3) return "Username must be at least 3 characters";
-    return "";
-  };
-
-  function validatePassword(password: string) {
-    if (!password) return "Password is required";
-    if (password.length < 8) return "Password must be at least 8 characters";
-    if (!/(?=.*[a-z])/.test(password))
-      return "Password must include lowercase letters";
-    if (!/(?=.*[A-Z])/.test(password))
-      return "Password must include uppercase letters";
-    if (!/(?=.*[0-9])/.test(password)) return "Password must include numbers";
-    return "";
-  }
-
-  const validateConfirmPassword = (
-    confirmPassword: string,
-    password: string
-  ) => {
-    if (!confirmPassword) return "Please confirm your password";
-    if (confirmPassword !== password) return "passwords doesn't match";
-    return "";
-  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    const { name, value, type, checked } = e.target;
+    const newValue = type === "checkbox" ? checked : value;
 
-    let error = "";
-    switch (name) {
-      case "email":
-        error = validateEmail(value);
-        break;
-      case "username":
-        error = validateUsername(value);
-        break;
-      case "password":
-        error = validatePassword(value);
-        if (formData.confirmPassword) {
-          const confirmError = validateConfirmPassword(
-            formData.confirmPassword,
-            value
-          );
-          setErrors((prev) => ({ ...prev, confirmPassword: confirmError }));
-        }
-        break;
-      case "confirmPassword":
-        error = validateConfirmPassword(value, formData.password);
-        break;
-      default:
-        break;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: newValue,
+    }));
+
+    const updated = { ...formData, [name]: newValue };
+    const result = signupSchema.safeParse(updated);
+
+    if (!result.success) {
+      const fieldError =
+        result.error.flatten().fieldErrors[name as keyof SignupFormData];
+      setErrors((prev) => ({
+        ...prev,
+        [name]: fieldError?.[0] || "",
+      }));
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
-    setErrors((prev) => ({ ...prev, [name]: error }));
+  };
+  const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const emailError = validateEmail(formData.email);
-    const usernameError = validateUsername(formData.username);
-    const passwordError = validatePassword(formData.password);
-    const confirmPasswordError = validateConfirmPassword(
-      formData.confirmPassword,
-      formData.password
-    );
+    const result = signupSchema.safeParse(formData);
 
-    const termsError = !agreedToTerms
-      ? "You must agree to the term and conditions"
-      : "";
-
-    const newErrors = {
-      email: emailError,
-      username: usernameError,
-      password: passwordError,
-      confirmPassword: confirmPasswordError,
-      terms: termsError,
-    };
-
-    setErrors(newErrors);
-    if (Object.values(newErrors).some((error) => error)) {
-      return;
-    }
-
-    if (!profileImage) {
-      toast.error("Profile Picture Required", {
-        description: "Please upload a profile picture",
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+      setErrors({
+        email: fieldErrors.email?.[0] || "",
+        username: fieldErrors.username?.[0] || "",
+        password: fieldErrors.password?.[0] || "",
+        confirmPassword: fieldErrors.confirmPassword?.[0] || "",
+        agreedToTerms: fieldErrors.agreedToTerms?.[0] || "",
+        // profileImage: fieldErrors.profileImage?.[0] || "",
       });
       return;
     }
+    signup(formData)
+      .then(() => {
+        navigate("/dashboard");
+      })
+      .catch((err) => {
+        toast.error("Login failed", {
+          description: err.message,
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
 
+    setErrors({});
     toast("Account Created!", {
       description: "Your account has been created successfully.",
     });
-    console.log("Form submitted: ", { ...formData, profileImage });
+    console.log("Submitted:", result.data);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center  px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       <h1 className="text-center font-bold text-3xl mb-3 tracking-tight">
-        Create Your account
+        Create Your Account
       </h1>
       <p className="text-center text-gray-600 text-sm">
         Join us today and start your journey
       </p>
-      <div className=" mt-2 px-6 py-8 bg-white shadow-md rounded-lg">
+
+      <div className="mt-2 px-6 py-8 bg-white shadow-md rounded-lg">
         <form
           onSubmit={handleSubmit}
-          className=" space-y-6 flex flex-col items-center"
+          className="space-y-6 flex flex-col items-center"
         >
-          <div className="flex justify-center">
+          {/* <div className="flex justify-center">
             <ImageUpload
-              value={profileImage}
-              onChange={(url: string) => setProfileImage(url)}
+              value={formData.profileImage}
+              onChange={handleImageChange}
             />
           </div>
-          {/* Email */}
-          <div className="relative w-full">
+          {errors.profileImage && (
+            <p className="text-xs text-red-500">{errors.profileImage}</p>
+          )} */}
+
+          <div className="w-full space-y-1">
             <Input
               icon={<Mail className="h-5 w-5 text-gray-400" />}
               id="email"
               name="email"
-              type="email"
-              value={formData.email}
+              type="text"
               placeholder="Email Address"
+              value={formData.email}
               onChange={handleChange}
-              className={`${
-                errors.password ? "border-red-500" : "border-gray-300"
-              }`}
             />
+            {errors.email && (
+              <p className="text-xs text-red-500">{errors.email}</p>
+            )}
           </div>
 
-          {/* // Username */}
-          <div className="relative w-full">
+          <div className="w-full space-y-1">
             <Input
               icon={<User className="h-5 w-5 text-gray-400" />}
               id="username"
               name="username"
               type="text"
+              placeholder="Username"
               value={formData.username}
-              placeholder="User Name"
               onChange={handleChange}
-              className={`${
-                errors.username ? "border-red-500" : "border-gray-300"
-              }`}
             />
+            {errors.username && (
+              <p className="text-xs text-red-500">{errors.username}</p>
+            )}
           </div>
 
-          {/* Password */}
-          <div className="relative w-full">
+          <div className="relative w-full space-y-1">
             <Input
               icon={<Lock className="h-5 w-5 text-gray-400" />}
               id="password"
@@ -191,9 +186,6 @@ const SignUp = () => {
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
-              className={`${
-                errors.password ? "border-red-500" : "border-gray-300"
-              }`}
             />
             <div
               className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
@@ -210,19 +202,15 @@ const SignUp = () => {
             )}
           </div>
 
-          {/* confirm password */}
-          <div className="relative w-full">
+          <div className="relative w-full space-y-1">
             <Input
               icon={<Lock className="h-5 w-5 text-gray-400" />}
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              value={formData.confirmPassword}
               placeholder="Confirm Password"
+              value={formData.confirmPassword}
               onChange={handleChange}
-              className={`${
-                errors.confirmPassword ? "border-red-400" : ""
-              }`}
             />
             <div
               className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
@@ -239,42 +227,43 @@ const SignUp = () => {
             )}
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="w-full space-y-1">
+            <Textarea
+              id="bio"
+              name="bio"
+              placeholder="Tell us about yourself..."
+              value={formData.bio || ""}
+              onChange={handleBioChange}
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 mb-2">
             <Checkbox
-              id="terms"
-              checked={agreedToTerms}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                const checked = e.target.checked;
-                setAgreedToTerms(checked === true);
-                setErrors((prev) => ({
-                  ...prev,
-                  terms:
-                    checked === true
-                      ? ""
-                      : "You must agree to the Terms & Conditions",
-                }));
-              }}
+              id="agreedToTerms"
+              name="agreedToTerms"
+              checked={formData.agreedToTerms}
+              onChange={handleChange}
             />
             <label
-              htmlFor="terms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              htmlFor="agreedToTerms"
+              className="text-sm font-medium leading-none"
             >
               I agree to the Terms & Conditions
             </label>
           </div>
-          {errors.terms && (
-            <p className="text-xs text-red-500">{errors.terms}</p>
+          {errors.agreedToTerms && (
+            <p className="text-xs text-red-500">{errors.agreedToTerms}</p>
           )}
 
-          <Button type="submit" className="w-89">
-            Create Account
+          <Button type="submit" className="w-89" disabled={loading}>
+            {loading ? "Loading..." : "Create Account"}
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm">
           <p className="text-gray-600">
             Already have an account?{" "}
-            <Link to="/Login">
+            <Link to="/login">
               <Button variant="link">Login here</Button>
             </Link>
           </p>

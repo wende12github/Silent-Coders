@@ -12,6 +12,15 @@ import {
   User,
   WalletTransaction,
 } from "./types";
+import {
+  AuthResponse,
+  loginUser,
+  LogoutResponse,
+  logoutUser,
+  refreshAccessToken,
+  registerUser,
+  RegisterUserData,
+} from "../services/api";
 
 // Define the store state and actions
 interface AuthState {
@@ -22,22 +31,27 @@ interface AuthState {
   sessions: Session[];
   transactions: WalletTransaction[];
   leaderboard: LeaderboardEntry[];
-  login: (email: string, password: string) => Promise<void>;
-  signup: (
-    name: string,
-    username: string,
-    email: string,
-    password: string
-  ) => Promise<void>;
-  logout: () => void;
-  setSessions: (bookings: Session[]) => void;
-  setSkills: (skills: Skill[]) => void;
+  login: ({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }) => Promise<AuthResponse>;
+  signup: (userData: RegisterUserData) => Promise<void>;
+  logout: () => Promise<LogoutResponse>;
+  setAuthenticated: (isAuthenticated: boolean) => void;
+  refreshToken: string | null;
+  setTokens: (accessToken: string, refreshToken: string) => void;
+  accessToken: string | null;
+  clearTokens: () => void;
+  refreshAccessToken: () => Promise<void>;
 }
 
 // Create the Zustand store with persistence
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: mockUser,
       isLoading: false,
       isAuthenticated: false,
@@ -45,75 +59,30 @@ export const useAuthStore = create<AuthState>()(
       sessions: mockSessions,
       transactions: mockTransactions,
       leaderboard: mockLeaderboard,
-
-      login: async (email: string, password: string) => {
-        
-        set({ isLoading: true });
-        try {
-          set({ user: mockUser, isAuthenticated: true });
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          if (email === mockUser.email) {
-            set({ user: mockUser, isAuthenticated: true });
-          } else {
-            throw new Error("Invalid credentials");
-          }
-        } catch (error) {
-          console.error("Login failed:", error);
-          throw error;
-        } finally {
-          set({ isLoading: false });
-        }
+      login: loginUser,
+      signup: registerUser,
+      logout: logoutUser,
+      setAuthenticated: (isAuthenticated: boolean) => {
+        set({ isAuthenticated });
+      },
+      accessToken: null,
+      refreshToken: null,
+      setTokens: (refreshToken: string, accessToken: string) => {
+        set({ refreshToken, accessToken });
+      },
+      clearTokens: () => {
+        set({ accessToken: null, refreshToken: null });
+        localStorage.removeItem("refresh_token");
       },
 
-      signup: async (
-        name: string,
-        username: string,
-        email: string,
-        password: string
-      ) => {
-        set({ isLoading: true });
-        try {
-          // Simulate API call
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-
-          // Create a new user based on the mock user but with the provided details
-          const newUser = {
-            ...mockUser,
-            name,
-            username,
-            email,
-            date_joined: new Date().toISOString(),
-          };
-
-          set({ user: newUser, isAuthenticated: true });
-        } catch (error) {
-          console.error("Signup failed:", error);
-          throw error;
-        } finally {
-          set({ isLoading: false });
-        }
-      },
-
-      logout: () => {
-        set({ user: null, isAuthenticated: false });
-      },
-
-      setSessions: (sessions: Session[]) => {
-        set({ sessions });
-      },
-
-      setSkills: (skills: Skill[]) => {
-        set({ skills });
-      },
+      refreshAccessToken: refreshAccessToken,
     }),
     {
-      name: "timebank-auth-storage", // name of the item in localStorage
+      name: "timebank-auth-storage",
       partialize: (state) => ({
         user: state.user,
         isAuthenticated: state.isAuthenticated,
-      }), // only persist these fields
+      }),
     }
   )
 );

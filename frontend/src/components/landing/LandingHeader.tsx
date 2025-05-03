@@ -2,6 +2,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faClock } from '@fortawesome/free-regular-svg-icons';
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { useState } from 'react';
+import Button from '../ui/Button';
+import { Link } from 'react-router-dom';
 
 export const LandingHeader = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -17,8 +19,8 @@ export const LandingHeader = () => {
           <a href='#how-it-works' className="text-gray-700 hover:text-[var(--color-primary)] transition duration-200">How It Works</a>
           <a href='#about-us' className="text-gray-700 hover:text-[var(--color-primary)] transition duration-200">About Us</a>
           <a href='#testimonials' className="text-gray-700 hover:text-[var(--color-primary)] transition duration-200">Testimonials</a>
-          <button className="hover:text-timebank-blue transition duration-200 border-1 rounded-[var(--radius)] font-medium text-[var(--color-primary)] px-4 py-2 hover:bg-[var(--color-muted)]">Login</button>
-          <button className="bg-[var(--color-primary)] hover:bg-[var(--color-primary-dark)] text-[white] font-medium rounded-[var(--radius)] px-4 py-2">Signup</button>
+          <Link to='/login'><Button size='lg' className="">Login</Button></Link>
+          <Link to="/signup"><Button size='lg' variant="secondary" className="">Signup</Button></Link>
         </div>
 
         <div className="md:hidden">
