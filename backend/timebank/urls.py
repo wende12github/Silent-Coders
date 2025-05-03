@@ -33,7 +33,7 @@ This API allows students to exchange skills and services using **time as currenc
 )
 
 urlpatterns = [
-    path('skill/', include('skills.urls')), 
+    path('', include('skills.urls')), 
     path('admin/', admin.site.urls),
     path('', include('authentication.urls')),
 
