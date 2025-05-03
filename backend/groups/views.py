@@ -1,9 +1,11 @@
-from rest_framework import generics, permissions, status
+from groups.models import Group, GroupMembership, UserStats
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
+from django.db.models import ExpressionWrapper, F, FloatField
 from django.contrib.auth import get_user_model
-from .models import Group, GroupMembership
+from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer, GroupLeaderboardSerializer
 from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
@@ -57,4 +59,31 @@ class GroupJoinView(generics.GenericAPIView):
         GroupMembership.objects.create(user=request.user, group=group)
 
         return Response({"message": f"You have successfully joined the group {group.name}."}, status=status.HTTP_201_CREATED)
+
+
+class GroupLeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
+    serializer_class = GroupLeaderboardSerializer
+
+    def get_queryset(self):
+        group_id = self.kwargs.get('group_id')  # Fetch group by ID from URL
+        sort_by = self.request.query_params.get('sort_by', 'given')  # default: given
+        top_n = int(self.request.query_params.get('top', 10))
+
+        order_map = {
+            'given': '-total_hours_given',
+            'received': '-total_hours_received',
+            'sessions': '-sessions_completed',
+            'net': '',  # Sorting by annotation if needed
+        }
+
+        queryset = UserStats.objects.filter(group_id=group_id)  # Filter by group
+
+        if sort_by == 'net':
+            queryset = queryset.annotate(
+                net=ExpressionWrapper(F('total_hours_given') - F('total_hours_received'), output_field=FloatField())
+            ).order_by('-net')[:top_n]
+        else:
+            queryset = queryset.order_by(order_map.get(sort_by, '-total_hours_given'))[:top_n]
+
+        return queryset
 
