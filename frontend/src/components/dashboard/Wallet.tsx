@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useAuthStore } from "../../store/ayan";
+import { useAuthStore } from "../../store/authStore";
 import {
 	Card,
 	CardContent,
