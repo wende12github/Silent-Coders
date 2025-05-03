@@ -23,11 +23,13 @@ class RegisterView(APIView):
         username = data.get("username")
         email = data.get("email")
         password = data.get("password")
+        first_name = data.get("first_name")
+        last_name = data.get("last_name")
 
         if User.objects.filter(username=username).exists():
             return Response({"error": "Username already exists"}, status=400)
 
-        user = User.objects.create_user(username=username, email=email, password=password)
+        user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
         return Response({"message": "User created successfully"}, status=201)
 
 class UserLoginView(APIView):
