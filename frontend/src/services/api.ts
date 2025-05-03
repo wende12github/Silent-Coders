@@ -1,19 +1,18 @@
 import axios, { AxiosInstance, AxiosResponse } from "axios";
 import {
-    Announcement,
-    Group,
+  Announcement,
+  Group,
   LeaderboardEntry,
   Session,
-  Skill,
   User,
   WalletTransaction,
 } from "../store/types";
 
-import { API_BASE_URL } from "../utils/constants";
-
-interface AuthResponse {
-  token: string;
-  user: User;
+import { API_BASE_URL, REFRESH_TOKEN_STORAGE_KEY } from "../utils/constants";
+import { useAuthStore } from "../store/authStore";
+export interface AuthResponse {
+  refresh: string;
+  access: string;
 }
 
 interface WalletBalanceResponse {
@@ -24,7 +23,6 @@ interface TransferResponse {
   transaction: WalletTransaction;
 }
 
-
 // Interface for admin dashboard data (example)
 interface AdminDashboardData {
   total_users: number;
@@ -34,33 +32,74 @@ interface AdminDashboardData {
 }
 
 const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: "http://127.0.0.1:8000/swagger/",
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// --- Authentication Endpoints ---
+apiClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    if (error.response?.status === 401) {
+      const refreshToken = localStorage.getItem("refresh_token");
+
+      if (!refreshToken) {
+        console.error("No refresh token found, user must log in again.");
+        useAuthStore.getState().setAuthenticated(false);
+        return Promise.reject(error);
+      }
+
+      try {
+        await refreshAccessToken();
+        const newAccessToken = useAuthStore.getState().accessToken;
+        if (!newAccessToken) {
+          useAuthStore.getState().setAuthenticated(false);
+          return Promise.reject(error);
+        }
+        error.config.headers["Authorization"] = `Bearer ${newAccessToken}`;
+        return apiClient(error.config);
+      } catch (refreshError) {
+        console.error("Failed to refresh token:", refreshError);
+        useAuthStore.getState().setAuthenticated(false);
+        return Promise.reject(refreshError);
+      }
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export const setAuthToken = (token: string) => {
+  if (token) {
+    apiClient.defaults.headers["Authorization"] = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers["Authorization"];
+  }
+};
+
+const storeRefreshToken = (refreshToken: string) => {
+  localStorage.setItem(REFRESH_TOKEN_STORAGE_KEY, refreshToken);
+};
 
 /**
  * Mock API call to register a new user.
  * @param {object} userData - User registration data (e.g., { email, password, name, username })
  * @returns {Promise<AuthResponse>} - The response data from the API.
  */
-
-export const registerUser = async (userData: {
+export interface RegisterUserData {
   email: string;
   password: string;
-  name: string;
   username: string;
-}): Promise<AuthResponse> => {
+  bio: string | null;
+  // name: string;
+}
+export const registerUser = async (
+  userData: RegisterUserData
+): Promise<void> => {
   try {
-    const response: AxiosResponse<AuthResponse> = await apiClient.post(
-      "/auth/register/",
-      userData
-    );
+    const response = await apiClient.post("/auth/register/", userData);
     console.log("Register user response:", response.data);
-    return response.data;
   } catch (error: any) {
     // Use 'any' or a more specific error type if available
     console.error("Error registering user:", error);
@@ -74,6 +113,7 @@ export const registerUser = async (userData: {
  * @returns {Promise<AuthResponse>} - The response data from the API (e.g., { token, user }).
  */
 export const loginUser = async (credentials: {
+  // done
   email: string;
   password: string;
 }): Promise<AuthResponse> => {
@@ -83,6 +123,9 @@ export const loginUser = async (credentials: {
       credentials
     );
     console.log("Login user response:", response.data);
+    storeRefreshToken(response.data.refresh);
+    setAuthToken(response.data.access);
+    useAuthStore.getState().setAuthenticated(true);
     return response.data;
   } catch (error: any) {
     console.error("Error logging in user:", error);
@@ -91,20 +134,31 @@ export const loginUser = async (credentials: {
 };
 
 /**
- * Mock API call to log out the current user.
+ * Mock API call to refresh the access token.
  * @returns {Promise<object>} - The response data from the API.
  */
-export const logoutUser = async (): Promise<object> => {
-  // Return type can be more specific if the API returns data
+
+export const refreshAccessToken = async () => {
+  const { setTokens } = useAuthStore();
+
+  const { refreshToken } = useAuthStore.getState();
+  if (!refreshToken) return;
+
   try {
-    const response: AxiosResponse<object> = await apiClient.post(
-      "/auth/logout/"
-    );
-    console.log("Logout user response:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("Error logging out user:", error);
-    throw error;
+    const response = await axios.post(`${API_BASE_URL}/auth/refresh/`, {
+      refresh_token: refreshToken,
+    });
+
+    const data = await response.data;
+    if (data.access_token) {
+      setTokens(data.access_token, data.refresh_token);
+      setAuthToken(data.access_token);
+    } else {
+      setTokens("", "");
+      localStorage.removeItem(REFRESH_TOKEN_STORAGE_KEY);
+    }
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
   }
 };
 
@@ -137,9 +191,10 @@ export const requestPasswordReset = async (data: {
  * Mock API call to fetch the current user's profile.
  * @returns {Promise<User>} - The current user's profile data.
  */
+
 export const fetchCurrentUser = async (): Promise<User> => {
   try {
-    const response: AxiosResponse<User> = await apiClient.get("/users/me/");
+    const response: AxiosResponse<User> = await apiClient.get("/auth/me/");
     console.log("Fetch current user response:", response.data);
     return response.data;
   } catch (error: any) {
@@ -187,61 +242,6 @@ export const fetchUserById = async (id: string): Promise<User> => {
 };
 
 // --- Skills Endpoints ---
-
-/**
- * Mock API call to create a new skill.
- * @param {object} skillData - The data for the new skill (e.g., { name, description, is_offered, tags }).
- * @returns {Promise<Skill>} - The created skill data.
- */
-export const createSkill = async (
-  skillData: Omit<Skill, "id" | "created_at" | "updated_at">
-): Promise<Skill> => {
-  // Omit generated fields
-  try {
-    const response: AxiosResponse<Skill> = await apiClient.post(
-      "/skills/",
-      skillData
-    );
-    console.log("Create skill response:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("Error creating skill:", error);
-    throw error;
-  }
-};
-
-/**
- * Mock API call to fetch all skills.
- * @returns {Promise<Skill[]>} - A list of skills.
- */
-export const fetchAllSkills = async (): Promise<Skill[]> => {
-  try {
-    const response: AxiosResponse<Skill[]> = await apiClient.get("/skills/");
-    console.log("Fetch all skills response:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("Error fetching all skills:", error);
-    throw error;
-  }
-};
-
-/**
- * Mock API call to search for skills by name.
- * @param {string} query - The search query for skill names.
- * @returns {Promise<Skill[]>} - A list of matching skills.
- */
-export const searchSkills = async (query: string): Promise<Skill[]> => {
-  try {
-    const response: AxiosResponse<Skill[]> = await apiClient.get(
-      `/skills/match/?q=${encodeURIComponent(query)}`
-    );
-    console.log(`Search skills "${query}" response:`, response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error(`Error searching skills "${query}":`, error);
-    throw error;
-  }
-};
 
 // --- Sessions Endpoints ---
 
@@ -548,6 +548,49 @@ export const createUser = async (userData: {
     return response.data;
   } catch (error: any) {
     console.error("Error creating user:", error);
+    throw error;
+  }
+};
+
+// --- Bookings Endpoints ---
+
+// Create a new booking
+export const createBooking = async (bookingData: {
+  skill_id: number;
+  provider_id: number;
+  scheduled_time: string;
+  duration: number;
+}): Promise<Booking> => {
+  try {
+    const response = await apiClient.post("/bookings/", bookingData);
+    console.log("Create booking response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error creating booking:", error);
+    throw error;
+  }
+};
+
+// Fetch all bookings
+export const fetchAllBookings = async (): Promise<Booking[]> => {
+  try {
+    const response = await apiClient.get("/bookings/");
+    console.log("Fetch all bookings response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    throw error;
+  }
+};
+
+// Cancel a booking
+export const cancelBooking = async (bookingId: number): Promise<Booking> => {
+  try {
+    const response = await apiClient.patch(`/bookings/${bookingId}/cancel/`);
+    console.log(`Cancel booking ${bookingId} response:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error canceling booking ${bookingId}:`, error);
     throw error;
   }
 };

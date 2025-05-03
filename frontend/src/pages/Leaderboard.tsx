@@ -5,7 +5,7 @@ import Avatar from "../components/ui/Avatar";
 import LeaderboardList from "../components/leaderboard/LeaderboardList";
 import { useAuthStore } from "../store/authStore";
 import { allUsers as mockUsers, LeaderboardEntry, User } from "../store/types";
-
+import { fetchLeaderboard } from '../services/leaderboard';
 type TimePeriod = "all-time" | "month";
 
 export const processAndRankLeaderboard = (
@@ -84,7 +84,7 @@ export const processAndRankLeaderboard = (
 };
 
 const LeaderboardPage = () => {
-  const { leaderboard } = useAuthStore();
+  const [leaderboard,setLeaderboard]=useState<any>(null);
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("all-time");
   const [allUsers, setAllUsers] = useState<User[]>([]);
   const [allEntries, setAllEntries] = useState<LeaderboardEntry[]>([]);
@@ -92,18 +92,103 @@ const LeaderboardPage = () => {
 
   const { user: currentUser } = useAuthStore();
 
-  // Load mock data
+
+
+  // src/pages/Leaderboard.tsx
+
+interface UserStats {
+  user: string;
+  total_hours_given: number;
+  sessions_completed: number;
+}
+
+interface LeaderboardResponse {
+  results: UserStats[];
+  count: number;
+  next?: string;
+  previous?: string;
+}
+
+const  Leaderboard = () => {
+  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
+  const [page, setPage] = useState<number>(1);
+  const limit = 10;
+
   useEffect(() => {
-    const loadMockData = async () => {
-      setIsDataLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      setAllUsers(mockUsers);
-      setAllEntries(leaderboard);
-      setIsDataLoading(false);
+    const loadLeaderboard = async () => {
+      const data = await fetchLeaderboard(page, limit);
+      setLeaderboard(data);
     };
 
-    loadMockData();
-  }, []);
+    loadLeaderboard();
+  }, [page]);
+
+  return (
+    <div className="p-4">
+      <h2 className="text-2xl font-semibold mb-4">Leaderboard</h2>
+
+      {leaderboard?.results?.length ? (
+        leaderboard.results.map((userStat, index) => (
+          <div
+            key={index}
+            className="bg-white rounded-lg shadow p-4 mb-3 border"
+          >
+            <p className="font-bold text-lg">{userStat.user}</p>
+            <p>Total Hours: {userStat.total_hours_given}</p>
+            <p>Sessions Completed: {userStat.sessions_completed}</p>
+          </div>
+        ))
+      ) : (
+        <p>No data found.</p>
+      )}
+
+      <div className="flex gap-4 mt-4">
+        <Button
+          disabled={!leaderboard?.previous}
+          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          Previous
+        </Button>
+        <Button
+          disabled={!leaderboard?.next}
+          onClick={() => setPage((prev) => prev + 1)}
+          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+};
+
+// export default Leaderboard;
+
+
+  //  const [page,setPage]= useState(1); //start on page 1
+  // const limit=10; //show 10 users per page
+  // // Load mock data
+
+  // useEffect(() => {
+  //   const loadMockData = async () => {
+  //     setIsDataLoading(true);
+  //     try{
+  //       const response =await fetch(
+  //         ` http://127.0.0.1:8000/leaderboard?page=${page}&limit=${limit}`
+  //       );
+  //       const data=await response.json();
+
+  //       setAllUsers(data.users);
+  //       setAllEntries(data.entries);
+  //     }catch(error){
+  //       console.error("Failed to load leaderboard",error);
+  //     }
+
+  //     setIsDataLoading(false);
+  //   };
+
+  //   loadMockData();
+  // }, [page]);
 
   // Process and rank data
   const rankedUsers = useMemo(() => {
@@ -228,6 +313,11 @@ const LeaderboardPage = () => {
       ) : (
         <LeaderboardList rankedUsers={rankedUsers} />
       )}
+      {/* <div>
+        <Button onClick={()=>setPage((p)=>Math.max(p-1,1))} disabled={page===1}>Previous</Button>
+        <span className="font-medium">page {page}</span>
+        <Button onClick={()=>setPage((p)=>p+1)}></Button>
+      </div> */}
     </div>
   );
 };

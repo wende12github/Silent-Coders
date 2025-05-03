@@ -9,7 +9,7 @@ export default function SettingsPage() {
   const { user } = useAuthStore();
 
   const [profileForm, setProfileForm] = useState({
-    name: user?.name || "",
+    name: user?.first_name || "",
     username: user?.username || "",
     email: user?.email || "",
     bio: user?.bio || "",
@@ -81,7 +81,7 @@ export default function SettingsPage() {
                   <div className="relative flex shrink-0 overflow-hidden rounded-full h-24 w-24 border border-gray-300">
                     <img
                       src={user?.profile_picture || ""}
-                      alt={user?.name || "User"}
+                      alt={user?.first_name || "User"}
                       className="object-cover w-full h-full"
                     />
                   </div>

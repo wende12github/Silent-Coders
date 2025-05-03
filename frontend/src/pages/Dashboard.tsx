@@ -2,10 +2,16 @@ import { Clock, Calendar, BookOpen, TrendingUp, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "../components/ui/Badge";
 import { useAuthStore } from "../store/authStore";
+import {
+  mockLeaderboard,
+  mockSessions,
+  mockSkills,
+  mockTransactions,
+} from "../store/types";
 
 export default function DashboardPage() {
-  const { user, skills, sessions, transactions, leaderboard } = useAuthStore();
-  const topEntries = leaderboard.sort( ).slice(0, 5);
+  const { user } = useAuthStore();
+  const topEntries = mockLeaderboard.sort().slice(0, 5);
 
   if (!user) return null;
 
@@ -26,7 +32,7 @@ export default function DashboardPage() {
     });
   };
 
-  const upcomingSessions = sessions
+  const upcomingSessions = mockSessions
     .filter(
       (booking) =>
         booking.status === "Confirmed" &&
@@ -39,7 +45,7 @@ export default function DashboardPage() {
     )
     .slice(0, 3);
 
-  const recentTransactions = [...transactions]
+  const recentTransactions = [...mockTransactions]
     .sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -54,20 +60,22 @@ export default function DashboardPage() {
             <div className="relative flex shrink-0 overflow-hidden rounded-full h-16 w-16 border border-gray-300">
               <img
                 src={user.profile_picture || ""}
-                alt={user.name}
+                alt={user.first_name}
                 className="object-cover w-full h-full"
               />
               {!user.profile_picture && (
                 <div className="flex items-center justify-center h-full w-full bg-gray-200 text-lg font-semibold text-gray-700">
-                  {user.name.charAt(0)}
+                  {user.first_name.charAt(0)}
                 </div>
               )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
+              <h2 className="text-xl font-bold text-gray-900">
+                {user.first_name}
+              </h2>
               <p className="text-gray-600">@{user.username}</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {skills
+                {mockSkills
                   .filter((skill) => skill.is_offered)
                   .slice(0, 2)
                   .map((skill) => (
@@ -79,9 +87,9 @@ export default function DashboardPage() {
                       {skill.name}
                     </Badge>
                   ))}
-                {skills.filter((skill) => skill.is_offered).length > 2 && (
+                {mockSkills.filter((skill) => skill.is_offered).length > 2 && (
                   <Badge variant="ghost" className="bg-blue-100">
-                    +{skills.filter((skill) => skill.is_offered).length - 2}{" "}
+                    +{mockSkills.filter((skill) => skill.is_offered).length - 2}{" "}
                     more
                   </Badge>
                 )}
@@ -95,7 +103,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
-                    {user.time_wallet}
+                    {user.id} ID
                   </span>
                 </div>
               </div>
@@ -104,7 +112,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1">
                   <BookOpen className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
-                    {skills.filter((skill) => skill.is_offered).length}
+                    {mockSkills.filter((skill) => skill.is_offered).length}
                   </span>
                 </div>
               </div>
@@ -114,7 +122,7 @@ export default function DashboardPage() {
                   <Calendar className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
                     {
-                      sessions.filter(
+                      mockSessions.filter(
                         (booking) => booking.status === "Completed"
                       ).length
                     }
@@ -126,7 +134,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1">
                   <TrendingUp className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
-                    {leaderboard.findIndex(
+                    {mockLeaderboard.findIndex(
                       (entry) => entry.user.id === user.id
                     ) + 1}
                   </span>
@@ -170,8 +178,8 @@ export default function DashboardPage() {
                           </h4>
                           <p className="text-sm text-gray-600">
                             {session.requester.id === user.id
-                              ? `Learning from ${session.provider.name}`
-                              : `Teaching ${session.requester.name}`}
+                              ? `Learning from ${session.provider.first_name}`
+                              : `Teaching ${session.requester.first_name}`}
                           </p>
                         </div>
                         <div className="mt-2 sm:mt-0 sm:text-right">
@@ -273,12 +281,12 @@ export default function DashboardPage() {
                         {entry.user.profile_picture ? (
                           <img
                             src={entry.user.profile_picture}
-                            alt={entry.user.name || "User"}
+                            alt={entry.user.first_name || "User"}
                             className="object-cover w-full h-full"
                           />
                         ) : (
                           <div className="flex items-center justify-center h-full w-full bg-gray-200 text-sm font-semibold text-gray-700">
-                            {entry.user.name?.charAt(0) ||
+                            {entry.user.first_name?.charAt(0) ||
                               entry.user.username?.charAt(0) ||
                               "U"}
                           </div>
@@ -286,7 +294,7 @@ export default function DashboardPage() {
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-gray-900 truncate">
-                          {entry.user.name || entry.user.username}
+                          {entry.user.first_name || entry.user.username}
                         </p>
                         <p className="text-xs text-gray-600 truncate">
                           @{entry.user.username}

@@ -57,17 +57,23 @@
 }
 
 .wiggly-line {
-    position: relative;
-  }
-  
-  .wiggly-line::after {
-    content: "";
-    position: absolute;
-    height: 10px;
-    left: 0;
-    right: 0;
-    bottom: -15px;
-    background-image: url("data:image/svg+xml,%3Csvg width='100' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,5 C20,-5 35,15 50,5 C65,-5 80,15 100,5' stroke='hsl(221.2 83.2% 53.3%)' stroke-width='2' fill='none' /%3E%3C/svg%3E");
-    background-repeat: repeat-x;
-    background-size: 100px 10px;
-  }
+  position: relative;
+}
+
+.wiggly-line::after {
+  content: "";
+  position: absolute;
+  height: 10px;
+  left: 0;
+  right: 0;
+  bottom: -15px;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,5 C20,-5 35,15 50,5 C65,-5 80,15 100,5' stroke='hsl(221.2 83.2% 53.3%)' stroke-width='2' fill='none' /%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 10px;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+html {
+  scrollbar-gutter: stable;
+}

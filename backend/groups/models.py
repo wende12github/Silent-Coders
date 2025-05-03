@@ -28,9 +28,7 @@ class Group(models.Model):
 class GroupMembership(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     group = models.ForeignKey(Group, on_delete=models.CASCADE)
-    invited_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, related_name='invitations_sent')
     joined_at = models.DateTimeField(auto_now_add=True)
-    status = models.CharField(max_length=20, choices=[('pending', 'Pending'), ('accepted', 'Accepted'), ('declined', 'Declined')], default='pending')  # Added status
     is_active = models.BooleanField(default=True) 
 
     class Meta:
@@ -38,3 +36,13 @@ class GroupMembership(models.Model):
         indexes = [
             models.Index(fields=['user', 'group']),
         ]
+
+class UserStats(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)  # Relating to group
+    total_hours_given = models.FloatField(default=0)
+    total_hours_received = models.FloatField(default=0)
+    sessions_completed = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.group.name}'

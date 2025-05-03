@@ -6,7 +6,7 @@ import { Select, SelectItem } from "../components/ui/Select.tsx";
 import { Label } from "../components/ui/Form.tsx";
 import { mockSkills, Skill } from "../store/types.ts";
 
-// Filter categories
+
 const tags = [
   "All",
   "Tech",
@@ -22,21 +22,15 @@ const tags = [
 
 const HomePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
-  // Removed activeTab state as Tabs component manages it internally
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [locationFilter, setLocationFilter] = useState("all"); // 'all', 'remote', 'local'
   const [showFilters, setShowFilters] = useState(false);
 
-  // Filter skills based on active tab (passed from Tabs), search term, and filters
   const filterSkills = (skillsToFilter: Skill[], currentActiveTab: string) => {
     return skillsToFilter.filter((skill) => {
-      // Filter by tab (using the activeTab value passed from Tabs)
-      if (currentActiveTab === "offering" && skill.is_offered)
-        return false;
-      if (currentActiveTab === "seeking" && !skill.is_offered)
-        return false;
+      if (currentActiveTab === "offering" && skill.is_offered) return false;
+      if (currentActiveTab === "seeking" && !skill.is_offered) return false;
 
-      // Filter by search term
       if (
         searchTerm &&
         !skill.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
@@ -45,7 +39,6 @@ const HomePage = () => {
         return false;
       }
 
-      // Filter by category
       if (
         selectedCategory !== "All" &&
         !skill.tags.includes(selectedCategory)
@@ -53,7 +46,6 @@ const HomePage = () => {
         return false;
       }
 
-      // Filter by location
       if (
         locationFilter !== "all" &&
         skill.location.toLowerCase() !== locationFilter
@@ -148,7 +140,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-full">
+    <div className="min-h-full ">
       <div className="bg-white px-4 py-4 shadow-sm sm:sticky sm:top-0 z-10 mb-6">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
@@ -219,7 +211,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto sm:px-4 px-2 sm:py-2">
+      <div className="max-w-7xl mx-auto sm:px-4 px-2 sm:py-2 ">
         <Tabs
           defaultValue="all"
           items={skillTabs}

@@ -10,7 +10,6 @@ import {
   LogOut,
   BookOpen,
   Wallet,
-  User,
 } from "lucide-react";
 import Button from "../ui/Button";
 import { useAuthStore } from "../../store/authStore";
@@ -49,11 +48,6 @@ export default function DashboardSidebar({ visible }: { visible?: boolean }) {
       name: "Leaderboard",
       href: "/dashboard/leaderboard",
       icon: Award,
-    },
-    {
-      name: "Profile",
-      href: "/dashboard/profile",
-      icon: User,
     },
     {
       name: "Settings",

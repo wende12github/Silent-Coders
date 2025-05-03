@@ -1,73 +1,97 @@
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
-
 import React, { useState } from "react";
+import { z } from "zod";
+import { useNavigate } from "react-router-dom";
+
 import Button from "../components/ui/Button";
 import { Input } from "../components/ui/Form";
-// import { useAuthStore } from "../store/authStore";
+import { useAuthStore } from "../store/authStore";
+import { toast } from "sonner";
+
+// Define Zod schema
+const loginSchema = z.object({
+  email: z
+    .string()
+    .min(1, "Email is required")
+    .email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
-  // const {login} = useAuthStore()
-  // login("john.doe@example.com", "123456")
-  const [formData, setFormData] = useState({ email: "", password: "" });
-  const [errors, setErrors] = useState({ email: "", password: "" });
+  const navigate = useNavigate();
+
+  const { login } = useAuthStore();
+  const [loading, setIsLoading] = useState(false);
+
+  const [formData, setFormData] = useState<LoginFormData>({
+    email: "",
+    password: "",
+  });
+
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof LoginFormData, string>>
+  >({});
+
   const [showPassword, setShowPassword] = useState(false);
 
-  const validateEmail = (email: string) => {
-    const reg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!email) return "Email is required";
-    if (!reg.test(email)) return "Please enter a vaild email address";
-    return "";
-  };
-
-  const validatePassword = (password: string) => {
-    if (!password) return "Password is required";
-    return "";
-  };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
+
+    setFormData((prev) => ({
+      ...prev,
       [name]: value,
-    });
-    // Real-time validation
-    let error = "";
-    switch (name) {
-      case "email":
-        error = validateEmail(value);
-        break;
-      case "password":
-        error = validatePassword(value);
-        break;
-      default:
-        break;
-    }
+    }));
 
-    setErrors((prev) => ({ ...prev, [name]: error }));
+    const result = loginSchema.safeParse({ ...formData, [name]: value });
+    if (!result.success) {
+      const fieldError =
+        result.error.flatten().fieldErrors[name as keyof LoginFormData];
+      setErrors((prev) => ({ ...prev, [name]: fieldError?.[0] || "" }));
+    } else {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    // Validate all fields
-    const emailError = validateEmail(formData.email);
-    const passwordError = validatePassword(formData.password);
+    const result = loginSchema.safeParse(formData);
 
-    const newErrors = {
-      email: emailError,
-      password: passwordError,
-    };
-    setErrors(newErrors);
-
-    // Proceed if no errors
-    if (!emailError && !passwordError) {
-      console.log("Form submitted:", formData);
-      // submit logic here
+    if (!result.success) {
+      const fieldErrors = result.error.flatten().fieldErrors;
+      setErrors({
+        email: fieldErrors.email?.[0] || "",
+        password: fieldErrors.password?.[0] || "",
+      });
+      return;
     }
+    // console.log("Form submitted:", result.data);
+    login(formData)
+      .then((res) => {
+        if (res.access) {
+          navigate("/");
+          console.log("Login successful");
+        }
+      })
+      .catch((err) => {
+        toast.error("Login failed", {
+          description: err.message,
+        });
+      })
+      .finally(() => {
+        setIsLoading(false);
+      });
+
+    setErrors({});
   };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-8">
+    <div className="py-10 flex-grow flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-10">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             Welcome back
@@ -77,30 +101,30 @@ const Login: React.FC = () => {
           </p>
         </div>
 
-        <div className="bg-white py-8 px-6 ">
+        <div className="bg-white py-8 px-6">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2 w-full">
-                <Input
-                  id="email"
-                  icon={<Mail className="h-5 w-5 text-gray-400" />}
-                  name="email"
-                  type="email"
-                  placeholder="Email address"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={`${
-                    errors.email ? "border-red-500" : "border-gray-300"
-                  }`}
-                />
+              <Input
+                id="email"
+                icon={<Mail className="h-5 w-5 text-gray-400" />}
+                name="email"
+                type="email"
+                placeholder="Email address"
+                value={formData.email}
+                onChange={handleChange}
+                className={`${
+                  errors.email ? "border-red-500" : "border-gray-300"
+                }`}
+              />
               {errors.email && (
                 <p className="text-xs text-red-500">{errors.email}</p>
               )}
             </div>
 
-            <div>
+            <div className="relative space-y-2">
               <Input
                 id="password"
-                icon={<Lock className="h-5 w-5  text-gray-400" />}
+                icon={<Lock className="h-5 w-5 text-gray-400" />}
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
@@ -137,8 +161,8 @@ const Login: React.FC = () => {
             </div>
 
             <div>
-              <Button type="submit" className="w-full ">
-                Login
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Loading..." : "Login"}
               </Button>
             </div>
           </form>
@@ -156,4 +180,5 @@ const Login: React.FC = () => {
     </div>
   );
 };
+
 export default Login;

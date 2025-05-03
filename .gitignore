@@ -1,13 +1,11 @@
 # Python
 __pycache__/
-*.pyc
 *.py[cod]
 *.egg
 *.egg-info/
 dist/
 build/
 *.log
-*.bak
 
 # Django
 *.sqlite3
@@ -20,6 +18,7 @@ venv/
 myenv/
 my_env/
 ENV/
+env/
 .venv/
 .Python
 
@@ -38,7 +37,6 @@ ENV/
 **/migrations/__pycache__/
 **/migrations/*.pyo
 **/migrations/*.pyd
-*.migrations/
 # Uncomment the line below if you want to ignore migration files completely
 # **/migrations/*.py
 
@@ -51,4 +49,4 @@ htmlcov/
 
 # Other
 *.swp
-
+*.swo
