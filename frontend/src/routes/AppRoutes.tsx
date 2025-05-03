@@ -3,7 +3,7 @@ import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
 import ProtectedRoute from "./ProtectedRoute";
-import Profile from "../pages/Profile";
+// import Profile from "../pages/Profile";
 import Leaderboard from "../pages/Leaderboard";
 import LandingPage from "../pages/LandingPage";
 import Settings from "../components/dashboard/Settings";
@@ -41,7 +41,7 @@ function AppRoutes() {
           <Route path="/dashboard/settings" element={<Settings />} />
           <Route path="/dashboard/myskills" element={<MySkills />} />
           <Route path="/dashboard/sessions" element={<Sessions />} />
-          <Route path="/dashboard/profile" element={<Profile />} />
+          {/* <Route path="/dashboard/profile" element={<Profile />} /> */}
           <Route path="/dashboard/wallet" element={<Walet />} />
           <Route path="/dashboard/leaderboard" element={<Leaderboard />} />
         </Route>

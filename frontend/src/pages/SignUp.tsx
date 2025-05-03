@@ -5,12 +5,11 @@ import { z } from "zod";
 
 import Button from "../components/ui/Button";
 import { toast } from "sonner";
-// import { ImageUpload } from "../components/ImageUpload";
+
 import { Checkbox } from "../components/ui/Checkbox";
 import { Input, Textarea } from "../components/ui/Form";
 import { useAuthStore } from "../store/authStore";
 
-// Zod schema
 const signupSchema = z
   .object({
     email: z.string().min(1, "Email is required").email("Invalid email"),
@@ -18,6 +17,14 @@ const signupSchema = z
       .string()
       .min(3, "Username must be at least 3 characters")
       .nonempty("Username is required"),
+    first_name: z
+      .string()
+      .min(1, "First name is required")
+      .nonempty("First name is required"),
+    last_name: z
+      .string()
+      .min(1, "Last name is required")
+      .nonempty("Last name is required"),
     password: z
       .string()
       .min(4, "Password must be at least 4 characters")
@@ -29,7 +36,6 @@ const signupSchema = z
       message: "You must agree to the Terms & Conditions",
     }),
     bio: z.string().nullable(),
-    // profileImage: z.string().min(1, "Profile image is required"),
   })
   .refine((data) => data.password === data.confirmPassword, {
     path: ["confirmPassword"],
@@ -42,11 +48,12 @@ const SignUp = () => {
   const [formData, setFormData] = useState<SignupFormData>({
     email: "",
     username: "",
+    first_name: "",
+    last_name: "",
     password: "",
     confirmPassword: "",
     agreedToTerms: false,
     bio: "",
-    // profileImage: "",
   });
   const navigate = useNavigate();
 
@@ -82,6 +89,7 @@ const SignUp = () => {
       setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
+
   const handleBioChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -89,6 +97,8 @@ const SignUp = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setIsLoading(true);
+
     const result = signupSchema.safeParse(formData);
 
     if (!result.success) {
@@ -96,20 +106,27 @@ const SignUp = () => {
       setErrors({
         email: fieldErrors.email?.[0] || "",
         username: fieldErrors.username?.[0] || "",
+        first_name: fieldErrors.first_name?.[0] || "",
+        last_name: fieldErrors.last_name?.[0] || "",
         password: fieldErrors.password?.[0] || "",
         confirmPassword: fieldErrors.confirmPassword?.[0] || "",
         agreedToTerms: fieldErrors.agreedToTerms?.[0] || "",
-        // profileImage: fieldErrors.profileImage?.[0] || "",
       });
+      setIsLoading(false);
       return;
     }
-    signup(formData)
+
+    signup(result.data)
       .then(() => {
-        navigate("/");
+        toast.success("Account Created!", {
+          description: "Your account has been created successfully.",
+        });
+        navigate("/login");
       })
       .catch((err) => {
-        toast.error("Login failed", {
-          description: err.message,
+        console.error("Signup failed:", err);
+        toast.error("Signup failed", {
+          description: err.message || "An unexpected error occurred.",
         });
       })
       .finally(() => {
@@ -117,14 +134,11 @@ const SignUp = () => {
       });
 
     setErrors({});
-    toast("Account Created!", {
-      description: "Your account has been created successfully.",
-    });
     console.log("Submitted:", result.data);
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
+    <div className="py-5 flex flex-grow flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
       <h1 className="text-center font-bold text-3xl mb-3 tracking-tight">
         Create Your Account
       </h1>
@@ -132,21 +146,11 @@ const SignUp = () => {
         Join us today and start your journey
       </p>
 
-      <div className="mt-2 px-6 py-8 bg-white shadow-md rounded-lg">
+      <div className="mt-2 px-6 py-8 bg-white shadow-md rounded-lg w-full max-w-sm">
         <form
           onSubmit={handleSubmit}
           className="space-y-6 flex flex-col items-center"
         >
-          {/* <div className="flex justify-center">
-            <ImageUpload
-              value={formData.profileImage}
-              onChange={handleImageChange}
-            />
-          </div>
-          {errors.profileImage && (
-            <p className="text-xs text-red-500">{errors.profileImage}</p>
-          )} */}
-
           <div className="w-full space-y-1">
             <Input
               icon={<Mail className="h-5 w-5 text-gray-400" />}
@@ -177,6 +181,36 @@ const SignUp = () => {
             )}
           </div>
 
+          <div className="w-full space-y-1">
+            <Input
+              icon={<User className="h-5 w-5 text-gray-400" />}
+              id="first_name"
+              name="first_name"
+              type="text"
+              placeholder="First Name"
+              value={formData.first_name}
+              onChange={handleChange}
+            />
+            {errors.first_name && (
+              <p className="text-xs text-red-500">{errors.first_name}</p>
+            )}
+          </div>
+
+          <div className="w-full space-y-1">
+            <Input
+              icon={<User className="h-5 w-5 text-gray-400" />}
+              id="last_name"
+              name="last_name"
+              type="text"
+              placeholder="Last Name"
+              value={formData.last_name}
+              onChange={handleChange}
+            />
+            {errors.last_name && (
+              <p className="text-xs text-red-500">{errors.last_name}</p>
+            )}
+          </div>
+
           <div className="relative w-full space-y-1">
             <Input
               icon={<Lock className="h-5 w-5 text-gray-400" />}
@@ -190,6 +224,7 @@ const SignUp = () => {
             <div
               className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
               onClick={() => setShowPassword(!showPassword)}
+              style={{ top: "0", bottom: "0", margin: "auto 0" }}
             >
               {showPassword ? (
                 <EyeOff className="h-5 w-5 text-gray-400" />
@@ -215,6 +250,7 @@ const SignUp = () => {
             <div
               className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              style={{ top: "0", bottom: "0", margin: "auto 0" }}
             >
               {showConfirmPassword ? (
                 <EyeOff className="h-5 w-5 text-gray-400" />
@@ -231,13 +267,14 @@ const SignUp = () => {
             <Textarea
               id="bio"
               name="bio"
-              placeholder="Tell us about yourself..."
+              placeholder="Tell us about yourself... (Optional)"
               value={formData.bio || ""}
               onChange={handleBioChange}
             />
           </div>
 
-          <div className="flex items-center space-x-2 mb-2">
+          <div className="flex items-center space-x-2 mb-2 w-full">
+            {" "}
             <Checkbox
               id="agreedToTerms"
               name="agreedToTerms"
@@ -246,7 +283,7 @@ const SignUp = () => {
             />
             <label
               htmlFor="agreedToTerms"
-              className="text-sm font-medium leading-none"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
               I agree to the Terms & Conditions
             </label>
@@ -255,8 +292,9 @@ const SignUp = () => {
             <p className="text-xs text-red-500">{errors.agreedToTerms}</p>
           )}
 
-          <Button type="submit" className="w-89" disabled={loading}>
-            {loading ? "Loading..." : "Create Account"}
+          <Button type="submit" className="w-full" disabled={loading}>
+            {" "}
+            {loading ? "Creating Account..." : "Create Account"}{" "}
           </Button>
         </form>
 
@@ -264,7 +302,10 @@ const SignUp = () => {
           <p className="text-gray-600">
             Already have an account?{" "}
             <Link to="/login">
-              <Button variant="link">Login here</Button>
+              <Button variant="link" className="inline-block align-baseline">
+                {" "}
+                Login here
+              </Button>
             </Link>
           </p>
         </div>

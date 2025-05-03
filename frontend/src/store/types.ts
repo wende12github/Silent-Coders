@@ -3,12 +3,12 @@ export interface User {
   id: number;
   email: string;
   username: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   bio?: string | null;
   profile_picture?: string | null; // URI
   user_skills: number[]; // unique integers
   availability?: string | null;
-  // is_provider: boolean;
 }
 
 export interface Skill {
@@ -123,7 +123,8 @@ export const mockUser: User = {
   id: 1,
   email: "john.doe@example.com",
   username: "johndoe",
-  name: "John Doe",
+  first_name: "John",
+  last_name: "Doe",
   bio: "Computer Science student passionate about web development and machine learning.",
   profile_picture: "/placeholder.svg?height=200&width=200",
   user_skills: [],
@@ -134,7 +135,8 @@ const saraAhmed: User = {
   id: 2,
   email: "sara@example.com",
   username: "saradev",
-  name: "Sara Ahmed",
+  first_name: "Sara",
+  last_name: "Ahmed",
   bio: "Frontend developer specializing in React",
   profile_picture: null,
   user_skills: [],
@@ -144,7 +146,8 @@ const michaelJohnson: User = {
   id: 3,
   email: "michael@example.com",
   username: "michaelj",
-  name: "Michael Johnson",
+  first_name: "Michael",
+  last_name: "Johnson",
   bio: "Beginner programmer looking to improve",
   profile_picture: null,
   user_skills: [],
@@ -154,7 +157,8 @@ const alexChen: User = {
   id: 4,
   email: "alex@example.com",
   username: "alextech",
-  name: "Alex Chen",
+  first_name: "Alex",
+  last_name: "Chen",
   bio: "Teaching programming for 3 years",
   profile_picture: null,
   user_skills: [],
@@ -165,7 +169,8 @@ const emilyDavis: User = {
   id: 5,
   email: "emily.davis@example.com",
   username: "emilyd",
-  name: "Emily Davis",
+  first_name: "Emily",
+  last_name: "Davis",
   bio: "Graphic designer with a passion for illustration.",
   profile_picture: null,
   user_skills: [],
@@ -175,7 +180,8 @@ const davidWilson: User = {
   id: 6,
   email: "david.w@example.com",
   username: "davidw",
-  name: "David Wilson",
+  first_name: "David",
+  last_name: "Wilson",
   bio: "Musician and music theory tutor.",
   profile_picture: null,
   user_skills: [],
@@ -185,7 +191,8 @@ const oliviaMartinez: User = {
   id: 7,
   email: "olivia.m@example.com",
   username: "oliviam",
-  name: "Olivia Martinez",
+  first_name: "Olivia",
+  last_name: "Martinez",
   bio: "Yoga instructor and mindfulness coach.",
   profile_picture: null,
   user_skills: [],

@@ -4,7 +4,7 @@ import DashboardHeader from "./DashboardHeader";
 
 const DashboarLayot = () => {
   return (
-    <div className="flex min-h-screen">
+    <div className="flex flex-grow">
       <DashboardSidebar />
       <div className="flex flex-col w-full">
         <DashboardHeader />

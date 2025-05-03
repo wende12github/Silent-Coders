@@ -25,9 +25,7 @@ const ThemeToggle: React.FC = () => {
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      <span className="w-5 h-5 rounded-full">
-        {theme === "dark" ? <Moon /> : <Sun />}
-      </span>
+      {theme === "dark" ? <Moon /> : <Sun />}
     </Button>
   );
 };
@@ -37,13 +35,15 @@ const MobileNav: React.FC = () => {
 
   return (
     <div>
-      <button
-        className="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 md:hidden"
+      <Button
+        size="icon"
+        variant="ghost"
+        className="md:hidden"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle mobile navigation"
       >
         <Menu />
-      </button>
+      </Button>
 
       <AnimatePresence>
         {isOpen && (
@@ -80,7 +80,7 @@ export default function DashboardHeader() {
       <MobileNav />
       <div className="flex-1" />
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="default" className="h-8 w-8 p-0">
+        <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
         </Button>
@@ -91,8 +91,8 @@ export default function DashboardHeader() {
             <button className="relative rounded-full p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 cursor-pointer">
               <Avatar
                 src={user.profile_picture}
-                alt={user.name}
-                fallback={user.name || "John Doe"}
+                alt={user.first_name}
+                fallback={user.first_name || "John Doe"}
                 className=""
               />
             </button>
