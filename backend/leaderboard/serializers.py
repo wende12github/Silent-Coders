@@ -35,3 +35,29 @@ class UserStatsSerializer(serializers.ModelSerializer):
 
     def get_net_contribution(self, obj):
         return obj.total_hours_given - obj.total_hours_received
+
+# class GroupLeaderboardSerializer(serializers.ModelSerializer):
+#     user = serializers.SerializerMethodField()
+#     net_contribution = serializers.SerializerMethodField()
+
+#     class Meta:
+#         model = UserStats
+#         fields = [
+#             'user',
+#             'total_hours_given',
+#             'total_hours_received', 
+#             'sessions_completed',
+#             'net_contribution',
+#         ]
+
+#     def get_user(self, obj):
+#         return {
+#             'id': obj.user.id,
+#             'username': obj.user.username,
+#             'full_name': f"{obj.user.first_name} {obj.user.last_name}",
+#             'profile_picture': obj.user.profile_picture.url if obj.user.profile_picture else None,
+#             'bio': obj.user.bio,
+#         }
+
+#     def get_net_contribution(self, obj):
+#         return obj.total_hours_given - obj.total_hours_received

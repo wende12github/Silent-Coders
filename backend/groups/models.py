@@ -36,3 +36,13 @@ class GroupMembership(models.Model):
         indexes = [
             models.Index(fields=['user', 'group']),
         ]
+
+class UserStats(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    group = models.ForeignKey(Group, on_delete=models.CASCADE)  # Relating to group
+    total_hours_given = models.FloatField(default=0)
+    total_hours_received = models.FloatField(default=0)
+    sessions_completed = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f'{self.user.username} - {self.group.name}'

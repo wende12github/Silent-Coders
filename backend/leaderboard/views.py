@@ -30,4 +30,4 @@ class LeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.order_by(order_map.get(sort_by, '-total_hours_given'))[:top_n]
 
         return queryset
-
+    
