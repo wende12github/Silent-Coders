@@ -2,6 +2,9 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+
+from skills.models import Skill
+
 class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     bio = models.TextField(blank=True, null=True)
@@ -23,7 +26,7 @@ class UserSkill(models.Model):
     ]
 
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='user_skills')
-    skill = models.CharField(max_length=100)
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='Beginner')
     endorsements = models.PositiveIntegerField(default=0)
     experience_hours = models.FloatField(default=0.0)

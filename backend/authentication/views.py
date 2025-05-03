@@ -10,6 +10,7 @@ from drf_yasg import openapi
 from .serializers import UserSerializer, UserProfileSerializer, UserSkillSerializer
 from .models import UserSkill
 from django.contrib.auth import get_user_model
+from notifications.services import notify_user
 
 
 User = get_user_model()
@@ -98,6 +99,7 @@ class EndorseUserSkillView(APIView):
             skill.endorsements += 1
             skill.save()
             request.session[key] = True
+            notify_user(skill.user, "review", f"Your skill '{skill.skill.name}' was endorsed!")
             return Response(UserSkillSerializer(skill).data)
 
         except UserSkill.DoesNotExist:

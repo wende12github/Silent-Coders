@@ -37,6 +37,8 @@ urlpatterns = [
     path('', include('skills.urls')), 
     path('admin/', admin.site.urls),
     path('', include('authentication.urls')),
+    path("api/chatbot/", include("chat.urls")),
+    path('api/notifications/', include('notifications.urls')),
 
     path('wallet/', include('wallet.urls')),
     path('bookings/', include('bookings.urls')),
