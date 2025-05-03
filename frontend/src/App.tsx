@@ -8,18 +8,21 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 
 library.add(fas, far, fab) // Add all icons or specific ones
 import Header from "./components/layout/Header";
-import Footer from "./components/layout/Footer";
+// import Footer from "./components/layout/Footer";
+import { useAuthStore } from "./store/authStore";
+import { LandingHeader } from "./components/landing/LandingHeader";
+import { LandingFooter } from "./components/landing/LandingFooter";
 
 function Layout() {
   const location = useLocation();
-
+  const { isAuthenticated } = useAuthStore();
   const hideLayout = location.pathname.includes("/dashboard");
 
   return (
     <>
-      {!hideLayout && <Header />}
+      {!hideLayout && (isAuthenticated ? <Header /> : <LandingHeader />)}
       <AppRoutes />
-      {!hideLayout && <Footer />}
+      {!hideLayout && isAuthenticated && <LandingFooter />}
     </>
   );
 }

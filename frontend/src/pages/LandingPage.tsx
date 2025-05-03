@@ -1,4 +1,3 @@
-import { LandingHeader } from "../components/landing/LandingHeader";
 import { Hero } from "../components/landing/Hero";
 import { SectionSeparator } from "../components/landing/SectionSeparator";
 import { HowTo } from "../components/landing/HowTo";
@@ -9,7 +8,6 @@ import { LandingFooter } from "../components/landing/LandingFooter";
 const LandingPage: React.FC = () => {
   return (
     <div className="">
-      <LandingHeader />
       <Hero />
       <SectionSeparator />
       <HowTo />

@@ -105,7 +105,7 @@ const SignUp = () => {
     }
     signup(formData)
       .then(() => {
-        navigate("/dashboard");
+        navigate("/");
       })
       .catch((err) => {
         toast.error("Login failed", {
