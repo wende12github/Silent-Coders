@@ -2,10 +2,11 @@ import { Clock, Calendar, BookOpen, TrendingUp, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "../components/ui/Badge";
 import { useAuthStore } from "../store/authStore";
+import { mockLeaderboard, mockSessions, mockSkills, mockTransactions } from "../store/types";
 
 export default function DashboardPage() {
-  const { user, skills, sessions, transactions, leaderboard } = useAuthStore();
-  const topEntries = leaderboard.sort( ).slice(0, 5);
+  const { user } = useAuthStore();
+  const topEntries = mockLeaderboard.sort( ).slice(0, 5);
 
   if (!user) return null;
 
@@ -26,7 +27,7 @@ export default function DashboardPage() {
     });
   };
 
-  const upcomingSessions = sessions
+  const upcomingSessions = mockSessions
     .filter(
       (booking) =>
         booking.status === "Confirmed" &&
@@ -39,7 +40,7 @@ export default function DashboardPage() {
     )
     .slice(0, 3);
 
-  const recentTransactions = [...transactions]
+  const recentTransactions = [...mockTransactions]
     .sort(
       (a, b) =>
         new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -67,7 +68,7 @@ export default function DashboardPage() {
               <h2 className="text-xl font-bold text-gray-900">{user.name}</h2>
               <p className="text-gray-600">@{user.username}</p>
               <div className="mt-2 flex flex-wrap gap-2">
-                {skills
+                {mockSkills
                   .filter((skill) => skill.is_offered)
                   .slice(0, 2)
                   .map((skill) => (
@@ -79,9 +80,9 @@ export default function DashboardPage() {
                       {skill.name}
                     </Badge>
                   ))}
-                {skills.filter((skill) => skill.is_offered).length > 2 && (
+                {mockSkills.filter((skill) => skill.is_offered).length > 2 && (
                   <Badge variant="ghost" className="bg-blue-100">
-                    +{skills.filter((skill) => skill.is_offered).length - 2}{" "}
+                    +{mockSkills.filter((skill) => skill.is_offered).length - 2}{" "}
                     more
                   </Badge>
                 )}
@@ -95,7 +96,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1">
                   <Clock className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
-                    {user.time_wallet}
+                    {user.id} ID
                   </span>
                 </div>
               </div>
@@ -104,7 +105,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1">
                   <BookOpen className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
-                    {skills.filter((skill) => skill.is_offered).length}
+                    {mockSkills.filter((skill) => skill.is_offered).length}
                   </span>
                 </div>
               </div>
@@ -114,7 +115,7 @@ export default function DashboardPage() {
                   <Calendar className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
                     {
-                      sessions.filter(
+                      mockSessions.filter(
                         (booking) => booking.status === "Completed"
                       ).length
                     }
@@ -126,7 +127,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-1">
                   <TrendingUp className="h-4 w-4 text-blue-600" />
                   <span className="text-2xl font-bold text-gray-900">
-                    {leaderboard.findIndex(
+                    {mockLeaderboard.findIndex(
                       (entry) => entry.user.id === user.id
                     ) + 1}
                   </span>
