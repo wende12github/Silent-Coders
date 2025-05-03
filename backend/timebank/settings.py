@@ -14,6 +14,9 @@ from datetime import timedelta
 from pathlib import Path
 import environ
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,6 +33,8 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
+
+GEMINAI_API_KEY = os.getenv('GEMINAI_API_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 
@@ -63,6 +68,7 @@ INSTALLED_APPS = [
     'authentication',
     'bookings',
     'chat',
+    'notifications',
     'wallet',
     'skills',
     'leaderboard',

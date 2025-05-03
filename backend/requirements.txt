@@ -5,11 +5,15 @@ Django==5.2
 django-cors-headers==4.7.0
 django-environ==0.12.0
 django-filter==25.1
+# django-open-ai==1.77.0
+openai==1.77.0
 djangorestframework==3.16.0
 djangorestframework_simplejwt==5.5.0
 drf-yasg==1.21.10
 factory_boy==3.3.3
 Faker==37.1.0
+google-genai
+google_generativeai==0.8.5
 iniconfig==2.1.0
 packaging==25.0
 pillow==11.2.1
@@ -19,5 +23,6 @@ PyJWT==2.9.0
 pytest==8.3.5
 pytest-django==4.11.1
 python-decouple==3.8
+python-dotenv==1.1.0
 sqlparse==0.5.3
 tzdata==2025.2
