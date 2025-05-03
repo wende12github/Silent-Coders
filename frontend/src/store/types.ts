@@ -9,6 +9,8 @@ export type User = {
   is_admin: boolean;
   date_joined: string;
   name: string; // Added based on signup signature
+  user_skills: number[];
+  availability?: string;
 };
 
 export type Skill = {
@@ -114,6 +116,7 @@ export const mockUser: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-09-15T10:30:00Z",
+  user_skills: []
 };
 
 // Existing Users
@@ -128,6 +131,7 @@ const saraAhmed: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-08-10T08:45:00Z",
+  user_skills: []
 };
 
 const michaelJohnson: User = {
@@ -141,6 +145,7 @@ const michaelJohnson: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-10-05T14:20:00Z",
+  user_skills: []
 };
 
 const alexChen: User = {
@@ -154,6 +159,7 @@ const alexChen: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-07-15T10:30:00Z",
+  user_skills: []
 };
 
 // New Users
@@ -168,6 +174,7 @@ const emilyDavis: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-01-20T11:00:00Z",
+  user_skills: []
 };
 
 const davidWilson: User = {
@@ -181,6 +188,7 @@ const davidWilson: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-02-10T09:30:00Z",
+  user_skills: []
 };
 
 const oliviaMartinez: User = {
@@ -194,6 +202,7 @@ const oliviaMartinez: User = {
   is_active: true,
   is_admin: false,
   date_joined: "2024-03-01T13:15:00Z",
+  user_skills: []
 };
 export const allUsers = [
   mockUser,
