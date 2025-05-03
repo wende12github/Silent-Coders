@@ -4,7 +4,9 @@ from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from .models import Group, GroupMembership
-from .serializers import GroupSerializer, GroupDetailSerializer
+from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
 
 User = get_user_model()
 
@@ -35,8 +37,15 @@ class GroupDetailView(generics.RetrieveAPIView):
         return group
 
 class GroupJoinView(generics.GenericAPIView):
+    queryset = Group.objects.all()
+    serializer_class = EmptySerializer
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+    operation_description="Join a group by its ID.",
+    request_body=None,
+    responses={201: openapi.Response("Successfully joined"), 200: "Already a member"}
+)
     def post(self, request, pk):
         group = get_object_or_404(Group, pk=pk)
 
