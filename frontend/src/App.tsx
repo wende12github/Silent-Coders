@@ -9,7 +9,7 @@ import { fab } from '@fortawesome/free-brands-svg-icons'
 library.add(fas, far, fab) // Add all icons or specific ones
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
-
+import Leaderbord from "./pages/Leaderboard";
 function Layout() {
   const location = useLocation();
 
@@ -27,6 +27,7 @@ function Layout() {
 function App() {
   return (
     <BrowserRouter>
+    <Leaderbord/>
       <Layout />
     </BrowserRouter>
   );

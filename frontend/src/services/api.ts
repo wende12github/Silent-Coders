@@ -32,7 +32,7 @@ interface AdminDashboardData {
   // Add other admin stats
 }
 
-const apiClient: AxiosInstance = axios.create({
+export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",

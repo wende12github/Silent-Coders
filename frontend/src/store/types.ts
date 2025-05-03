@@ -11,6 +11,7 @@ export type User = {
   name: string; // Added based on signup signature
   user_skills: number[];
   availability?: string;
+  
 };
 
 export type Skill = {
