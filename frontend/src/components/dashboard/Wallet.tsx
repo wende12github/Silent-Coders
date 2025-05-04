@@ -1,9 +1,6 @@
-// components/WalletPage.tsx
 "use client";
-
 import { useState, useMemo } from "react";
 import { useWallet } from "../../hooks/useWallet";
-import { useAuthStore } from "../../store/authStore";
 import {
   Card,
   CardContent,
@@ -32,18 +29,10 @@ import {
 } from "../ui/Table";
 
 export default function WalletPage() {
-  const { user } = useAuthStore();
-  const {
-    balance,
-    transactions,
-    isLoading,
-    error,
-    fetchTransactions,
-  } = useWallet();
-  
+  const { balance, transactions, isLoading, error } = useWallet();
+
   const [timeRange, setTimeRange] = useState("all");
 
-  // Filter transactions based on time range
   const filteredTransactions = useMemo(() => {
     if (!transactions || transactions.length === 0) return [];
 
@@ -75,7 +64,6 @@ export default function WalletPage() {
     });
   }, [transactions, timeRange]);
 
-  // Calculate statistics
   const { totalEarned, totalSpent } = useMemo(() => {
     let earned = 0;
     let spent = 0;
@@ -180,7 +168,10 @@ export default function WalletPage() {
                     .map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
-                          {format(parseISO(transaction.timestamp), "MMM d, yyyy")}
+                          {format(
+                            parseISO(transaction.timestamp),
+                            "MMM d, yyyy"
+                          )}
                         </TableCell>
                         <TableCell>{transaction.reason}</TableCell>
                         <TableCell className="text-right text-green-500">
@@ -231,7 +222,10 @@ export default function WalletPage() {
                     .map((transaction) => (
                       <TableRow key={transaction.id}>
                         <TableCell>
-                          {format(parseISO(transaction.timestamp), "MMM d, yyyy")}
+                          {format(
+                            parseISO(transaction.timestamp),
+                            "MMM d, yyyy"
+                          )}
                         </TableCell>
                         <TableCell>{transaction.reason}</TableCell>
                         <TableCell className="text-right text-red-500">

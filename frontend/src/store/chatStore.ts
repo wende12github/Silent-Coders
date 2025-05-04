@@ -1,35 +1,41 @@
-import { create } from 'zustand'
+import { create } from "zustand";
+import { apiClient } from "../services/api";
 
 type Message = {
-  role: 'user' | 'assistant'
-  content: string
-}
+  role: "user" | "assistant";
+  content: string;
+};
 
 type ChatState = {
-  messages: Message[]
-  sendMessage: (msg: string) => Promise<void>
-}
+  messages: Message[];
+  isLoading: boolean;
+  sendMessage: (msg: string) => Promise<void>;
+};
 
-export const useChatStore = create<ChatState>((set, get) => ({
+export const useChatStore = create<ChatState>((set) => ({
   messages: [],
+  isLoading: false,
+
   sendMessage: async (msg: string) => {
-    const userMsg: Message = { role: 'user', content: msg }
-    set({ messages: [...get().messages, userMsg] })
+    const userMsg: Message = { role: "user", content: msg };
+    set((state) => ({
+      messages: [...state.messages, userMsg],
+      isLoading: true,
+    }));
 
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/chatbot/ask/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ message: msg }),
-      })
+      const res = await apiClient.post("/chatbot/ask/", { message: msg });
 
-      const data = await res.json()
-      const botMsg: Message = { role: 'assistant', content: data.reply }
-      set({ messages: [...get().messages, userMsg, botMsg] })
+      const data = res.data;
+      const botMsg: Message = { role: "assistant", content: data.reply };
+
+      set((state) => ({
+        messages: [...state.messages, botMsg],
+        isLoading: false,
+      }));
     } catch (err) {
-      console.error("ChatBot Error:", err)
+      console.error("ChatBot Error:", err);
+      set({ isLoading: false });
     }
-  }
-}))
+  },
+}));

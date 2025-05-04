@@ -74,8 +74,8 @@ const MySkills = () => {
     "Health",
   ];
 
-  const localSkills = skills.filter((skill) => skill.location === "local");
-  const remoteSkills = skills.filter((skill) => skill.location === "remote");
+  const offeredSkills = skills.filter((skill) => skill.is_offered);
+  const neededSkills = skills.filter((skill) => !skill.is_offered);
 
   const handleAddSkill = () => {
     if (!newSkill.name?.trim()) {
@@ -195,12 +195,12 @@ const MySkills = () => {
 
   const skillTabs: TabItem[] = [
     {
-      value: "local",
-      label: "Local Skills",
+      value: "all",
+      label: "All Skills",
       content: (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {localSkills.length > 0 ? (
-            localSkills.map((skill) => (
+          {offeredSkills.length > 0 ? (
+            offeredSkills.map((skill) => (
               <Card key={skill.id} className="">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between ">
@@ -271,8 +271,100 @@ const MySkills = () => {
               </Card>
             ))
           ) : (
-            <Card className="col-span-full">
-              {" "}
+            <Card className="col-span-full py-10">
+              <CardContent className="flex flex-col items-center justify-center py-10">
+                <BookOpen className="h-10 w-10 text-gray-600 mb-4" />
+                <p className="text-center text-gray-600 mb-4">
+                  You Don't have any skills added yet.
+                </p>
+                <Button onClick={openAddDialog}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Skill
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      ),
+    },
+    {
+      value: "local",
+      label: "Local Skills",
+      content: (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {offeredSkills.length > 0 ? (
+            offeredSkills.map((skill) => (
+              <Card key={skill.id} className="">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between ">
+                    <div className="space-y-1">
+                      <CardTitle className="flex items-center text-2xl font-semibold">
+                        <BookOpen className="mr-2 h-4 w-4 text-blue-600" />
+                        {skill.name}
+                      </CardTitle>
+
+                      <CardDescription className="flex items-center text-gray-600">
+                        <MapPin className="mr-1 h-4 w-4 text-gray-500" />
+                        {skill.location === "local"
+                          ? `Local${skill.address ? ` (${skill.address})` : ""}`
+                          : "Remote"}
+                      </CardDescription>
+                    </div>
+
+                    <Badge
+                      variant="outline"
+                      className={
+                        skill.is_offered
+                          ? "bg-blue-100 text-blue-600"
+                          : "bg-gray-200 text-gray-900"
+                      }
+                    >
+                      {skill.is_offered ? "Offering" : "Learning"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+
+                <CardContent>
+                  <p className="text-sm text-gray-600">
+                    {skill.description || "No description provided."}
+                  </p>
+                </CardContent>
+
+                <CardFooter className="flex flex-wrap gap-1 justify-end">
+                  {" "}
+                  {skill.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="bg-gray-100 text-gray-700"
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </CardFooter>
+
+                <CardFooter className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditDialog(skill)}
+                  >
+                    <Edit className="mr-2 h-3 w-3" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteSkill(skill.id)}
+                  >
+                    <Trash2 className="mr-2 h-3 w-3 text-red-600" />
+                    Delete
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))
+          ) : (
+            <Card className="col-span-full py-10">
               <CardContent className="flex flex-col items-center justify-center py-10">
                 <BookOpen className="h-10 w-10 text-gray-600 mb-4" />
                 <p className="text-center text-gray-600 mb-4">
@@ -293,8 +385,8 @@ const MySkills = () => {
       label: "Remote Skills",
       content: (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {remoteSkills.length > 0 ? (
-            remoteSkills.map((skill) => (
+          {neededSkills.length > 0 ? (
+            neededSkills.map((skill) => (
               <Card key={skill.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
@@ -365,8 +457,7 @@ const MySkills = () => {
               </Card>
             ))
           ) : (
-            <Card className="col-span-full">
-              {" "}
+            <Card className="col-span-full py-10">
               <CardContent className="flex flex-col items-center justify-center py-10">
                 <BookOpen className="h-10 w-10 text-gray-600 mb-4" />
                 <p className="text-center text-gray-600 mb-4">
@@ -402,12 +493,16 @@ const MySkills = () => {
       </div>
 
       <Tabs
-        defaultValue="local"
+        defaultValue="all"
         items={skillTabs}
-        tabsListClassName="w-full grid grid-cols-2 gap-1 mb-6"
+        tabsListClassName="w-full grid grid-cols-3 gap-1 mb-6"
       />
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+      <Dialog
+        open={isDialogOpen}
+        onOpenChange={setIsDialogOpen}
+        className="max-h-screen overflow-y-auto"
+      >
         <DialogHeader>
           <DialogTitle>
             {editingSkill ? "Edit Skill" : "Add New Skill"}

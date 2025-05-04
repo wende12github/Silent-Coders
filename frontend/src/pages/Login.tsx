@@ -6,10 +6,9 @@ import { useNavigate } from "react-router-dom";
 
 import Button from "../components/ui/Button";
 import { Input } from "../components/ui/Form";
-import { useAuthStore } from "../store/authStore";
 import { toast } from "sonner";
+import { useLogin } from "../hooks/hooks";
 
-// Define Zod schema
 const loginSchema = z.object({
   email: z
     .string()
@@ -23,7 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const Login: React.FC = () => {
   const navigate = useNavigate();
 
-  const { login } = useAuthStore();
+  const { login } = useLogin();
   const [loading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState<LoginFormData>({

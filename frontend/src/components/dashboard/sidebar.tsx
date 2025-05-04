@@ -10,14 +10,16 @@ import {
   LogOut,
   BookOpen,
   Wallet,
+  Bell,
+  Bubbles,
 } from "lucide-react";
 import Button from "../ui/Button";
-import { useAuthStore } from "../../store/authStore";
 import clsx from "clsx";
+import { useLogout } from "../../hooks/hooks";
 
 export default function DashboardSidebar({ visible }: { visible?: boolean }) {
   const location = useLocation();
-  const { logout } = useAuthStore();
+  const { logout } = useLogout();
 
   const isActive = (path: string) => {
     return location.pathname === path;
@@ -48,6 +50,16 @@ export default function DashboardSidebar({ visible }: { visible?: boolean }) {
       name: "Leaderboard",
       href: "/dashboard/leaderboard",
       icon: Award,
+    },
+    {
+      name: "Ai Chat",
+      href: "/dashboard/chat",
+      icon: Bubbles,
+    },
+    {
+      name: "Notifications",
+      href: "/dashboard/notifications",
+      icon: Bell,
     },
     {
       name: "Settings",

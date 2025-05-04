@@ -21,7 +21,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
       : rank === 3
       ? "bg-amber-100 text-amber-800"
       : "bg-gray-50 text-gray-500";
-  console.log(entry.score)
+  console.log(entry.net_contribution);
 
   return (
     <div
@@ -88,7 +88,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
         {" "}
         {/* Added flex-shrink-0 */}
         <div className="text-lg font-bold text-gray-900">
-          {entry.score}{" "}
+          {parseFloat(entry.net_contribution)}{" "}
           <span className="text-xs font-normal text-gray-500">credits</span>
         </div>
         <div className="flex flex-wrap gap-1 mt-1 sm:justify-end">
@@ -101,7 +101,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
               Top
             </Badge>
           )}
-          {entry.score >= expertScore && (
+          {parseFloat(entry.net_contribution) >= expertScore && (
             <Badge
               size="lg"
               variant="ghost"
@@ -110,7 +110,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
               Exp
             </Badge>
           )}
-          {entry.score >= 50 && (
+          {parseFloat(entry.net_contribution) >= 50 && (
             <Badge
               size="lg"
               variant="ghost"
@@ -119,7 +119,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
               Active
             </Badge>
           )}
-          {/* {entry.completed_sessions > 10 && (
+          {entry.sessions_completed > 10 && (
             <Badge
               size="lg"
               variant="ghost"
@@ -127,7 +127,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
             >
               Sessions Champ
             </Badge>
-          )} */}
+          )}
         </div>
       </div>
     </div>
