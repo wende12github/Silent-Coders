@@ -80,7 +80,7 @@ class TokenObtainPairSerializer(TokenObtainPairSerializer):
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['bio', 'availability', 'profile_picture', 'is_provider']
+        fields = ['bio', 'availability', 'profile_picture']
 
 
 class PasswordChangeSerializer(serializers.Serializer):
