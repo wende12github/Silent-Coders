@@ -44,7 +44,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'bio', 'email','profile_picture','user_skills',
-            'availability', 'is_booked_for', 'last_name', 'first_name']
+            'availability', 'last_name', 'first_name']
+
         read_only_fields = ('id',)
 
     def get_user(self, obj):
@@ -78,9 +79,15 @@ class TokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)  
     class Meta:
         model = User
-        fields = ['bio', 'availability', 'profile_picture']
+
+        fields = ['username', 'first_name', 'last_name', 'email', 'bio',
+                  'availability', 'profile_picture']
+        extra_kwargs = {field: {'required': False} for field in fields}
+
+
 
 
 class PasswordChangeSerializer(serializers.Serializer):

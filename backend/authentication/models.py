@@ -9,9 +9,9 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
-    availability = models.TextField(blank=True, null=True)
-    is_booked_for = models.BooleanField(default=False)
-    
+
+    availability = models.TextField(blank=True, null=True)    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
