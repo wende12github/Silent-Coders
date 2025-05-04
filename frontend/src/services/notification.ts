@@ -1,36 +1,29 @@
 import { apiClient } from "./api";
 import axios from "axios";
 import { Notification } from "../store/types";
+import { PaginatedResponse } from "./api";
+
 /**
  * Fetches notifications for the current user.
- * @returns {Promise<Notification[]>} - A list of notifications.
+ * @returns {Promise<PaginatedResponse<Notification>>} - A paginated list of notifications.
  */
-
-export const fetchNotifications = async (): Promise<Notification[]> => {
+export const fetchNotifications = async (
+  page: number = 1
+): Promise<PaginatedResponse<Notification>> => {
   try {
-    const response = await apiClient.get<Notification[]>("/notifications/");
+    const response = await apiClient.get<PaginatedResponse<Notification>>(
+      "/notifications/",
+      { params: { page } }
+    );
     console.log("Fetched notifications:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching notifications:", error);
-    if (axios.isAxiosError(error)) {
-      throw new Error(
-        error.response?.data?.detail ||
-          error.message ||
-          "Failed to fetch notifications."
-      );
-    }
-    throw new Error(
-      "An unexpected error occurred while fetching notifications."
-    );
+    throw error;
   }
 };
 
-/**
- * Marks a specific notification as read.
- * @param {number} notificationId - The ID of the notification to mark as read.
- * @returns {Promise<Notification>} - The updated notification object.
- */
+// Marks a specific notification as read
 export const markNotificationAsRead = async (
   notificationId: number
 ): Promise<Notification> => {
@@ -58,5 +51,16 @@ export const markNotificationAsRead = async (
     throw new Error(
       `An unexpected error occurred while marking notification ${notificationId} as read.`
     );
+  }
+};
+
+// Delete a notification
+export const deleteNotification = async (notificationId: number): Promise<void> => {
+  try {
+    await apiClient.delete(`/notifications/${notificationId}/`);
+    console.log(`Deleted notification ${notificationId}`);
+  } catch (error) {
+    console.error(`Error deleting notification ${notificationId}:`, error);
+    throw error;
   }
 };
