@@ -42,7 +42,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('id', 'username', 'bio', 'email','full_name','profile_picture','user_skills',
-            'availability', 'is_provider', 'full_name')
+            'availability','full_name')
         read_only_fields = ('id',)
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}".strip()
@@ -63,7 +63,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'bio',
-                  'availability', 'profile_picture', 'is_provider']
+                  'availability', 'profile_picture']
         extra_kwargs = {field: {'required': False} for field in fields}
 
 
