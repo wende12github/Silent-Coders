@@ -38,12 +38,13 @@ class LoginSerializer(serializers.Serializer):
             raise serializers.ValidationError('Must include "email" and "password".')
 
 class UserProfileSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
+    first_name = serializers.SerializerMethodField()
+    last_name = serializers.SerializerMethodField()
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'bio', 'email','full_name','profile_picture','user_skills',
-            'availability', 'is_booked_for', 'full_name']
+        fields = ['id', 'username', 'bio', 'email','profile_picture','user_skills',
+            'availability', 'is_booked_for', 'last_name', 'first_name']
         read_only_fields = ('id',)
 
     def get_user(self, obj):
@@ -52,14 +53,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'id': obj.id,
             'username': obj.username,
             'email': obj.email,
-            'full_name': f"{obj.first_name} {obj.last_name}",
+            'first_name': f"{obj.first_name}",
+            'last_name': f"{obj.last_name}",
             'profile_picture': obj.profile_picture.url if obj.profile_picture else None,
             'bio': obj.bio,
             'date_joined': obj.date_joined,
         }
     
-    def get_full_name(self, obj):
-        return f"{obj.first_name} {obj.last_name}".strip()
+    def get_first_name(self, obj):
+        return f"{obj.first_name}".strip()
+    def get_last_name(self, obj):
+        return f"{obj.last_name}".strip()
     
 
 class UserSkillSerializer(serializers.ModelSerializer):
