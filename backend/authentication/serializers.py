@@ -64,11 +64,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         model = User
         fields = ['username', 'first_name', 'last_name', 'email', 'bio',
                   'availability', 'profile_picture', 'is_provider']
-        extra_kwargs = {
-            'username': {'required': False},
-            'first_name': {'required': False},
-            'last_name': {'required': False},
-        }
+        extra_kwargs = {field: {'required': False} for field in fields}
 
 
 
