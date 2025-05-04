@@ -6,6 +6,19 @@ from drf_yasg.utils import swagger_serializer_method
 
 User = get_user_model()
 
+
+class GroupListSerializer(serializers.ModelSerializer):
+    owner = serializers.StringRelatedField()  # Shows username/email instead of ID
+    member_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Group
+        fields = ['id', 'name', 'description', 'owner', 'member_count', 'created_at']
+
+    def get_member_count(self, obj):
+        return obj.members.count()
+
+
 class GroupMemberSerializer(serializers.Serializer):
     email = serializers.EmailField()
     name = serializers.CharField()

@@ -5,13 +5,18 @@ from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.db.models import ExpressionWrapper, F, FloatField
 from django.contrib.auth import get_user_model
-from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer, GroupLeaderboardSerializer
+from .serializers import EmptySerializer, GroupListSerializer, GroupSerializer, GroupDetailSerializer, GroupLeaderboardSerializer
 from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 
 User = get_user_model()
 
+
+class GroupListAPIView(generics.ListAPIView):
+    queryset = Group.objects.filter(is_active=True)
+    serializer_class = GroupListSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
 class GroupCreateView(generics.CreateAPIView):
     queryset = Group.objects.all()
