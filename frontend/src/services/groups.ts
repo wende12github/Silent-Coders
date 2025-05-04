@@ -1,4 +1,5 @@
-import { apiClient } from "./api";
+import { LeaderboardEntry } from "../store/types";
+import { apiClient, PaginatedResponse } from "./api";
 import axios, { AxiosResponse } from "axios";
 
 export interface Group {
@@ -7,7 +8,10 @@ export interface Group {
   description: string;
   owner: number;
   created_at: string;
-  members: string;
+  members: {
+    email: string;
+    name: string;
+  }[];
 }
 
 export interface CreateGroupRequest {
@@ -21,13 +25,17 @@ export interface GroupResponse {
   description: string;
   owner: number;
   created_at: string;
+  members: {
+    email: string;
+    name: string;
+  }[];
 }
 
 export interface GroupListResponse {
   count: number;
   next: string | null;
   previous: string | null;
-  results: GroupResponse[];
+  results: Omit<GroupResponse, "members">[] | GroupResponse[];
 }
 
 export const createGroup = async (
@@ -51,7 +59,7 @@ export const createGroup = async (
 export const fetchMyGroups = async (
   page?: number,
   search?: string
-): Promise<GroupListResponse> => {
+): Promise<Omit<GroupResponse, "members">[]> => {
   try {
     const params = page
       ? search
@@ -60,11 +68,11 @@ export const fetchMyGroups = async (
       : search
       ? { search }
       : {};
-    const response = await apiClient.get<GroupListResponse>(
+    const response = await apiClient.get<PaginatedResponse<GroupResponse>>(
       "groups/my-groups",
       { params }
     );
-    return response.data;
+    return response.data.results;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       console.error("API Error Details:", {
@@ -96,15 +104,58 @@ export const fetchGroupById = async (id: string): Promise<Group> => {
   }
 };
 
-export const joinGroup = async (id: string): Promise<Group> => {
+export const joinGroup = async (id: string): Promise<void> => {
   try {
     const response: AxiosResponse<Group> = await apiClient.post(
       `/groups/${id}/join`
     );
     console.log(`Join group ${id} response:`, response.data);
-    return response.data;
   } catch (error: any) {
     console.error(`Error joining group ${id}:`, error);
+    throw error;
+  }
+};
+
+export const getGroupLeaderboard = async (
+  groupId: string,
+  limit: number = 10
+): Promise<LeaderboardEntry[]> => {
+  try {
+    const response = await apiClient.get(`/groups/${groupId}/leaderboard/`, {
+      params: {
+        limit,
+      },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching group leaderboard:", error);
+    throw error;
+  }
+};
+
+export interface AllGroups {
+  id: number;
+  name: string;
+  description: string;
+  owner: string;
+  member_count: number;
+  created_at: string;
+}
+
+export const fetchAllGroups = async (
+  search?: string,
+  page: number = 1
+): Promise<AllGroups[]> => {
+  try {
+    const response = await apiClient.get("/groups/", {
+      params: {
+        search,
+        page,
+      },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching groups:", error);
     throw error;
   }
 };

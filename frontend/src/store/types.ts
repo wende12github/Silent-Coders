@@ -25,6 +25,28 @@ export interface Skill {
   updated_at?: string;
 }
 
+export interface Booking {
+  id: number;
+  booked_by: string;
+  booked_for: string;
+  skill: Skill;
+  status: "pending" | "confirmed" | "completed" | "cancelled";
+  scheduled_time: string;
+  duration: number;
+  created_at: string;
+  cancel_reason: string | null;
+}
+
+export interface Notification {
+  id: number;
+  type: "booking_request" | "booking_status" | "message" | "review";
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  user: number;
+}
+
+
 /* OLD TYPES */
 
 // export type Skill = {
@@ -39,16 +61,16 @@ export interface Skill {
 //   location: "local" | "remote";
 // };
 
-export type Session = {
-  id: number;
-  scheduled_time: string;
-  duration: number;
-  status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
-  created_at: string;
-  skill: Skill;
-  requester: User;
-  provider: User;
-};
+// export type Session = {
+//   id: number;
+//   scheduled_time: string;
+//   duration: number;
+//   status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
+//   created_at: string;
+//   skill: Skill;
+//   requester: User;
+//   provider: User;
+// };
 
 export type WalletTransaction = {
   id: number;
@@ -58,10 +80,10 @@ export type WalletTransaction = {
 };
 
 export type LeaderboardEntry = {
-  id: number;
-  week: number;
-  score: number;
-  timestamp: string;
+  total_hours_given: number;
+  total_hours_received: number;
+  sessions_completed: number;
+  net_contribution: string;
   user: User;
 };
 
@@ -288,66 +310,39 @@ export const mockSkills: Skill[] = [
   },
 ];
 
-// Helper to find a skill by ID
-const findSkillById = (id: number) =>
-  mockSkills.find((skill) => skill.id === id);
-// Helper to find a user by ID (including the new ones)
-
-const findUserById = (id: number) => allUsers.find((user) => user.id === id);
-
-export const mockSessions: Session[] = [
+export const mockSessions: Booking[] = [
   {
     id: 1,
     scheduled_time: "2024-11-25T15:00:00Z",
     duration: 60,
-    status: "Confirmed",
+    status: "confirmed",
     created_at: "2024-11-20T10:30:00Z",
-    skill: findSkillById(4)!, // React Development
-    requester: findUserById(1)!, // John Doe
-    provider: findUserById(2)!, // Sara Ahmed
+    cancel_reason: null,
+    booked_by: "",
+    booked_for: "",
+    skill: mockSkills[0],
   },
   {
     id: 2,
     scheduled_time: "2024-11-28T14:00:00Z",
     duration: 90,
-    status: "Pending",
+    status: "pending",
     created_at: "2024-11-22T09:15:00Z",
-    skill: findSkillById(1)!, // JavaScript Programming
-    requester: findUserById(3)!, // Michael Johnson
-    provider: findUserById(1)!, // John Doe
+    cancel_reason: null,
+    booked_by: "",
+    booked_for: "",
+    skill: mockSkills[1],
   },
   {
-    // New Booking 1
     id: 3,
     scheduled_time: "2024-04-10T11:00:00Z",
     duration: 45,
-    status: "Completed",
+    status: "completed",
     created_at: "2024-04-05T15:00:00Z",
-    skill: findSkillById(5)!, // Illustration Basics
-    requester: findUserById(1)!, // John Doe
-    provider: findUserById(5)!, // Emily Davis
-  },
-  {
-    // New Booking 2
-    id: 4,
-    scheduled_time: "2024-04-12T16:00:00Z",
-    duration: 60,
-    status: "Confirmed",
-    created_at: "2024-04-08T10:00:00Z",
-    skill: findSkillById(6)!, // Beginner Piano Lessons
-    requester: findUserById(3)!, // Michael Johnson
-    provider: findUserById(6)!, // David Wilson
-  },
-  {
-    // New Booking 3
-    id: 5,
-    scheduled_time: "2024-04-15T09:30:00Z",
-    duration: 30,
-    status: "Pending",
-    created_at: "2024-04-10T14:00:00Z",
-    skill: findSkillById(7)!, // Mindfulness Meditation
-    requester: findUserById(2)!, // Sara Ahmed
-    provider: findUserById(7)!, // Olivia Martinez
+    cancel_reason: null,
+    booked_by: "",
+    booked_for: "",
+    skill: mockSkills[2],
   },
 ];
 
@@ -402,33 +397,68 @@ export const mockTransactions: WalletTransaction[] = [
 
 export const mockLeaderboard: LeaderboardEntry[] = [
   {
-    id: 1,
-    week: 45,
-    score: 22.5,
-    timestamp: "2024-11-12T00:00:00Z", // Start of the week timestamp
-    user: findUserById(4)!, // Alex Chen
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 1,
+      email: "john.doe@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
   {
-    id: 2,
-    week: 45,
-    score: 82.5,
-    timestamp: "2024-11-12T00:00:00Z",
-    user: findUserById(2)!, // Sara Ahmed
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 2,
+      email: "alex@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
   {
-    id: 3,
-    week: 45,
-    score: 5.5,
-    timestamp: "2024-11-12T00:00:00Z",
-    user: findUserById(1)!, // John Doe
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 3,
+      email: "jane.doe@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
   {
-    // New Leaderboard Entry 2 (different week)
-    id: 5,
-    week: 15,
-    score: 10.0,
-    timestamp: "2024-04-07T00:00:00Z",
-    user: findUserById(5)!, // Emily Davis
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 4,
+      email: "tjay@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
 ];
 

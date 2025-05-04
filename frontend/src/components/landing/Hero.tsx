@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import placeholder from "../../assets/placeholder.png";
 import Button from "../ui/Button";
 
@@ -18,9 +19,11 @@ export const Hero = () => {
               required.
             </p>
             <div className="flex justify-center md:justify-start gap-8">
-              <Button size="lg" className="lg:text-lg!">
-                Get Started
-              </Button>
+              <Link to="/signup">
+                <Button size="lg" className="lg:text-lg!">
+                  Get Started
+                </Button>
+              </Link>
               <a href="#about-us">
                 <Button
                   size="lg"
