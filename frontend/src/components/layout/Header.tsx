@@ -6,11 +6,11 @@ import { useLogout } from "../../hooks/hooks";
 import { Link, useNavigate } from "react-router-dom";
 
 const Header = () => {
-  const { logoutUser } = useLogout();
+  const { logout } = useLogout();
   const navigate = useNavigate();
 
   const onLogout = () => {
-    logoutUser().then(() => navigate("/"));
+    logout().then(() => navigate("/"));
   };
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -19,18 +19,24 @@ const Header = () => {
     <div className="bg-white shadow-sm sticky top-0 z-50">
       <div className="mx-0 md:px-16 px-4 py-4 flex justify-between items-center">
         <Link to="/">
-          <div className="flex items-center gap-[8px]">
+          <div className="flex items-center gap-2">
             <Clock className="text-[28px] text-primary" />
             <h1 className="text-2xl font-bold text-primary">TimeBank</h1>
           </div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-[16px]">
+        <div className="hidden md:flex items-center gap-4">
           <a
             href="/dashboard"
             className="text-gray-700 hover:text-primary transition duration-200"
           >
             Dashboard
+          </a>
+          <a
+            href="/groups"
+            className="text-gray-700 hover:text-primary transition duration-200"
+          >
+            Groups
           </a>
           <a
             href="/dashboard/settings"

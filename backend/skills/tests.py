@@ -1,103 +1,86 @@
-from rest_framework.test import APITestCase
+from django.contrib.auth import get_user_model
+from django.test import TestCase
+from rest_framework.test import APIClient
 from rest_framework import status
-from django.contrib.auth.models import User
-from .models import ServiceOffering, Skill, ServiceRequest
+from .models import Skill
 
-class ServiceOfferingTests(APITestCase):
+User = get_user_model()
+
+class SkillAPITestCase(TestCase):
     def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
-        self.skill = Skill.objects.create(name="Programming")  # Create required skill
-        self.client.force_authenticate(user=self.user)  # Better for API tests
-
-    def test_create_service_offering(self):
-        data = {
-            'title': 'Web Development',
-            'description': 'Offering web development services',
-            'skill': self.skill.id  # Add required field
-        }
-        response = self.client.post('/api/service-offerings/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(ServiceOffering.objects.count(), 1)
-        self.assertEqual(ServiceOffering.objects.get().title, 'Web Development')
-
-    def test_service_offering_list(self):
-        ServiceOffering.objects.create(
-            title="Web Design", 
-            description="Offering web design services", 
-            user=self.user,
-            skill=self.skill  # Add required field
-        )
-        response = self.client.get('/api/service-offerings/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-class SkillTests(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        """Set up test users and sample skills"""
+        self.client = APIClient()
+        self.user = User.objects.create_user(username="testuser", password="testpass")
         self.client.force_authenticate(user=self.user)
+
+        self.skill = Skill.objects.create(
+            user=self.user,
+            name="Python Programming",
+            description="Teaching Python concepts",
+            is_offered=True,
+            location="remote",
+            address="Virtual",
+            tags=["python", "coding"],
+            is_visible=True
+        )
+
+    def test_list_skills(self):
+        """Test retrieving a list of skills"""
+        response = self.client.get("/skills/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.json()), 1)  # Ensure at least one skill is returned
 
     def test_create_skill(self):
-        data = {
-            'name': 'Python',
-            # Remove description if your model doesn't have it
+        """Test creating a new skill"""
+        payload = {
+            "name": "Django Development",
+            "description": "Web development with Django",
+            "is_offered": True,
+            "location": "remote",
+            "tags": ["django", "webdev"],
+            "is_visible": True
         }
-        response = self.client.post('/api/skills/', data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(Skill.objects.count(), 1)
-        self.assertEqual(Skill.objects.get().name, 'Python')
-
-    def test_skill_list(self):
-        Skill.objects.create(name="Python")
-        response = self.client.get('/api/skills/')
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
-
-class ServiceRequestTests(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create_user(username='testuser', password='testpassword')
-        self.client.force_authenticate(user=self.user)
-        self.skill = Skill.objects.create(name="Programming")
-        self.service_offering = ServiceOffering.objects.create(
-            title="Web Development", 
-            description="Offering web development services", 
-            user=self.user,
-            skill=self.skill
-        )
-
-    def test_create_service_request(self):
-        data = {
-        'service_offering': self.service_offering.id,
-        'skill': self.skill.id,
-        'description': 'I need a website built',
-        'title': 'Build My Website'  # ✅ Add this
-    }
-        response = self.client.post('/api/requests/', data, format='json')
-        print("CREATE SR RESPONSE:", response.data)
+        response = self.client.post("/skills/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-    
-    def test_service_request_list(self):
-        service_request = ServiceRequest.objects.create(
-            user=self.user,
-            skill=self.skill,
-            service_offering=self.service_offering,
-            description="Example request"
-        )
-        response = self.client.get('/api/requests/')
-        print(response.data)
+    def test_retrieve_skill(self):
+        """Test retrieving a specific skill"""
+        response = self.client.get(f"/skills/{self.skill.id}/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.json()["name"], self.skill.name)
 
-    def test_update_status_action(self):
-        service_request = ServiceRequest.objects.create(
-            service_offering=self.service_offering, 
-            description="Need website built", 
-            user=self.user,
-            skill=self.skill  # ✅ Add required skill here
-        )
-        url = f'/api/requests/{service_request.id}/update_status/'
-        data = {'status': 'completed'}
-        response = self.client.patch(url, data, format='json')
-        print(response.data)
+    def test_update_skill(self):
+        """Test updating a skill"""
+        payload = {"name": "Advanced Python"}
+        response = self.client.patch(f"/skills/{self.skill.id}/", payload, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data['status'], 'completed')
+        self.assertEqual(response.json()["name"], "Advanced Python")
+
+    def test_delete_skill(self):
+        """Test deleting a skill"""
+        response = self.client.delete(f"/skills/{self.skill.id}/")
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Skill.objects.filter(id=self.skill.id).exists())
+
+    def test_search_skills(self):
+        """Test searching for skills"""
+        response = self.client.get("/skills/search/?search=python")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.json()), 1)
+
+    def test_my_skills_view(self):
+        """Test retrieving authenticated user's skills"""
+        response = self.client.get("/skills/me/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.json()), 1)  # Should return at least one skill
+
+    def test_offered_skills_view(self):
+        """Test retrieving offered skills"""
+        response = self.client.get("/skills/offered/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertGreaterEqual(len(response.json()), 1)
+
+    def test_requested_skills_view(self):
+        """Test retrieving requested skills"""
+        response = self.client.get("/skills/requested/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)  # No requested skills yet

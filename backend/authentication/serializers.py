@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import UserSkill, User
+from .models import UserSkill, User, EmailNotificationPreference
 from django.contrib.auth import get_user_model, authenticate
 
 User = get_user_model()
@@ -44,7 +44,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'bio', 'email','profile_picture','user_skills',
-            'availability', 'is_booked_for', 'last_name', 'first_name']
+            'availability', 'last_name', 'first_name']
+
         read_only_fields = ('id',)
 
     def get_user(self, obj):
@@ -75,3 +76,27 @@ class UserSkillSerializer(serializers.ModelSerializer):
 
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)  
+    class Meta:
+        model = User
+
+        fields = ['username', 'first_name', 'last_name', 'email', 'bio',
+                  'availability', 'profile_picture']
+        extra_kwargs = {field: {'required': False} for field in fields}
+
+
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+
+class EmailPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailNotificationPreference
+        fields = ['newsletter', 'updates', 'skill_match_alerts']
+
