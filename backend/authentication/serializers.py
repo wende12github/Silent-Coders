@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import UserSkill, User
+from .models import UserSkill, User, EmailNotificationPreference
 from django.contrib.auth import get_user_model, authenticate
 
 User = get_user_model()
@@ -75,3 +75,21 @@ class UserSkillSerializer(serializers.ModelSerializer):
 
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['bio', 'availability', 'profile_picture', 'is_provider']
+
+
+class PasswordChangeSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
+
+class EmailPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EmailNotificationPreference
+        fields = ['newsletter', 'updates', 'skill_match_alerts']
+
