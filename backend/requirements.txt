@@ -1,6 +1,7 @@
 asgiref==3.8.1
 channels==4.2.2
 colorama==0.4.6
+channels_redis==4.2.1
 Django==5.2
 django-cors-headers==4.7.0
 django-environ==0.12.0
