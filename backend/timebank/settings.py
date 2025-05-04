@@ -41,7 +41,6 @@ EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 ALLOWED_HOSTS = []
 
 
-
 # Application definition
 
 INSTALLED_APPS = [

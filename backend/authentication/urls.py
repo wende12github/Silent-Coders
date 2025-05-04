@@ -19,6 +19,4 @@ urlpatterns = [
     path('profile/update/', UpdateProfileView.as_view(), name='update-profile'),
     path('profile/password/', UpdatePasswordView.as_view(), name='update-password'),
     path('profile/preferences/', UpdateEmailPreferencesView.as_view(), name='update-email-preferences')
-
-
 ]
