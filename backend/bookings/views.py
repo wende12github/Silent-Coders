@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from leaderboard.services import update_user_stats
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from django.db import models
@@ -196,7 +196,7 @@ class AvailabilitySlotDetailView(generics.RetrieveUpdateDestroyAPIView):
         return obj
     
 class UserAvailabilityView(generics.ListAPIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     serializer_class = AvailabilitySlotSerializer
 
     def get_queryset(self):
