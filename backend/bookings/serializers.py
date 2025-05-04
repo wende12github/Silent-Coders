@@ -129,7 +129,8 @@ class AvailabilitySlotSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['booked_for'] = self.context['request'].user
         return super().create(validated_data)
-    
+
+
 class BookingCancelSerializer(serializers.ModelSerializer):
     cancel_reason = serializers.CharField(required=True)
 
