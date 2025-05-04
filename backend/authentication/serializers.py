@@ -59,9 +59,17 @@ class TokenObtainPairSerializer(TokenObtainPairSerializer):
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)  
     class Meta:
         model = User
-        fields = ['bio', 'availability', 'profile_picture', 'is_provider']
+        fields = ['username', 'first_name', 'last_name', 'email', 'bio',
+                  'availability', 'profile_picture', 'is_provider']
+        extra_kwargs = {
+            'username': {'required': False},
+            'first_name': {'required': False},
+            'last_name': {'required': False},
+        }
+
 
 
 class PasswordChangeSerializer(serializers.Serializer):
