@@ -72,5 +72,5 @@ class PasswordChangeSerializer(serializers.Serializer):
 class EmailPreferenceSerializer(serializers.ModelSerializer):
     class Meta:
         model = EmailNotificationPreference
-        fields = ['newsletter', 'updates', 'job_alerts']
+        fields = ['newsletter', 'updates', 'skill_match_alerts']
 

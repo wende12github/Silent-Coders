@@ -4,10 +4,18 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import LoginSerializer, TokenObtainPairSerializer, UserSerializer, UserProfileSerializer, UserSkillSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import UserSerializer, UserProfileSerializer, UserSkillSerializer, UserProfileUpdateSerializer,PasswordChangeSerializer,EmailPreferenceSerializer
+from .serializers import (
+    LoginSerializer,
+    TokenObtainPairSerializer,
+    UserSerializer,
+    UserProfileSerializer,
+    UserSkillSerializer,
+    UserProfileUpdateSerializer,
+    PasswordChangeSerializer,
+    EmailPreferenceSerializer
+)
 from .models import UserSkill, EmailNotificationPreference
 from django.contrib.auth import get_user_model
 
@@ -102,14 +110,6 @@ class EndorseUserSkillView(APIView):
 
         except UserSkill.DoesNotExist:
             return Response({"detail": "Skill not found."}, status=status.HTTP_404_NOT_FOUND)
-
-class UserProfileView(generics.RetrieveAPIView):
-    serializer_class = UserProfileSerializer
-    permission_classes = [permissions.IsAuthenticated]
-
-    def get_object(self):
-        return self.request.user
-
 
 class UpdateProfileView(generics.UpdateAPIView):
     serializer_class = UserProfileUpdateSerializer
