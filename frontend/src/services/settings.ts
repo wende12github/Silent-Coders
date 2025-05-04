@@ -1,4 +1,5 @@
 import { apiClient } from "./api";
+import { AxiosResponse } from "axios";
 
 // Reset user password
 export const resetPassword = async (passwordData: {
@@ -40,6 +41,35 @@ export const updatePreferences = async (preferencesData: {
     console.log("Update preferences response:", response.data);
   } catch (error) {
     console.error("Error updating preferences:", error);
+    throw error;
+  }
+};
+
+// Fetch user settings
+export const fetchUserSettings = async (): Promise<UserSettings> => {
+  try {
+    const response: AxiosResponse<UserSettings> = await apiClient.get("/settings/");
+    console.log("Fetch user settings response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching user settings:", error);
+    throw error;
+  }
+};
+
+// Update user settings
+export const updateUserSettings = async (
+  settingsData: Partial<UserSettings>
+): Promise<UserSettings> => {
+  try {
+    const response: AxiosResponse<UserSettings> = await apiClient.patch(
+      "/settings/",
+      settingsData
+    );
+    console.log("Update user settings response:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Error updating user settings:", error);
     throw error;
   }
 };
