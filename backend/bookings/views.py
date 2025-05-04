@@ -182,3 +182,23 @@ class AvailabilitySlotListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return AvailabilitySlot.objects.filter(booked_for=self.request.user)
+    
+
+class AvailabilitySlotDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvailabilitySlotSerializer
+    queryset = AvailabilitySlot.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        if obj.booked_for != self.request.user:
+            raise PermissionDenied("You do not have permission to modify this slot.")
+        return obj
+    
+class UserAvailabilityView(generics.ListAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvailabilitySlotSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return AvailabilitySlot.objects.filter(booked_for__id=user_id)
