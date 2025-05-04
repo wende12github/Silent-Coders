@@ -3,7 +3,7 @@ from bookings.models import Booking, BookingStatus
 from .models import UserStats
 
 def update_user_stats(user):
-    completed_bookings = Booking.objects.filter(provider=user, status=BookingStatus.COMPLETED)
+    completed_bookings = Booking.objects.filter(booked_for=user, status=BookingStatus.COMPLETED)
 
     total_hours = sum([b.duration for b in completed_bookings])
     sessions = completed_bookings.count()

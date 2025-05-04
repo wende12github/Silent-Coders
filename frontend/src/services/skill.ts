@@ -1,8 +1,8 @@
 import { AxiosResponse } from "axios";
-import { apiClient } from "./api";
+import { apiClient, PaginatedResponse } from "./api";
 import { Skill } from "../store/types";
 
-interface FetchSkillsParams {
+export interface FetchSkillsParams {
   searchTerm?: string | null;
   page?: number | null;
   type?: "request" | "offer" | null;
@@ -13,6 +13,7 @@ interface FetchSkillsParams {
  * @param params - Filtering options.
  * @returns {Promise<Skill[]>}
  */
+
 export const fetchSkills = async ({
   searchTerm = null,
   page = 1,
@@ -26,14 +27,14 @@ export const fetchSkills = async ({
       endpoint = "/skills/offered/";
     }
 
-    const response: AxiosResponse<Skill[]> = await apiClient.get(endpoint, {
+    const response = await apiClient.get<PaginatedResponse<Skill>>(endpoint, {
       params: {
         q: searchTerm || undefined,
         page: page || undefined,
       },
     });
 
-    return response.data;
+    return response.data.results;
   } catch (error) {
     console.error("Error fetching skills:", error);
     throw error;
@@ -44,12 +45,12 @@ export const createSkill = async (
   skillData: Omit<Skill, "id" | "user">
 ): Promise<Skill> => {
   try {
-    const response: AxiosResponse<Skill> = await apiClient.post(
+    const response = await apiClient.post(
       "/skill/",
       skillData
     );
-    const data = response.data;
-    return data;
+    const data = response.data.results;
+    return data as Skill;
   } catch (error) {
     console.error("Error creating skill:", error);
     throw error;
@@ -97,24 +98,20 @@ export const fetchSkill = async (skillId: number): Promise<Skill> => {
 
 export const fetchMySkills = async (): Promise<Skill[]> => {
   try {
-    const response: AxiosResponse<Skill[]> = await apiClient.get("/skills/my/");
-    return response.data;
+    const response: AxiosResponse<PaginatedResponse<Skill>> = await apiClient.get("/skills/me/");
+    return response.data.results;
   } catch (error) {
     console.error("Error fetching my skills:", error);
     throw error;
   }
 };
 
-/**
- * Mock API call to fetch all skills.
- * @returns {Promise<Skill[]>} - A list of skills.
- */
 
 export const fetchAllSkills = async (): Promise<Skill[]> => {
   try {
-    const response: AxiosResponse<Skill[]> = await apiClient.get("/skills/");
+    const response: AxiosResponse<PaginatedResponse<Skill>> = await apiClient.get("/skills/");
     console.log("Fetch all skills response:", response.data);
-    return response.data;
+    return response.data.results;
   } catch (error: any) {
     console.error("Error fetching all skills:", error);
     throw error;

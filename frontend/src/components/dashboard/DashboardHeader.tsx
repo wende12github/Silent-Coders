@@ -15,6 +15,7 @@ import Avatar from "../ui/Avatar";
 import { useAuthStore } from "../../store/authStore";
 
 import { useThemeStore } from "../../store/themeStore";
+import { useLogout } from "../../hooks/hooks";
 
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useThemeStore();
@@ -71,9 +72,10 @@ const MobileNav: React.FC = () => {
   );
 };
 export default function DashboardHeader() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
   if (!user) return null;
+  const { logout } = useLogout();
 
   return (
     <header className="sticky top-0 z-30 flex min-h-14 items-center gap-4 border-b border-border bg-white px-4 sm:px-6 ">
@@ -91,7 +93,7 @@ export default function DashboardHeader() {
             <button className="relative rounded-full p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 cursor-pointer">
               <Avatar
                 src={user.profile_picture}
-                alt={user.first_name}
+                alt={user.first_name || "U"}
                 fallback={user.first_name || "John Doe"}
                 className=""
               />

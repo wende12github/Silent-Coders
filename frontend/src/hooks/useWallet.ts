@@ -1,7 +1,6 @@
 // hooks/useWallet.ts
 import { useState, useEffect } from "react";
 import {
- 
   fetchWalletBalance,
   fetchWalletTransactions,
 } from "../services/api";

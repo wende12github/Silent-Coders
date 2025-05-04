@@ -8,7 +8,7 @@ import { toast } from "sonner";
 
 import { Checkbox } from "../components/ui/Checkbox";
 import { Input, Textarea } from "../components/ui/Form";
-import { useAuthStore } from "../store/authStore";
+import { useSignup } from "../hooks/hooks";
 
 const signupSchema = z
   .object({
@@ -56,9 +56,9 @@ const SignUp = () => {
     bio: "",
   });
   const navigate = useNavigate();
+  const { signup } = useSignup();
 
   const [loading, setIsLoading] = useState(false);
-  const { signup } = useAuthStore();
 
   const [errors, setErrors] = useState<
     Partial<Record<keyof SignupFormData, string>>

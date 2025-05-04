@@ -7,9 +7,9 @@ User = get_user_model()
 
 
 class Booking(models.Model):
-    service_offering = models.ForeignKey('skills.Skill', on_delete=models.CASCADE)
-    requester = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='requested_bookings', on_delete=models.CASCADE)
-    provider = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='provided_bookings', on_delete=models.CASCADE)
+    skill = models.ForeignKey('skills.Skill', on_delete=models.CASCADE, related_name='bookings')
+    booked_by = models.ForeignKey(User, related_name='bookings_made', on_delete=models.CASCADE)
+    booked_for = models.ForeignKey(User, related_name='bookings_received', on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=BookingStatus.CHOICES, default=BookingStatus.PENDING)
     scheduled_time = models.DateTimeField()
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
@@ -17,7 +17,7 @@ class Booking(models.Model):
     cancel_reason = models.TextField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.requester} booked {self.provider} for {self.service_offering}"
+        return f"{self.booked_by} booked {self.booked_for} for {self.skill}"
 
 
 class Review(models.Model):
@@ -36,13 +36,13 @@ class AvailabilitySlot(models.Model):
         (3, 'Thursday'), (4, 'Friday'), (5, 'Saturday'), (6, 'Sunday'),
     ]
 
-    provider = models.ForeignKey(User, on_delete=models.CASCADE, related_name='availability_slots')
+    booked_for = models.ForeignKey(User, on_delete=models.CASCADE, related_name='availability_slots')
     weekday = models.IntegerField(choices=WEEKDAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
     class Meta:
-        unique_together = ['provider', 'weekday', 'start_time', 'end_time']
+        unique_together = ['booked_for', 'weekday', 'start_time', 'end_time']
 
     def __str__(self):
-        return f"{self.provider.username} - {self.get_weekday_display()} {self.start_time}-{self.end_time}"
+        return f"{self.booked_for.username} - {self.get_weekday_display()} {self.start_time}-{self.end_time}"
