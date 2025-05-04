@@ -3,12 +3,13 @@ import LeaderboardItem from "./LeaderboardEntry";
 import { LeaderboardEntry } from "../../store/types";
 
 interface LeaderboardListProps {
-  rankedUsers: LeaderboardEntry[];
+  rankedUsers: LeaderboardEntry[] | null;
 }
 
 const LeaderboardList: React.FC<LeaderboardListProps> = ({
   rankedUsers: leaderboardEntries,
 }) => {
+  if (!leaderboardEntries) return null;
 
   if (leaderboardEntries.length === 0) {
     return (
@@ -23,7 +24,11 @@ const LeaderboardList: React.FC<LeaderboardListProps> = ({
   return (
     <div className="space-y-3">
       {leaderboardEntries.map((entry, index) => (
-        <LeaderboardItem key={entry.id} entry={entry} rank={index + 1} />
+        <LeaderboardItem
+          key={entry.user.username}
+          entry={entry}
+          rank={index + 1}
+        />
       ))}
     </div>
   );

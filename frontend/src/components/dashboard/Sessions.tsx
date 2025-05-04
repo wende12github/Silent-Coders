@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Calendar, Clock, Video, MapPin, Check, X } from "lucide-react";
 import { format, isPast } from "date-fns";
 import Tabs, { TabItem } from "../ui/Tabs";
@@ -12,34 +12,49 @@ import {
 import { Badge } from "../ui/Badge";
 import Button from "../ui/Button";
 import { Select, SelectItem } from "../ui/Select";
-import Avatar from "../ui/Avatar";
+// import Avatar from "../ui/Avatar";
+import { Booking } from "../../store/types";
+import { fetchMyBookings } from "../../services/booking";
 import { useAuthStore } from "../../store/authStore";
-import { Session } from "../../store/types";
 
 export default function Sessions() {
-  const { sessions: initialSessions, user } = useAuthStore();
-  const [sessions, setSessions] = useState(initialSessions);
+  const [sessions, setSessions] = useState<Booking[] | null>(null);
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
-  const filteredSessions = sessions.filter((session) => {
+  const { user } = useAuthStore();
+
+  useEffect(() => {
+    const loadSessions = async () => {
+      const data = await fetchMyBookings();
+      setSessions(data);
+    };
+    loadSessions();
+  }, [sessions]);
+
+
+  if (!sessions || sessions.length === 0) {
+    return <div>No sessions found</div>;
+  }
+
+  const filteredSessions = sessions?.filter((session) => {
     if (statusFilter !== "all" && session.status !== statusFilter) {
       return false;
     }
     return true;
   });
 
-  const upcomingSessions = filteredSessions.filter(
+  const upcomingSessions = filteredSessions?.filter(
     (session) => !isPast(new Date(session.scheduled_time))
   );
-  const pastSessions = filteredSessions.filter((session) =>
+  const pastSessions = filteredSessions?.filter((session) =>
     isPast(new Date(session.scheduled_time))
   );
 
-  const getOtherParticipant = (session: Session) => {
-    return session.provider.id === user?.id
-      ? session.requester
-      : session.provider;
-  };
+  // const getOtherParticipant = (session: Booking) => {
+  //   return session.provider === user?.id
+  //     ? session.requester
+  //     : session.provider;
+  // };
 
   const formatDate = (dateString: string) => {
     return format(new Date(dateString), "EEEE, MMMM d, yyyy");
@@ -69,13 +84,8 @@ export default function Sessions() {
   };
 
   const handleStatusChange = (sessionId: number, newStatus: string) => {
-    setSessions(
-      sessions.map((session) =>
-        session.id === sessionId
-          ? { ...session, status: newStatus as any }
-          : session
-      )
-    );
+    
+
 
     console.log(`Session ${sessionId} status changed to ${newStatus}`);
   };
@@ -88,15 +98,16 @@ export default function Sessions() {
         upcomingSessions.length > 0 ? (
           <div className="space-y-4">
             {upcomingSessions.map((session) => {
-              const otherParticipant = getOtherParticipant(session);
-              const isProvider = session.provider.id === user?.id;
+              // const otherParticipant = getOtherParticipant(session);
+              const isProvider = session.booked_for === user?.username;
               return (
                 <Card key={session.id} className="space-y-1">
                   <CardHeader className="pb-2">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center text-lg font-semibold">
-                          {session.skill.name}
+                          session.skill.name
+                          {/* {session.skill.name} */}
                           <span className="ml-2">
                             {getStatusBadge(session.status)}
                           </span>
@@ -104,7 +115,8 @@ export default function Sessions() {
                         <CardDescription>
                           {isProvider ? "Teaching" : "Learning from"}{" "}
                           <span className="font-medium text-gray-900">
-                            {otherParticipant.name}
+                            {/* {otherParticipant} */}
+                            first_name
                           </span>
                         </CardDescription>
                       </div>
@@ -124,23 +136,26 @@ export default function Sessions() {
                   <CardContent>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <div className="flex items-center gap-2">
-                        <Avatar
+                        {/* <Avatar
                           src={otherParticipant.profile_picture}
-                          alt={otherParticipant.name}
-                          fallback={otherParticipant.name}
-                        />
+                          alt={otherParticipant.first_name}
+                          fallback={otherParticipant.first_name}
+                        /> */}
+                        <div className="size-6 animate-pulse rounded-md"></div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">
-                            {otherParticipant.name}
+                            {/* {otherParticipant.} */}
+                            first_name
                           </p>
                           <p className="text-xs text-gray-600">
-                            @{otherParticipant.username}
+                            {/* @{otherParticipant.username} */}
+                            @username
                           </p>
                         </div>
                       </div>
                       <div className="flex-1" />
                       <div className="flex flex-wrap gap-2">
-                        {session.status === "Pending" && isProvider && (
+                        {session.status === "pending" && isProvider && (
                           <>
                             <Button
                               size="sm"
@@ -165,7 +180,7 @@ export default function Sessions() {
                             </Button>
                           </>
                         )}
-                        {session.status === "Confirmed" && (
+                        {session.status === "confirmed" && (
                           <Button
                             variant="outline"
                             size="sm"
@@ -179,7 +194,7 @@ export default function Sessions() {
                           </Button>
                         )}
 
-                        {session.status === "Confirmed" && (
+                        {session.status === "confirmed" && (
                           <>
                             <Button variant="outline" size="sm">
                               <Video className="mr-2 h-4 w-4" />
@@ -218,15 +233,16 @@ export default function Sessions() {
         pastSessions.length > 0 ? (
           <div className="space-y-4">
             {pastSessions.map((session) => {
-              const otherParticipant = getOtherParticipant(session);
-              const isProvider = session.provider.id === user?.id;
+              // const otherParticipant = getOtherParticipant(session);
+              const isProvider = session.booked_for === user?.username;
               return (
                 <Card key={session.id} className="space-y-1">
                   <CardHeader className="pb-2">
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center text-lg font-semibold">
-                          {session.skill.name}
+                          session.skill.name
+                          {/* {session.skill.name} */}
                           <span className="ml-2">
                             {getStatusBadge(session.status)}
                           </span>
@@ -234,7 +250,7 @@ export default function Sessions() {
                         <CardDescription>
                           {isProvider ? "Taught" : "Learned from"}{" "}
                           <span className="font-medium text-gray-900">
-                            {otherParticipant.name}
+                            otherParticipant.first_name
                           </span>
                         </CardDescription>
                       </div>
@@ -254,23 +270,26 @@ export default function Sessions() {
                   <CardContent>
                     <div className="flex flex-col sm:flex-row gap-4">
                       <div className="flex items-center gap-2">
-                        <Avatar
+                        {/* <Avatar
                           src={otherParticipant.profile_picture}
-                          alt={otherParticipant.name}
-                          fallback={otherParticipant.name}
-                        />
+                          alt={otherParticipant.first_name}
+                          fallback={otherParticipant.first_name}
+                        /> */}
+                        <div className="size-6 animate-pulse rounded-md"></div>
                         <div>
                           <p className="text-sm font-medium text-gray-900">
-                            {otherParticipant.name}
+                            otherParticipant.first_name
+                            {/* {otherParticipant.first_name} */}
                           </p>
                           <p className="text-xs text-gray-600">
-                            @{otherParticipant.username}
+                            @other.username
+                            {/* @{otherParticipant.username} */}
                           </p>
                         </div>
                       </div>
                       <div className="flex-1" />
 
-                      {session.status === "Completed" && (
+                      {session.status === "completed" && (
                         <div className="flex flex-wrap gap-2">
                           <Button variant="outline" size="sm">
                             Leave Review
@@ -280,7 +299,7 @@ export default function Sessions() {
                           </Button>
                         </div>
                       )}
-                      {session.status === "Cancelled" && (
+                      {session.status === "cancelled" && (
                         <div className="flex flex-wrap gap-2">
                           <Button variant="outline" size="sm">
                             View Details

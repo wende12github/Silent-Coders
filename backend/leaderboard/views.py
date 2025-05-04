@@ -7,7 +7,6 @@ from django.db.models import F, ExpressionWrapper, FloatField
 class LeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = UserStats.objects.all()
     serializer_class = UserStatsSerializer
-    # Optionally, we can add ordering by `total_hours_given` if we need top N results.
     ordering = ['-total_hours_given']
 
     def get_queryset(self):
@@ -18,7 +17,7 @@ class LeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
             'given': '-total_hours_given',
             'received': '-total_hours_received',
             'sessions': '-sessions_completed',
-            'net': '',  # Sorting by annotation if needed
+            'net': 'net',  # Sorting by annotation if needed
         }
 
         queryset = UserStats.objects.all()
@@ -31,4 +30,4 @@ class LeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
             queryset = queryset.order_by(order_map.get(sort_by, '-total_hours_given'))[:top_n]
 
         return queryset
-
+    

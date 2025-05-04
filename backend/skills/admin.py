@@ -1,8 +1,7 @@
 
 from django.contrib import admin
-from .models import Skill, ServiceOffering,ServiceRequest
+from .models import Skill
+
 
 admin.site.register(Skill)
-admin.site.register(ServiceOffering)
-admin.site.register(ServiceRequest)
 
