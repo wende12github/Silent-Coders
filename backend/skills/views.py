@@ -40,7 +40,7 @@ class SkillRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Skill.objects.filter(user=self.request.user)
+        return Skill.objects.filter(user=self.request.user.id)
 
 # ✅ Offered Skills View with SQLite-Friendly Tag Filtering
 class OfferedSkillsView(generics.ListAPIView):
