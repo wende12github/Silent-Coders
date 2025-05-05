@@ -7,13 +7,14 @@ from notifications.models import Notification
 def booking_created(sender, instance, created, **kwargs):
     if created:
         Notification.objects.create(
-            user=instance.receiver,
+            user=instance.booked_for,
             type='booking_request',
-            content=f"You have a new booking request from {instance.sender.username}."
+            content="You have a new booking request from {instance.sender.username}."
         )
     elif instance.status in ['accepted', 'rejected']:
         Notification.objects.create(
-            user=instance.sender,
+            # user=instance.sender,
+            user=1,
             type='booking_status',
-            content=f"Your booking was {instance.status} by {instance.receiver.username}."
+            content="Your booking was {instance.status} by {instance.receiver.username}."
         )

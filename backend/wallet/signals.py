@@ -16,7 +16,7 @@ def create_user_wallet(sender, instance, created, **kwargs):
 def send_transfer_notification(sender, instance, created, **kwargs):
     if created:
         sender_user = instance.sender
-        receiver_user = instance.receiver
+        receiver_user = instance.booked_for
         amount = instance.amount
         reason = instance.reason
         subject = f"Time Transfer Notification: {amount} hours"

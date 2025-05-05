@@ -8,6 +8,7 @@ import { Input, Label, Textarea } from "../ui/Form";
 import { updateCurrentUser } from "../../services/user"; // Assuming updateCurrentUser is in services/user.ts
 import { User } from "../../store/types"; // Import User type
 import { ImageUpload } from "../ImageUpload"; // Import the ImageUpload component
+import { resetPassword,updateUserData,updatePreferences } from "../../services/settings";
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore();
@@ -149,6 +150,51 @@ export default function SettingsPage() {
     });
     // TODO: Add logic to save changes (e.g., API call) for privacy
      console.log("Privacy settings updated:", { [key]: value });
+  };
+  // **Added Functions**
+
+  // Reset Password
+  const handleResetPassword = async () => {
+    try {
+      await resetPassword({
+        old_password: "wear",
+        new_password: "Hello",
+      });
+      alert("Password reset successfully!");
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      alert("Failed to reset password.");
+    }
+  };
+
+  // Update Preferences
+  const handleUpdatePreferences = async () => {
+    try {
+      await updatePreferences({
+        newsletter: true,
+        updates: true,
+        skill_match_alerts: true,
+      });
+      alert("Preferences updated successfully!");
+    } catch (error) {
+      console.error("Error updating preferences:", error);
+      alert("Failed to update preferences.");
+    }
+  };
+
+  // Update User Data
+  const handleUpdateUserData = async () => {
+    try {
+      await updateUserData({
+        bio: "New bio",
+        username: "new_username",
+        availability: "Available",
+      });
+      alert("User data updated successfully!");
+    } catch (error) {
+      console.error("Error updating user data:", error);
+      alert("Failed to update user data.");
+    }
   };
 
   // Define the items for the Tabs component

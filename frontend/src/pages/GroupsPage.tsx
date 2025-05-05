@@ -9,9 +9,10 @@ import {
   joinGroup
 } from "../services/groups";
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const GroupsPage = () => {
+  const navigate = useNavigate();
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [formData, setFormData] = useState<CreateGroupRequest>({
     name: "",
@@ -115,8 +116,7 @@ const GroupsPage = () => {
     try {
       await joinGroup(groupId);
       setJoinStates(prev => ({ ...prev, [groupId]: 'success' }));
-      // Consider using state updates instead of reload for better UX
-      window.location.reload();
+      navigate(`/groups/${groupId}`)
     } catch (error) {
       console.error('Join failed:', error);
       setJoinStates(prev => ({ ...prev, [groupId]: 'error' }));
