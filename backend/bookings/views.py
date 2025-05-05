@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from leaderboard.services import update_user_stats
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from django.db import models
@@ -182,3 +182,23 @@ class AvailabilitySlotListCreateView(generics.ListCreateAPIView):
 
     def get_queryset(self):
         return AvailabilitySlot.objects.filter(booked_for=self.request.user)
+    
+
+class AvailabilitySlotDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvailabilitySlotSerializer
+    queryset = AvailabilitySlot.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        if obj.booked_for != self.request.user:
+            raise PermissionDenied("You do not have permission to modify this slot.")
+        return obj
+    
+class UserAvailabilityView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = AvailabilitySlotSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return AvailabilitySlot.objects.filter(booked_for__id=user_id)

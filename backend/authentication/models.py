@@ -9,9 +9,9 @@ class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     bio = models.TextField(blank=True, null=True)
     profile_picture = models.ImageField(upload_to='profile_pictures/', blank=True, null=True)
-    availability = models.TextField(blank=True, null=True)
-    is_booked_for = models.BooleanField(default=False)
-    
+
+    availability = models.TextField(blank=True, null=True)    
+
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username']
     
@@ -30,6 +30,9 @@ class UserSkill(models.Model):
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='Beginner')
     endorsements = models.PositiveIntegerField(default=0)
     experience_hours = models.FloatField(default=0.0)
+    name = models.CharField(max_length=100)  
+    location = models.CharField(max_length=255)  
+    address = models.TextField(blank=True, null=True) 
 
     class Meta:
         unique_together = ('user', 'skill')

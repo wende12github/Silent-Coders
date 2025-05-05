@@ -9,8 +9,47 @@ from drf_yasg import openapi
 from rest_framework.response import Response
 from .models import ChatMessage, PrivateChatMessage
 from .serializers import ChatMessageSerializer, PrivateChatMessageSerializer
+from django.db.models import Q
+from groups.models import Group
 
 User =  get_user_model()
+
+class GroupChatMessagesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, group_name):
+        limit = int(request.query_params.get("limit", 20))
+        offset = int(request.query_params.get("offset", 0))
+
+        try:
+            group = Group.objects.get(name=group_name)
+        except Group.DoesNotExist:
+            return Response({"error": "Group not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        messages = ChatMessage.objects.filter(room=group).order_by('-created_at')[offset:offset + limit]
+        serializer = ChatMessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
+
+class PrivateChatMessagesView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, user_id):
+        limit = int(request.query_params.get("limit", 20))
+        offset = int(request.query_params.get("offset", 0))
+
+        try:
+            other_user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        messages = PrivateChatMessage.objects.filter(
+            Q(sender=request.user, receiver=other_user) | Q(sender=other_user, receiver=request.user)
+        ).order_by('-created_at')[offset:offset + limit]
+
+        serializer = PrivateChatMessageSerializer(messages, many=True)
+        return Response(serializer.data)
+
 class SendMessageView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 

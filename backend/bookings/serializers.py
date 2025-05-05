@@ -21,11 +21,10 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         end_time = scheduled_time + timedelta(minutes=duration)
         weekday = scheduled_time.weekday()
 
-        # Convert to time only
-        start_clock = scheduled_time.time()
-        end_clock = end_time.time()
+        # Force UTC extraction
+        start_clock = scheduled_time.astimezone(timezone.utc).time()
+        end_clock = end_time.astimezone(timezone.utc).time()
 
-        # Check booked_for availability
         available = AvailabilitySlot.objects.filter(
             booked_for=booked_for,
             weekday=weekday,
@@ -36,7 +35,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         if not available:
             raise serializers.ValidationError("booked_for is not available during the selected time.")
 
-        # (Optional) Prevent overlapping bookings for booked_for
+        # Prevent overlapping bookings
         overlap = Booking.objects.filter(
             booked_for=booked_for,
             scheduled_time__lt=end_time,
@@ -129,7 +128,8 @@ class AvailabilitySlotSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['booked_for'] = self.context['request'].user
         return super().create(validated_data)
-    
+
+
 class BookingCancelSerializer(serializers.ModelSerializer):
     cancel_reason = serializers.CharField(required=True)
 

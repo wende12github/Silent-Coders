@@ -9,9 +9,10 @@ import Avatar from "../ui/Avatar";
 
 interface UserSkillCardProps {
   skill: Skill;
+  onRequestSession: () => void;
 }
 
-const UserSkillCard: React.FC<UserSkillCardProps> = ({ skill }) => {
+const UserSkillCard: React.FC<UserSkillCardProps> = ({ skill, onRequestSession }) => {
   const isOffering = skill.is_offered;
 
   const [userData, setUserData] = useState<User | null>(null);
@@ -103,7 +104,7 @@ const UserSkillCard: React.FC<UserSkillCardProps> = ({ skill }) => {
           </div>
         </div>
 
-        <Button className="w-full">Request Session</Button>
+        <Button onClick={onRequestSession} className="w-full">Request Session</Button>
       </div>
     </div>
   );

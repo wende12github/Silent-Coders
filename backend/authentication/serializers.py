@@ -44,7 +44,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ['id', 'username', 'bio', 'email','profile_picture','user_skills',
-            'availability', 'is_booked_for', 'last_name', 'first_name']
+            'availability', 'last_name', 'first_name']
+
         read_only_fields = ('id',)
 
     def get_user(self, obj):
@@ -69,18 +70,38 @@ class UserProfileSerializer(serializers.ModelSerializer):
 class UserSkillSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserSkill
-        fields = ['id', 'user', 'skill', 'level', 'endorsements', 'experience_hours']
+        fields = ['id', 'user', 'skill', 'level', 'endorsements', 'experience_hours', 'name', 'location', 'address']
         read_only_fields = ['endorsements', 'user']
 
+class PublicUserSerializer(serializers.ModelSerializer):
+    user_skills = UserSkillSerializer(many=True, read_only=True)
+    profile_picture = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'username', 'first_name', 'last_name',
+            'profile_picture', 'bio', 'user_skills'
+        ]
+    def get_profile_picture(self, obj):
+        request = self.context.get('request')
+        if obj.profile_picture and request:
+            return request.build_absolute_uri(obj.profile_picture.url)
+        return None  
+   
 
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
     pass
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(required=False)  
     class Meta:
         model = User
-        fields = ['bio', 'availability', 'profile_picture']
+
+        fields = ['username', 'first_name', 'last_name', 'email', 'bio',
+                  'availability', 'profile_picture']
+        extra_kwargs = {field: {'required': False} for field in fields}
 
 
 class PasswordChangeSerializer(serializers.Serializer):

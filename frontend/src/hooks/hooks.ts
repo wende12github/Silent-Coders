@@ -8,6 +8,8 @@ import {
 } from "../services/api";
 import { useAuthStore } from "../store/authStore";
 import { REFRESH_TOKEN_STORAGE_KEY } from "../utils/constants";
+import { fetchMe } from "../services/user";
+import { User } from "../store/types";
 
 export interface LogoutResponse {
   refresh: string;
@@ -97,3 +99,7 @@ export const useSignup = () => {
   return { signup: signupUser };
 };
 
+export const useCurrentUser = async () => {
+  const user: User = await fetchMe();
+  return { user };
+};
