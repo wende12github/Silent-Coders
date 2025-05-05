@@ -46,3 +46,13 @@ class UserStats(models.Model):
 
     def __str__(self):
         return f'{self.user.username} - {self.group.name}'
+
+class GroupAnnouncement(models.Model):
+    group = models.ForeignKey('Group', related_name='announcements', on_delete=models.CASCADE)
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    posted_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.title} in {self.group.name}"

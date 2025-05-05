@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Group, GroupMembership, UserStats
+from .models import Group, GroupMembership, UserStats, GroupAnnouncement
 from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from drf_yasg.utils import swagger_serializer_method
@@ -86,3 +86,12 @@ class GroupLeaderboardSerializer(serializers.ModelSerializer):
 
     def get_net_contribution(self, obj):
         return obj.total_hours_given - obj.total_hours_received
+
+
+class GroupAnnouncementSerializer(serializers.ModelSerializer):
+    posted_by = serializers.StringRelatedField(read_only=True)
+
+    class Meta:
+        model = GroupAnnouncement
+        fields = ['id', 'group', 'title', 'message', 'created_at', 'posted_by']
+        read_only_fields = ['id', 'created_at', 'posted_by']

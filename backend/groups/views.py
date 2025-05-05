@@ -6,9 +6,10 @@ from django.shortcuts import get_object_or_404
 from django.db.models import ExpressionWrapper, F, FloatField
 from django.contrib.auth import get_user_model
 from .serializers import EmptySerializer, GroupListSerializer, GroupSerializer, GroupDetailSerializer, GroupLeaderboardSerializer
-from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer
+from .serializers import EmptySerializer, GroupSerializer, GroupDetailSerializer, GroupAnnouncementSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from .models import GroupAnnouncement    
 
 User = get_user_model()
 
@@ -92,3 +93,42 @@ class GroupLeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
 
         return queryset
 
+
+class GroupAnnouncementListCreateView(generics.ListCreateAPIView):
+    serializer_class = GroupAnnouncementSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    @swagger_auto_schema(
+        operation_summary="Get group announcements",
+        operation_description="Returns a list of announcements for the group. Must be a group member.",
+        responses={200: GroupAnnouncementSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        operation_summary="Create a group announcement",
+        operation_description="Only the group owner can post an announcement to the group.",
+        request_body=GroupAnnouncementSerializer,
+        responses={201: GroupAnnouncementSerializer}
+    )
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def get_queryset(self):
+        group_id = self.kwargs['group_id']
+        group = get_object_or_404(Group, pk=group_id)
+
+        if not group.members.filter(id=self.request.user.id).exists():
+            raise PermissionDenied("You are not a member of this group.")
+        return group.announcements.all().order_by('-created_at')
+
+    def perform_create(self, serializer):
+        group_id = self.kwargs['group_id']
+        group = get_object_or_404(Group, pk=group_id)
+
+        if group.owner != self.request.user:
+            raise PermissionDenied("Only the group owner can post announcements.")
+
+        serializer.save(group=group, posted_by=self.request.user)
