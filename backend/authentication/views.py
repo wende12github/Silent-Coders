@@ -144,7 +144,6 @@ class UpdateEmailPreferencesView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         preferences, created = EmailNotificationPreference.objects.get_or_create(user=self.request.user)
         return preferences
-
 class PublicUserDetailView(generics.RetrieveAPIView):
     queryset = User.objects.all()
     serializer_class = PublicUserSerializer
