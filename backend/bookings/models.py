@@ -15,9 +15,16 @@ class Booking(models.Model):
     duration = models.PositiveIntegerField(help_text="Duration in minutes")
     created_at = models.DateTimeField(auto_now_add=True)
     cancel_reason = models.TextField(blank=True, null=True)
+    availability = models.ForeignKey('AvailabilitySlot', on_delete=models.CASCADE, related_name='bookings', null=True, blank=True)
 
     def __str__(self):
         return f"{self.booked_by} booked {self.booked_for} for {self.skill}"
+
+    def save(self, *args, **kwargs):
+        if self.availability:
+            self.availability.is_booked = self.status not in [BookingStatus.CANCELLED, BookingStatus.COMPLETED]
+            self.availability.save()
+        super().save(*args, **kwargs)
 
 
 class Review(models.Model):
@@ -40,6 +47,7 @@ class AvailabilitySlot(models.Model):
     weekday = models.IntegerField(choices=WEEKDAYS)
     start_time = models.TimeField()
     end_time = models.TimeField()
+    is_booked = models.BooleanField(default=False)
 
     class Meta:
         unique_together = ['booked_for', 'weekday', 'start_time', 'end_time']

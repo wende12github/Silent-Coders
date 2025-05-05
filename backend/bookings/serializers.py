@@ -7,9 +7,11 @@ from datetime import timedelta
 from skills.serializers import SkillSerializer
 
 class BookingCreateSerializer(serializers.ModelSerializer):
+    availability_id = serializers.IntegerField(write_only=True, required=True)
+
     class Meta:
         model = Booking
-        fields = ['id', 'booked_for', 'skill', 'scheduled_time', 'duration']
+        fields = ['id', 'booked_for', 'skill', 'scheduled_time', 'duration', 'availability_id']
 
     def validate(self, data):
         scheduled_time = data['scheduled_time']
@@ -48,12 +50,23 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         # if overlap:
         #     raise serializers.ValidationError("booked_for has another booking that overlaps with this time.")
 
+        availability_id = data.get('availability_id')
+        try:
+            availability = AvailabilitySlot.objects.get(id=availability_id, is_booked=False)
+        except AvailabilitySlot.DoesNotExist:
+            raise serializers.ValidationError("Invalid or already booked availability slot.")
+
+        data['availability'] = availability
         return data
 
     def create(self, validated_data):
         booked_by = self.context['request'].user
-        validated_data.pop("booked_by", None)
-        return Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
+        availability = validated_data.pop('availability')
+        booking = Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
+        availability.is_booked = True
+        availability.save()
+        return booking
+        
 
 class BookingActionSerializer(serializers.ModelSerializer):
     cancel_reason = serializers.CharField(required=False, allow_blank=True)
@@ -120,6 +133,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         model = Review
         fields = ['id', 'booking', 'reviewer', 'rating', 'comment', 'created_at']
         read_only_fields = ['id', 'reviewer', 'created_at', 'booking']
+
+class ReviewListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Review
+        fields = ['id', 'booking', 'reviewer', 'rating', 'comment', 'created_at']
+        read_only_fields = ['id', 'booking', 'reviewer', 'created_at']
 
 class AvailabilitySlotSerializer(serializers.ModelSerializer):
     class Meta:
