@@ -15,6 +15,6 @@ export const fetchLeaderboard = async (
 
 // ✅ Keep this if you're using it to fetch the current user's rank or data
 export const fetchUserLeaderboard = async (userId: number) => {
-  const response = await apiClient.get(`/leaderboard/user/${userId}/`);
+  const response = await apiClient.get(`/leaderboard/${userId}/`);
   return response.data;
 };
