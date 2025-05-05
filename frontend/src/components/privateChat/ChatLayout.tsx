@@ -27,7 +27,7 @@ export default function ChatLayout() {
      try {
         // TODO: Replace with your actual API call to get recent chats or contacts
         // This is a placeholder: fetching all users except the current one
-        const response = await apiClient.get('/users/');
+        const response = await apiClient.get('/chatbot/private-conversations/');
         // Filter out the current user
         const filteredUsers = response.data.filter((u: User) => u.id !== user.id);
         setConversations(filteredUsers);
