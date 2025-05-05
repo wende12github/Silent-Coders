@@ -30,6 +30,9 @@ class UserSkill(models.Model):
     level = models.CharField(max_length=20, choices=LEVEL_CHOICES, default='Beginner')
     endorsements = models.PositiveIntegerField(default=0)
     experience_hours = models.FloatField(default=0.0)
+    name = models.CharField(max_length=100)  
+    location = models.CharField(max_length=255)  
+    address = models.TextField(blank=True, null=True) 
 
     class Meta:
         unique_together = ('user', 'skill')
