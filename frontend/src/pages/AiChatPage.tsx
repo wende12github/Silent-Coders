@@ -1,7 +1,6 @@
 import { useState } from "react";
 import PrivateChat from "../components/privateChat/PrivateChat";
 
-
 // Example usage in a parent component
 
 export function AiChatPage() {
