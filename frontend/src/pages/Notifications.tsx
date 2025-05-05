@@ -12,15 +12,16 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [nextPage, setNextPage] = useState<string | null>(null); // State for pagination
+  const [nextPage, setNextPage] = useState<number | null>(1);
 
-  const loadNotifications = async (url?: string) => {
+  const loadNotifications = async (pageNumber: number) => {
     setIsLoading(true);
     setError(null);
+
     try {
-      const data = await fetchNotifications(url || "/notifications/");
-      setNotifications((prev) => [...prev, ...data.results]); // Append new notifications
-      setNextPage(data.next); // Update the next page URL
+      const data = await fetchNotifications(pageNumber);
+      setNotifications((prev) => [...prev, ...data.results]);
+      setNextPage(data.next ? pageNumber + 1 : null);
     } catch (err: any) {
       console.error("Error loading notifications:", err);
       setError(err.message || "Failed to load notifications.");
@@ -30,33 +31,33 @@ export default function NotificationsPage() {
   };
 
   useEffect(() => {
-    loadNotifications(); // Load the first page of notifications on component mount
+    loadNotifications(1);
   }, []);
 
   const handleLoadMore = () => {
     if (nextPage) {
-      const nextPageNumber = new URL(nextPage).searchParams.get("page");
-      if (nextPageNumber) {
-        loadNotifications(nextPageNumber);
-      }
+      loadNotifications(nextPage);
     }
   };
 
-  const handleMarkAsRead = async (id: number) => {
+  const handleMarkAsRead = async (notification: Notification) => {
     setNotifications((prevNotifications) =>
       prevNotifications.map((notif) =>
-        notif.id === id ? { ...notif, is_read: true } : notif
+        notif.id === notification.id ? { ...notif, is_read: true } : notif
       )
     );
 
     try {
-      await markNotificationAsRead(id);
+      await markNotificationAsRead(notification);
     } catch (err: any) {
-      console.error(`Failed to mark notification ${id} as read:`, err);
+      console.error(
+        `Failed to mark notification ${notification.id} as read:`,
+        err
+      );
 
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
-          notif.id === id ? { ...notif, is_read: false } : notif
+          notif.id === notification.id ? { ...notif, is_read: false } : notif
         )
       );
 
@@ -124,7 +125,7 @@ export default function NotificationsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => handleMarkAsRead(notification.id)}
+                  onClick={() => handleMarkAsRead(notification)}
                   disabled={isLoading}
                   className="flex-shrink-0 text-blue-600 hover:text-blue-800"
                   aria-label={`Mark notification ${notification.id} as read`}

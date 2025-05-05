@@ -17,9 +17,8 @@ import SignUp from "../pages/SignUp";
 import GroupPage from "../pages/GroupPage";
 import GroupsPage from "../pages/GroupsPage";
 import Notifications from "../pages/Notifications";
-// import {AiChatPage} from "../pages/AiChatPage";
 import ChatBotWidget from "../components/ChatBotWidget";
-import { AiChatPage } from "../Pages/AiChatPage";
+import ChatLayout from "../components/privateChat/ChatLayout";
 
 function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -49,7 +48,7 @@ function AppRoutes() {
               path="/dashboard/notifications"
               element={<Notifications />}
             />
-            <Route path="/dashboard/chat" element={<AiChatPage />} />
+            <Route path="/dashboard/chat" element={<ChatLayout />} />
           </Route>
         </Route>
       </Routes>

@@ -19,7 +19,7 @@ export default function DashboardPage() {
     error: errorWallet,
   } = useWallet();
 
-  const [bookings, setBookings] = useState<Booking[] | null>(null);
+  const [bookings, setBookings] = useState<Booking<Skill>[] | null>(null);
   const [mySkills, setMySkills] = useState<Skill[] | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<
     LeaderboardEntry[] | null
@@ -77,7 +77,7 @@ export default function DashboardPage() {
       setIsLoadingLeaderboard(true);
       try {
         const data = await fetchLeaderboard();
-        setLeaderboardData(data);
+        setLeaderboardData(data.results);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
         setErrorLeaderboard("Failed to fetch leaderboard.");
@@ -90,6 +90,7 @@ export default function DashboardPage() {
   }, []);
 
   const formatDate = (dateString: string) => {
+    console.log(dateString);
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
       year: "numeric",
@@ -99,6 +100,7 @@ export default function DashboardPage() {
   };
 
   const formatTime = (dateString: string) => {
+    console.log(dateString);
     const date = new Date(dateString);
     return date.toLocaleTimeString("en-US", {
       hour: "2-digit",
@@ -119,7 +121,7 @@ export default function DashboardPage() {
   const recentTransactions = (transactions || [])
     .sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
     .slice(0, 5);
 
@@ -429,7 +431,8 @@ export default function DashboardPage() {
                             </p>
                           </div>
                           <p className="text-xs text-gray-600">
-                            {formatDistanceToNow(
+                          <>{()=> console.log("Timestamp: ", transaction.timestamp)}</>
+                            {transaction.timestamp && formatDistanceToNow(
                               new Date(transaction.timestamp),
                               {
                                 addSuffix: true,
