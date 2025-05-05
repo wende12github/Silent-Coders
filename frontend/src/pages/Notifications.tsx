@@ -12,15 +12,17 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [nextPage, setNextPage] = useState<string | null>(null); // State for pagination
+  const [nextPage, setNextPage] = useState<string | null>(null);
 
   const loadNotifications = async (url?: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const data = await fetchNotifications(url || "/notifications/");
-      setNotifications((prev) => [...prev, ...data.results]); // Append new notifications
-      setNextPage(data.next); // Update the next page URL
+      const data = await fetchNotifications(url);
+      setNotifications((prev) => 
+        url ? [...prev, ...data.results] : data.results
+      );
+      setNextPage(data.next);
     } catch (err: any) {
       console.error("Error loading notifications:", err);
       setError(err.message || "Failed to load notifications.");
@@ -30,15 +32,12 @@ export default function NotificationsPage() {
   };
 
   useEffect(() => {
-    loadNotifications(); // Load the first page of notifications on component mount
+    loadNotifications();
   }, []);
 
   const handleLoadMore = () => {
     if (nextPage) {
-      const nextPageNumber = new URL(nextPage).searchParams.get("page");
-      if (nextPageNumber) {
-        loadNotifications(nextPageNumber);
-      }
+      loadNotifications(nextPage);
     }
   };
 
@@ -53,13 +52,11 @@ export default function NotificationsPage() {
       await markNotificationAsRead(id);
     } catch (err: any) {
       console.error(`Failed to mark notification ${id} as read:`, err);
-
       setNotifications((prevNotifications) =>
         prevNotifications.map((notif) =>
           notif.id === id ? { ...notif, is_read: false } : notif
         )
       );
-
       alert(`Failed to mark notification as read: ${err.message}`);
     }
   };
@@ -137,7 +134,6 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Load More Button */}
       {nextPage && (
         <div className="text-center mt-4">
           <Button
