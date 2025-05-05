@@ -1,10 +1,9 @@
 import { Send, Trophy } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Tabs, { TabItem } from "../components/ui/Tabs";
 import { useAuthStore } from "../store/authStore";
 import {
-  ChatMessage,
   initialMockMessages,
   LeaderboardEntry,
 } from "../store/types";
@@ -17,6 +16,9 @@ import {
   fetchAllGroups,
   Group,
   AllGroups,
+  sendGroupMessage,
+  ChatMessage,
+  fetchGroupMessages
 } from "../services/groups";
 
 const GroupsPage: React.FC = () => {
@@ -24,14 +26,15 @@ const GroupsPage: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMockMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessageText, setNewMessageText] = useState("");
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const [group, setGroup] = useState<Group | null>(null);
   const [groupLeaderboard, setGroupLeaderboard] = useState<
     LeaderboardEntry[] | null
   >(null);
-  const [myGroups, setMyGroups] = useState<Omit<Group, "members">[] | null>(
+  const [myGroups, setMyGroups] = useState<AllGroups[] | null>(
     null
   );
   const [allGroups, setAllGroups] = useState<AllGroups[] | null>(null);
@@ -147,8 +150,8 @@ const GroupsPage: React.FC = () => {
         const data = await fetchMyGroups();
         setMyGroups(data);
       } catch (error: any) {
-        console.error("Error fetching my groups:", error);
-        setErrorMyGroups(`Failed to fetch your groups: ${error.message}`);
+        console.error("Error fetching all groups:", error);
+        setErrorMyGroups(`Failed to fetch all groups: ${error.message}`);
       } finally {
         setIsLoadingMyGroups(false);
       }
@@ -174,6 +177,26 @@ const GroupsPage: React.FC = () => {
     loadAllGroups();
   }, []);
 
+  const loadMessages = useCallback(async () => {
+    if (!group?.name) return; // Guard clause
+    
+    setIsLoadingMessages(true);
+    try {
+      const fetchedMessages = await fetchGroupMessages(group.name);
+      setMessages(fetchedMessages);
+    } catch (error) {
+      console.error("Failed to load messages:", error);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [group?.name]); // Add dependency
+
+  useEffect(() => {
+    if (group?.name) {
+      loadMessages();
+    }
+  }, [group?.name, loadMessages]);
+
   useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
@@ -186,13 +209,20 @@ const GroupsPage: React.FC = () => {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessageText.trim() === "") return;
 
+    if (!group?.name) {
+      console.error("No group name available");
+      return;
+    }
+  
+    const tempId = Date.now();
+  
     const newMessage: ChatMessage = {
-      id: messages.length + 1,
+      id: tempId,
       senderId: currentUser?.id || 0,
-      senderName: currentUser?.first_name || "Unknown User",
+      senderName: currentUser?.first_name || currentUser?.username || "Unknown User",
       senderAvatar:
         currentUser?.profile_picture ||
         `https://placehold.co/100x100/ff7f7f/ffffff?text=${
@@ -202,12 +232,40 @@ const GroupsPage: React.FC = () => {
         }`,
       text: newMessageText,
       timestamp: new Date().toISOString(),
+      status: 'sending',
     };
-
-    setMessages([...messages, newMessage]);
+  
+    setMessages(prev => [...prev, newMessage]);
     setNewMessageText("");
-
-    console.log("Sending message:", newMessage);
+  
+    try {
+      const response = await sendGroupMessage({
+        is_group_chat: true,
+        message: newMessageText,
+        room_name: group.name// Replace with your room name
+      });
+  
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId
+          ? {
+              ...msg,
+              timestamp: response.created_at,
+              status: 'delivered',
+            }
+          : msg
+      ));
+      loadMessages();
+    } catch (error) {
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId
+          ? {
+              ...msg,
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Failed to send',
+            }
+          : msg
+      ));
+    }
   };
 
   const formatTimestamp = (timestamp: string): string => {
@@ -341,7 +399,12 @@ const GroupsPage: React.FC = () => {
             ref={messagesEndRef}
             className="flex-1 overflow-y-auto p-4 space-y-4"
           >
-            {messages.map((message) => (
+            {isLoadingMessages ? (
+              <div className="text-center py-4 text-gray-500">Loading messages...</div>
+            ) : messages.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">No messages yet</div>
+            ) : (
+            [...messages].reverse().map((message) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -385,7 +448,8 @@ const GroupsPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-            ))}
+            ))
+          )}
           </div>
           <div className="border-t border-gray-200 p-4 flex items-center gap-3">
             <input
@@ -519,66 +583,7 @@ const GroupsPage: React.FC = () => {
             tabsListClassName="mb-4"
           />
         </div>
-
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">My Groups</h2>
-          {renderContent(
-            isLoadingMyGroups,
-            errorMyGroups,
-            myGroups,
-            (groups) => (
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {Array.isArray(groups) &&
-                  groups.map((myGroup) => (
-                    <div
-                      key={myGroup.id}
-                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition"
-                    >
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {myGroup.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {myGroup.description}
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            ),
-            "You are not a member of any groups yet."
-          )}
         </div>
-
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Groups</h2>
-          {renderContent(
-            isLoadingAllGroups,
-            errorAllGroups,
-            allGroups,
-            (groups) => (
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {Array.isArray(groups) &&
-                  groups.map((allGroup) => (
-                    <div
-                      key={allGroup.id}
-                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition"
-                    >
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {allGroup.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {allGroup.description}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Members: {allGroup.member_count}
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            ),
-            "No groups available."
-          )}
-        </div>
-      </div>
     </div>
   );
 };

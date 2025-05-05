@@ -17,8 +17,9 @@ import SignUp from "../pages/SignUp";
 import GroupPage from "../pages/GroupPage";
 import GroupsPage from "../pages/GroupsPage";
 import Notifications from "../pages/Notifications";
-import AiChatPage from "../pages/AiChatPage";
+// import {AiChatPage} from "../pages/AiChatPage";
 import ChatBotWidget from "../components/ChatBotWidget";
+import { AiChatPage } from "../Pages/AiChatPage";
 
 function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);

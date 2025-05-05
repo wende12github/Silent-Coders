@@ -76,6 +76,12 @@ const Header = () => {
               Dashboard
             </a>
             <a
+            href="/groups"
+            className="text-gray-700 hover:text-primary transition duration-200"
+          >
+            Groups
+          </a>
+            <a
               href="/profile"
               className="text-gray-700 hover:text-primary transition duration-200 py-2"
             >
@@ -88,7 +94,7 @@ const Header = () => {
               Settings
             </a>
 
-            <Button variant="destructive" size="lg">
+            <Button onClick={onLogout} variant="destructive" size="lg">
               Logout
             </Button>
           </div>

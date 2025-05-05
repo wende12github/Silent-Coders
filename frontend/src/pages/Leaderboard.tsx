@@ -17,6 +17,9 @@ const LeaderboardPage = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
   const limit = 10;
+  const [count, setCount] = useState(0);
+const [next, setNext] = useState<string | null>(null);
+const [previous, setPrevious] = useState<string | null>(null);
 
   const { user: currentUser } = useAuthStore();
   const location = useLocation();
@@ -29,8 +32,16 @@ const LeaderboardPage = () => {
       setIsLoading(true);
       try {
         const data = await fetchLeaderboard(page, limit);
-        setLeaderboard(data);
-        setHasMore(data.length === limit); // if fewer results, no more pages
+        const filteredResults = data.results.filter(entry => Object.keys(entry).length > 0);
+  
+
+       
+        setLeaderboard(filteredResults);
+        setCount(data.count);
+        setNext(data.next);
+        setPrevious(data.previous);
+        // setLeaderboard(data);
+        // setHasMore(data.length === limit); // if fewer results, no more pages
         if (currentUser) {
           const userData = await fetchUserLeaderboard(currentUser.id);
           setCurrentUserData(userData);
@@ -87,10 +98,10 @@ const LeaderboardPage = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Top Contributors</h2>
         <div className="space-x-2">
-          <Button onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1 || isLoading}>
+          <Button onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={!previous || isLoading}>
             Previous
           </Button>
-          <Button onClick={() => setPage((p) => p + 1)} disabled={!hasMore || isLoading}>
+          <Button onClick={() => setPage((p) => p + 1)} disabled={!next || isLoading}>
             Next
           </Button>
         </div>

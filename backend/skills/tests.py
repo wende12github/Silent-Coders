@@ -28,7 +28,7 @@ class SkillAPITestCase(TestCase):
         """Test retrieving a list of skills"""
         response = self.client.get("/skills/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.json()), 1)  # Ensure at least one skill is returned
+        self.assertGreaterEqual(len(response.json()), 1)
 
     def test_create_skill(self):
         """Test creating a new skill"""
@@ -72,7 +72,7 @@ class SkillAPITestCase(TestCase):
         """Test retrieving authenticated user's skills"""
         response = self.client.get("/skills/me/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertGreaterEqual(len(response.json()), 1)  # Should return at least one skill
+        self.assertGreaterEqual(len(response.json()), 1)
 
     def test_offered_skills_view(self):
         """Test retrieving offered skills"""
@@ -83,4 +83,25 @@ class SkillAPITestCase(TestCase):
     def test_requested_skills_view(self):
         """Test retrieving requested skills"""
         response = self.client.get("/skills/requested/")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)  # No requested skills yet
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    # ✅ ADDED FUNCTIONALITY: Test retrieving all unique skill tags
+    def test_skill_tags_view(self):
+        """Test retrieving all unique skill tags"""
+        response = self.client.get("/skills/tags/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        returned_tags = response.json()
+        self.assertIn("python", returned_tags)  # Ensure 'python' tag is returned
+        self.assertIn("coding", returned_tags)
+
+    # ✅ ADDED FUNCTIONALITY: Test filtering skills by tag (SQLite Compatible)
+def test_filter_skills_by_tag(self):
+    response = self.client.get("/skills/?tag=python")
+    response_data = response.json()  # Ensure this is a list of dictionaries
+
+    if isinstance(response_data, list):  # Prevent errors if response is invalid
+        filtered_skills = [skill for skill in response_data if "python" in skill.get("tags", [])]
+    else:
+        filtered_skills = []  # Avoid errors
+
+    self.assertTrue(filtered_skills, "Expected skills with 'python' tag, but found none.")

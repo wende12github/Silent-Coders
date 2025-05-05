@@ -1,6 +1,8 @@
 import { LeaderboardEntry } from "../store/types";
-import { apiClient, PaginatedResponse } from "./api";
+import { apiClient } from "./api";
 import axios, { AxiosResponse } from "axios";
+import { fetchUser } from "./user";
+import { User } from "../store/types";
 
 export interface Group {
   id: number;
@@ -42,7 +44,7 @@ export const createGroup = async (
   groupData: CreateGroupRequest
 ): Promise<GroupResponse> => {
   try {
-    const response = await apiClient.post<GroupResponse>("/groups/", groupData);
+    const response = await apiClient.post<GroupResponse>("/groups/create/", groupData);
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
@@ -57,37 +59,20 @@ export const createGroup = async (
 };
 
 export const fetchMyGroups = async (
-  page?: number,
-  search?: string
-): Promise<Omit<GroupResponse, "members">[]> => {
+  search?: string,
+  page: number = 1
+): Promise<AllGroups[]> => {
   try {
-    const params = page
-      ? search
-        ? { page, search }
-        : { page }
-      : search
-      ? { search }
-      : {};
-    const response = await apiClient.get<PaginatedResponse<GroupResponse>>(
-      "groups/my-groups",
-      { params }
-    );
+    const response = await apiClient.get("/groups/my-groups/", {
+      params: {
+        search,
+        page,
+      },
+    });
     return response.data.results;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error("API Error Details:", {
-        status: error.response?.status,
-        data: error.response?.data,
-        headers: error.response?.headers,
-      });
-      throw new Error(
-        error.response?.data?.message ||
-          error.response?.data?.detail ||
-          `Failed to fetch groups (Status: ${error.response?.status})`
-      );
-    }
-    console.error("Non-Axios Error:", error);
-    throw new Error("Network error while fetching groups");
+    console.error("Error fetching groups:", error);
+    throw error;
   }
 };
 
@@ -104,12 +89,13 @@ export const fetchGroupById = async (id: string): Promise<Group> => {
   }
 };
 
-export const joinGroup = async (id: string): Promise<void> => {
+export const joinGroup = async (id: number): Promise<{ message: string }> => {
   try {
-    const response: AxiosResponse<Group> = await apiClient.post(
-      `/groups/${id}/join`
+    const response = await apiClient.post<{ message: string }>(
+      `/groups/${id}/join/`,
+      { id: Number(id) }
     );
-    console.log(`Join group ${id} response:`, response.data);
+    return response.data;
   } catch (error: any) {
     console.error(`Error joining group ${id}:`, error);
     throw error;
@@ -156,6 +142,81 @@ export const fetchAllGroups = async (
     return response.data.results;
   } catch (error) {
     console.error("Error fetching groups:", error);
+    throw error;
+  }
+};
+
+
+interface SendMessageRequest {
+  is_group_chat: boolean;
+  message: string;
+  room_name: string;
+}
+
+export interface ChatbotResponse {
+  user: number;
+  room: number;
+  message: string;
+  message_tyep: string;
+  created_at: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  senderId: number;
+  senderName: string;
+  senderAvatar: string;
+  text: string;
+  timestamp: string;
+  isSending?: boolean;
+  status?: 'sending' | 'delivered' | 'failed';
+  error?: string;
+}
+
+export const sendGroupMessage = async (
+  messageData: SendMessageRequest
+): Promise<ChatbotResponse> => {
+  try {
+    const response = await apiClient.post<ChatbotResponse>("/chatbot/sendMessage/", messageData);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const serverMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        JSON.stringify(error.response?.data);
+      throw new Error(serverMessage || "Failed to create group");
+    }
+    throw new Error("Network error - could not connect to server");
+  }
+};
+
+export const fetchGroupMessages = async (groupName: string): Promise<ChatMessage[]> => {
+  try {
+    // 1. Fetch messages
+    const response = await apiClient.get(`/chatbot/group/${groupName}/`);
+    
+    // 2. Process each message
+    const messages = await Promise.all(
+      response.data.map(async (msg: any) => {
+        // 3. Get user details for each message
+        const user = await fetchUser(msg.user);
+        
+        return {
+          id: `${msg.user}-${msg.created_at}`,
+          senderId: msg.user,
+          senderName: user.username, // Now using actual username
+          senderAvatar: user.profile_picture || `https://placehold.co/100x100?text=${user.username.charAt(0)}`,
+          text: msg.message,
+          timestamp: msg.created_at,
+          status: 'delivered' as const,
+        };
+      })
+    );
+    
+    return messages;
+  } catch (error) {
+    console.error(`Error fetching messages:`, error);
     throw error;
   }
 };
