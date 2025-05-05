@@ -1,5 +1,6 @@
 import { useState } from "react";
-import PrivateChat from "../components/PrivateMessage ";
+import PrivateChat from "../components/privateChat/PrivateChat";
+
 
 // Example usage in a parent component
 

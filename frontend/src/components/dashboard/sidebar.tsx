@@ -52,7 +52,7 @@ export default function DashboardSidebar({ visible }: { visible?: boolean }) {
       icon: Award,
     },
     {
-      name: "Ai Chat",
+      name: "User Chat",
       href: "/dashboard/chat",
       icon: Bubbles,
     },

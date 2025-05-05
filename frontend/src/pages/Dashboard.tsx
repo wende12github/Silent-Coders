@@ -22,8 +22,8 @@ export default function DashboardPage() {
   const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [mySkills, setMySkills] = useState<Skill[] | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<
-    LeaderboardEntry[] | null
-  >(null);
+    LeaderboardEntry[]
+  >();
 
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
   const [errorBookings, setErrorBookings] = useState<string | null>(null);
