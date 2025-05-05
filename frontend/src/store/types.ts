@@ -24,17 +24,17 @@ export interface Skill {
   created_at?: string;
   updated_at?: string;
 }
-
+// { booked_for: number; skill: number; scheduled_time: any; duration: number; booked_by: number; }
 export interface Booking {
   id: number;
   booked_by: string;
-  booked_for: string;
-  skill: Skill;
-  status: "pending" | "confirmed" | "completed" | "cancelled";
+  booked_for: string | number;
+  skill: Skill | number;
+  status?: "pending" | "confirmed" | "completed" | "cancelled";
   scheduled_time: string;
-  duration: number;
-  created_at: string;
-  cancel_reason: string | null;
+  duration?: number;
+  created_at?: string;
+  cancel_reason?: string | null;
 }
 
 export interface Notification {

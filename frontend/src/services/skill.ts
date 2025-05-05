@@ -46,10 +46,10 @@ export const createSkill = async (
 ): Promise<Skill> => {
   try {
     const response = await apiClient.post(
-      "/skill/",
+      "/skills/",
       skillData
     );
-    const data = response.data.results;
+    const data = response.data;
     return data as Skill;
   } catch (error) {
     console.error("Error creating skill:", error);
