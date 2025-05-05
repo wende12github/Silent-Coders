@@ -1,279 +1,81 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "react-router-dom";
 import Button from "../components/ui/Button";
 import Avatar from "../components/ui/Avatar";
 import LeaderboardList from "../components/leaderboard/LeaderboardList";
 import { useAuthStore } from "../store/authStore";
-import { allUsers as mockUsers, LeaderboardEntry, User } from "../store/types";
-import { fetchLeaderboard } from '../services/leaderboard';
-type TimePeriod = "all-time" | "month";
-
-export const processAndRankLeaderboard = (
-  users: User[],
-  entries: LeaderboardEntry[],
-  timePeriod: TimePeriod
-): LeaderboardEntry[] => {
-  let filteredAndAggregatedEntries: {
-    [userId: number]: { score: number; latestEntry?: LeaderboardEntry };
-  } = {};
-
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
-
-  entries.forEach((entry) => {
-    const score =
-      typeof entry.score === "number" ? entry.score : parseFloat(entry.score);
-    if (isNaN(score)) return;
-
-    let includeEntry = false;
-    if (timePeriod === "month") {
-      const entryDate = new Date(entry.timestamp);
-      includeEntry =
-        entryDate.getMonth() === currentMonth &&
-        entryDate.getFullYear() === currentYear;
-    } else {
-      includeEntry = true;
-    }
-
-    if (includeEntry) {
-      if (!filteredAndAggregatedEntries[entry.user.id]) {
-        filteredAndAggregatedEntries[entry.user.id] = {
-          score: 0,
-          latestEntry: entry,
-        };
-      }
-      filteredAndAggregatedEntries[entry.user.id].score += score;
-      filteredAndAggregatedEntries[entry.user.id].latestEntry = entry;
-    }
-  });
-
-  const rankedUsers: LeaderboardEntry[] = Object.keys(
-    filteredAndAggregatedEntries
-  )
-    .map((userId) => {
-      const userIdNum = parseInt(userId, 10);
-      const aggregatedData = filteredAndAggregatedEntries[userIdNum];
-      const user = users.find((u) => u.id === userIdNum);
-
-      return {
-        id: aggregatedData.latestEntry?.id || userIdNum,
-        user_id: userIdNum,
-        week: aggregatedData.latestEntry?.week || 0,
-        timestamp:
-          aggregatedData.latestEntry?.timestamp || new Date(0).toISOString(),
-        score: aggregatedData.score,
-        user: user || {
-          id: userIdNum,
-          username: "Unknown",
-          email: "",
-          bio: null,
-          profile_picture: null,
-          time_wallet: 0,
-          is_active: false,
-          is_admin: false,
-          date_joined: "",
-          name: "Unknown",
-          completed_sessions: 0,
-        },
-      };
-    })
-    .sort((a, b) => b.score - a.score);
-
-  return rankedUsers;
-};
+import {
+  fetchLeaderboard,
+  fetchUserLeaderboard,
+} from "../services/leaderboard";
+import { LeaderboardEntry } from "../store/types";
 
 const LeaderboardPage = () => {
-  const [leaderboard,setLeaderboard]=useState<any>(null);
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>("all-time");
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [allEntries, setAllEntries] = useState<LeaderboardEntry[]>([]);
-  const [isDataLoading, setIsDataLoading] = useState(true);
-
-  const { user: currentUser } = useAuthStore();
-
-
-
-  // src/pages/Leaderboard.tsx
-
-interface UserStats {
-  user: string;
-  total_hours_given: number;
-  sessions_completed: number;
-}
-
-interface LeaderboardResponse {
-  results: UserStats[];
-  count: number;
-  next?: string;
-  previous?: string;
-}
-
-const  Leaderboard = () => {
-  const [leaderboard, setLeaderboard] = useState<LeaderboardResponse | null>(null);
-  const [page, setPage] = useState<number>(1);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [currentUserData, setCurrentUserData] = useState<LeaderboardEntry | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const limit = 10;
 
-  useEffect(() => {
-    const loadLeaderboard = async () => {
-      const data = await fetchLeaderboard(page, limit);
-      setLeaderboard(data);
-    };
-
-    loadLeaderboard();
-  }, [page]);
-
-  return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4">Leaderboard</h2>
-
-      {leaderboard?.results?.length ? (
-        leaderboard.results.map((userStat, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-lg shadow p-4 mb-3 border"
-          >
-            <p className="font-bold text-lg">{userStat.user}</p>
-            <p>Total Hours: {userStat.total_hours_given}</p>
-            <p>Sessions Completed: {userStat.sessions_completed}</p>
-          </div>
-        ))
-      ) : (
-        <p>No data found.</p>
-      )}
-
-      <div className="flex gap-4 mt-4">
-        <Button
-          disabled={!leaderboard?.previous}
-          onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          Previous
-        </Button>
-        <Button
-          disabled={!leaderboard?.next}
-          onClick={() => setPage((prev) => prev + 1)}
-          className="bg-blue-500 text-white px-4 py-2 rounded disabled:opacity-50"
-        >
-          Next
-        </Button>
-      </div>
-    </div>
-  );
-};
-
-// export default Leaderboard;
-
-
-  //  const [page,setPage]= useState(1); //start on page 1
-  // const limit=10; //show 10 users per page
-  // // Load mock data
-
-  // useEffect(() => {
-  //   const loadMockData = async () => {
-  //     setIsDataLoading(true);
-  //     try{
-  //       const response =await fetch(
-  //         ` http://127.0.0.1:8000/leaderboard?page=${page}&limit=${limit}`
-  //       );
-  //       const data=await response.json();
-
-  //       setAllUsers(data.users);
-  //       setAllEntries(data.entries);
-  //     }catch(error){
-  //       console.error("Failed to load leaderboard",error);
-  //     }
-
-  //     setIsDataLoading(false);
-  //   };
-
-  //   loadMockData();
-  // }, [page]);
-
-  // Process and rank data
-  const rankedUsers = useMemo(() => {
-    if (isDataLoading || allUsers.length === 0 || allEntries.length === 0) {
-      return [];
-    }
-    return processAndRankLeaderboard(allUsers, allEntries, timePeriod);
-  }, [allUsers, allEntries, timePeriod, isDataLoading]);
-
-  // Calculate current user rank and points
-  const { currentUserRank, currentUserPoints } = useMemo(() => {
-    let rank: number | null = null;
-    let points: number | string = currentUser?.time_wallet || 0.0;
-    const currentUserId = currentUser?.id;
-
-    if (currentUserId !== null && rankedUsers.length > 0) {
-      const currentUserIndex = rankedUsers.findIndex(
-        (entry) => entry.user?.id === currentUserId
-      );
-
-      if (currentUserIndex >= 0) {
-        rank = currentUserIndex + 1;
-        points = rankedUsers[currentUserIndex].score;
-      } else {
-        rank = null;
-      }
-    } else if (currentUser !== null) {
-      points = currentUser.time_wallet;
-      rank = null;
-    } else {
-      points = "0.00";
-      rank = null;
-    }
-
-    return {
-      currentUserRank: rank,
-      currentUserPoints:
-        typeof points === "number" ? points.toFixed(2) : points,
-    };
-  }, [rankedUsers, currentUser]);
-
-  // Use useLocation for conditional width class in react-router-dom
+  const { user: currentUser } = useAuthStore();
   const location = useLocation();
   const widthClass = location.pathname.includes("/dashboard")
     ? "w-full lg:px-20"
     : "max-w-7xl mx-auto";
 
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await fetchLeaderboard(page, limit);
+        setLeaderboard(data);
+        setHasMore(data.length === limit); // if fewer results, no more pages
+        if (currentUser) {
+          const userData = await fetchUserLeaderboard(currentUser.id);
+          setCurrentUserData(userData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch leaderboard:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    loadData();
+  }, [page, currentUser]);
+
   return (
     <div className={`rounded-lg shadow-md p-4 md:p-6 ${widthClass}`}>
       <h1 className="text-4xl text-center mb-10 mt-5">Leaderboard</h1>
 
-      {/* Current User Stats Banner */}
       {currentUser && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center mb-1 md:mb-0">
+            <div className="flex items-center mb-2 md:mb-0">
               <div className="bg-blue-100 rounded-full p-1.5 mr-2">
-                {/* Use currentUser from store for the Avatar */}
                 <Avatar
                   src={currentUser.profile_picture}
                   fallback={currentUser.username || "U"}
                 />
               </div>
               <div>
-                <h3 className="text-md font-medium text-gray-900">
-                  Your Stats
-                </h3>
+                <h3 className="text-md font-medium text-gray-900">Your Stats</h3>
                 <p className="text-xs text-gray-500">
-                  {currentUserRank ? (
+                  {currentUserData ? (
                     <>
-                      Ranked{" "}
-                      <span className="font-bold">#{currentUserRank}</span> with{" "}
+                      You are ranked{" "}
+                      <span className="font-bold">#{currentUserData.sessions_completed}</span> with{" "}
+                      <span className="font-bold">{currentUserData.net_contribution}</span> points and{" "}
+                      <span className="font-bold">{currentUserData.sessions_completed}</span> sessions.
                     </>
                   ) : (
-                    `You're not ranked this ${
-                      timePeriod === "month" ? "month" : "period"
-                    }. Earn `
+                    "You're not ranked yet. Complete sessions to appear!"
                   )}
-                  <span className="font-bold">{currentUserPoints} credits</span>
                 </p>
               </div>
             </div>
-            {/* Use react-router-dom Link */}
-            <Link to={`/dashboard/settings`}>
-              {/* Button component wrapped by Link */}
+            <Link to="/dashboard/settings">
               <Button variant="link" size="sm">
                 View Profile
               </Button>
@@ -282,42 +84,25 @@ const  Leaderboard = () => {
         </div>
       )}
 
-      {/* Time Period Toggle and Title */}
-      <div className="flex flex-col md:flex-row md:justify-between md:items-center mb-4">
-        <h1 className="text-xl font-bold mb-2 md:mb-0">Top Contributors</h1>
-        <div className="flex space-x-2">
-          <Button
-            onClick={() => setTimePeriod("all-time")}
-            variant={timePeriod === "all-time" ? "default" : "outline"}
-            className="border"
-            disabled={isDataLoading}
-          >
-            All-Time
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-xl font-bold">Top Contributors</h2>
+        <div className="space-x-2">
+          <Button onClick={() => setPage((p) => Math.max(p - 1, 1))} disabled={page === 1 || isLoading}>
+            Previous
           </Button>
-          <Button
-            onClick={() => setTimePeriod("month")}
-            variant={timePeriod === "month" ? "default" : "outline"}
-            className="border"
-            disabled={isDataLoading}
-          >
-            This Month
+          <Button onClick={() => setPage((p) => p + 1)} disabled={!hasMore || isLoading}>
+            Next
           </Button>
         </div>
       </div>
 
-      {/* Main Loading State */}
-      {isDataLoading ? (
+      {isLoading ? (
         <div className="flex justify-center items-center h-48">
           <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
         </div>
       ) : (
-        <LeaderboardList rankedUsers={rankedUsers} />
+        <LeaderboardList rankedUsers={leaderboard} />
       )}
-      {/* <div>
-        <Button onClick={()=>setPage((p)=>Math.max(p-1,1))} disabled={page===1}>Previous</Button>
-        <span className="font-medium">page {page}</span>
-        <Button onClick={()=>setPage((p)=>p+1)}></Button>
-      </div> */}
     </div>
   );
 };

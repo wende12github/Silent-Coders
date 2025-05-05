@@ -2,7 +2,7 @@ from .models import Wallet, Transaction
 from django.core.exceptions import ValidationError
 
 def process_booking_confirmation(booking):
-    wallet = Wallet.objects.get(user=booking.requester)
+    wallet = Wallet.objects.get(user=booking.booked_by)
     if not wallet.has_sufficient_balance(booking.duration):
         raise ValidationError("Insufficient balance.")
 
@@ -16,7 +16,7 @@ def process_booking_confirmation(booking):
     )
 
 def process_booking_completion(booking):
-    wallet = Wallet.objects.get(user=booking.provider)
+    wallet = Wallet.objects.get(user=booking.booked_for)
     wallet.credit(booking.duration)
     Transaction.objects.create(
         wallet=wallet,

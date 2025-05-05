@@ -1,54 +1,55 @@
 import { Send, Trophy } from "lucide-react";
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom";
 import Tabs, { TabItem } from "../components/ui/Tabs";
 import { useAuthStore } from "../store/authStore";
 import {
-  allUsers,
-  ChatMessage,
   initialMockMessages,
-  mockLeaderboard,
+  LeaderboardEntry,
 } from "../store/types";
 import Avatar from "../components/ui/Avatar";
 import { Announcement } from "../store/types";
+import {
+  fetchGroupById,
+  getGroupLeaderboard,
+  fetchMyGroups,
+  fetchAllGroups,
+  Group,
+  AllGroups,
+  sendGroupMessage,
+  ChatMessage,
+  fetchGroupMessages
+} from "../services/groups";
 
-const GroupPage: React.FC = () => {
+const GroupsPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
+  const { groupId } = useParams<{ groupId: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMockMessages);
   const [newMessageText, setNewMessageText] = useState("");
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      handleSendMessage();
-    }
-  };
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-    }
-  }, [messages]);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
-  const handleSendMessage = () => {
-    if (newMessageText.trim() === "") return;
+  const [group, setGroup] = useState<Group | null>(null);
+  const [groupLeaderboard, setGroupLeaderboard] = useState<
+    LeaderboardEntry[] | null
+  >(null);
+  const [myGroups, setMyGroups] = useState<AllGroups[] | null>(
+    null
+  );
+  const [allGroups, setAllGroups] = useState<AllGroups[] | null>(null);
 
-    const newMessage: ChatMessage = {
-      id: messages.length + 1,
-      senderId: currentUser?.id || 0,
-      senderName: currentUser?.name || "Unknown User",
-      senderAvatar:
-        currentUser?.profile_picture ||
-        "https://placehold.co/100x100/ff7f7f/ffffff?text=AJ",
-      text: newMessageText,
-      timestamp: new Date().toISOString(),
-    };
+  const [isLoadingGroup, setIsLoadingGroup] = useState(false);
+  const [errorGroup, setErrorGroup] = useState<string | null>(null);
 
-    setMessages([...messages, newMessage]);
-    setNewMessageText("");
+  const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
+  const [errorLeaderboard, setErrorLeaderboard] = useState<string | null>(null);
 
-    console.log("Sending message:", newMessage);
-  };
-  const members = allUsers;
-  const leaderboard = mockLeaderboard;
+  const [isLoadingMyGroups, setIsLoadingMyGroups] = useState(false);
+  const [errorMyGroups, setErrorMyGroups] = useState<string | null>(null);
+
+  const [isLoadingAllGroups, setIsLoadingAllGroups] = useState(false);
+  const [errorAllGroups, setErrorAllGroups] = useState<string | null>(null);
 
   const mockAnnouncements: Announcement[] = [
     {
@@ -56,7 +57,15 @@ const GroupPage: React.FC = () => {
       title: "System Update Scheduled",
       content:
         "We will be performing a system update on May 5th. Expect downtime between 2:00 AM and 4:00 AM.",
-      author: allUsers[1],
+      author: {
+        id: 1,
+        username: "admin",
+        first_name: "Admin",
+        profile_picture: "",
+        email: "",
+        last_name: "",
+        user_skills: [],
+      },
       timestamp: "2025-05-01T10:00:00Z",
     },
     {
@@ -64,22 +73,201 @@ const GroupPage: React.FC = () => {
       title: "New Feature Release",
       content:
         "We&nbsp;re excited to introduce a new feature that enhances user experience. Check it out in your settings!",
-      author: allUsers[1],
+      author: {
+        id: 1,
+        username: "admin",
+        first_name: "Admin",
+        profile_picture: "",
+        email: "",
+        last_name: "",
+        user_skills: [],
+      },
       timestamp: "2025-05-02T09:30:00Z",
     },
     {
       id: "3",
       title: "Upcoming Event: Developer Meetup",
-      author: allUsers[1],
+      author: {
+        id: 1,
+        username: "admin",
+        first_name: "Admin",
+        profile_picture: "",
+        email: "",
+        last_name: "",
+        user_skills: [],
+      },
       content:
         "Join us for an exclusive developer meetup on May 10th! Register now to secure your spot.",
-
       timestamp: "2025-05-02T11:00:00Z",
     },
   ];
+
+  useEffect(() => {
+    if (!groupId) return;
+
+    const loadGroup = async () => {
+      setIsLoadingGroup(true);
+      try {
+        const data = await fetchGroupById(groupId);
+        setGroup(data);
+      } catch (error: any) {
+        console.error(`Error fetching group ${groupId}:`, error);
+        setErrorGroup(`Failed to fetch group: ${error.message}`);
+      } finally {
+        setIsLoadingGroup(false);
+      }
+    };
+
+    loadGroup();
+  }, [groupId]);
+
+  useEffect(() => {
+    if (!groupId) return;
+
+    const loadLeaderboard = async () => {
+      setIsLoadingLeaderboard(true);
+      try {
+        const data = await getGroupLeaderboard(groupId);
+        setGroupLeaderboard(data);
+      } catch (error: any) {
+        console.error(
+          `Error fetching leaderboard for group ${groupId}:`,
+          error
+        );
+        setErrorLeaderboard(`Failed to fetch leaderboard: ${error.message}`);
+      } finally {
+        setIsLoadingLeaderboard(false);
+      }
+    };
+
+    loadLeaderboard();
+  }, [groupId]);
+
+  useEffect(() => {
+    const loadMyGroups = async () => {
+      setIsLoadingMyGroups(true);
+      try {
+        const data = await fetchMyGroups();
+        setMyGroups(data);
+      } catch (error: any) {
+        console.error("Error fetching all groups:", error);
+        setErrorMyGroups(`Failed to fetch all groups: ${error.message}`);
+      } finally {
+        setIsLoadingMyGroups(false);
+      }
+    };
+
+    loadMyGroups();
+  }, []);
+
+  useEffect(() => {
+    const loadAllGroups = async () => {
+      setIsLoadingAllGroups(true);
+      try {
+        const data = await fetchAllGroups();
+        setAllGroups(data);
+      } catch (error: any) {
+        console.error("Error fetching all groups:", error);
+        setErrorAllGroups(`Failed to fetch all groups: ${error.message}`);
+      } finally {
+        setIsLoadingAllGroups(false);
+      }
+    };
+
+    loadAllGroups();
+  }, []);
+
+  useEffect(() => {
+    if (!group?.name) return;
+  
+    const loadMessages = async () => {
+      setIsLoadingMessages(true);
+      try {
+        const fetchedMessages = await fetchGroupMessages(group.name);
+        setMessages(() => fetchedMessages);
+      } catch (error) {
+        console.error("Failed to load messages:", error);
+        // Keep existing messages if reload fails
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+  
+    loadMessages();
+  }, [group?.name]); // Re-fetch when group changes
+
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      handleSendMessage();
+    }
+  };
+
+  const handleSendMessage = async () => {
+    if (newMessageText.trim() === "") return;
+
+    if (!group?.name) {
+      console.error("No group name available");
+      return;
+    }
+  
+    const tempId = Date.now();
+  
+    const newMessage: ChatMessage = {
+      id: tempId,
+      senderId: currentUser?.id || 0,
+      senderName: currentUser?.first_name || "Unknown User",
+      senderAvatar:
+        currentUser?.profile_picture ||
+        `https://placehold.co/100x100/ff7f7f/ffffff?text=${
+          currentUser?.first_name?.charAt(0) ||
+          currentUser?.username?.charAt(0) ||
+          "U"
+        }`,
+      text: newMessageText,
+      timestamp: new Date().toISOString(),
+      status: 'sending',
+    };
+  
+    setMessages(prev => [...prev, newMessage]);
+    setNewMessageText("");
+  
+    try {
+      const response = await sendGroupMessage({
+        is_group_chat: true,
+        message: newMessageText,
+        room_name: group.name// Replace with your room name
+      });
+  
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId
+          ? {
+              ...msg,
+              timestamp: response.created_at,
+              status: 'delivered',
+            }
+          : msg
+      ));
+    } catch (error) {
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId
+          ? {
+              ...msg,
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Failed to send',
+            }
+          : msg
+      ));
+    }
+  };
+
   const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
-
     return date.toLocaleDateString(undefined, {
       year: "numeric",
       month: "long",
@@ -88,6 +276,36 @@ const GroupPage: React.FC = () => {
       minute: "2-digit",
     });
   };
+
+  const renderContent = (
+    isLoading: boolean,
+    error: string | null,
+    data: any[] | null,
+    renderData: (data: any[]) => React.ReactNode,
+    emptyMessage: string
+  ) => {
+    if (isLoading) {
+      return (
+        <div className="text-center py-4 text-gray-500 text-sm">Loading...</div>
+      );
+    }
+    if (error) {
+      return (
+        <div className="text-center py-4 text-red-500 text-sm">
+          Error: {error}
+        </div>
+      );
+    }
+    if (!data || data.length === 0) {
+      return (
+        <div className="text-center py-4 text-gray-500 text-sm">
+          {emptyMessage}
+        </div>
+      );
+    }
+    return renderData(data);
+  };
+
   const communityTabs: TabItem[] = [
     {
       value: "general",
@@ -98,6 +316,7 @@ const GroupPage: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-800 mb-6">
               Announcements
             </h2>
+
             {mockAnnouncements.length === 0 ? (
               <p className="text-gray-600">
                 No announcements available at this time.
@@ -115,9 +334,9 @@ const GroupPage: React.FC = () => {
                     <p
                       className="text-gray-700 mb-3"
                       dangerouslySetInnerHTML={{ __html: announcement.content }}
-                    ></p>{" "}
+                    ></p>
                     <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>Posted by: {announcement.author.name}</span>
+                      <span>Posted by: {announcement.author.first_name}</span>
                       <span>{formatTimestamp(announcement.timestamp)}</span>
                     </div>
                   </div>
@@ -129,29 +348,42 @@ const GroupPage: React.FC = () => {
             <h1 className="text-2xl font-bold tracking-tight text-gray-900">
               Members
             </h1>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {members.map((member) => (
-                <div
-                  key={member.id}
-                  className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4 hover:shadow-md transition"
-                >
-                  <Avatar
-                    fallback={member.name || "U"}
-                    src={member.profile_picture}
-                    alt={member.name}
-                    className="w-14 h-14 rounded-full object-cover"
-                  />
-                  <div>
-                    <p className="text-lg font-semibold text-gray-800">
-                      {member.name}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      {member.time_wallet} Credits
-                    </p>
-                  </div>
+
+            {renderContent(
+              isLoadingGroup,
+              errorGroup,
+              group?.members || [],
+              (members) => (
+                <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                  {Array.isArray(members) &&
+                    members.map((member: { email: string; name: string }) => (
+                      <div
+                        key={member.email}
+                        className="bg-white rounded-lg shadow-sm p-4 flex items-center space-x-4 hover:shadow-md transition"
+                      >
+                        <Avatar
+                          fallback={member.name?.charAt(0) || "U"}
+                          src={`https://placehold.co/100x100/ff7f7f/ffffff?text=${
+                            member.name?.charAt(0) || "U"
+                          }`}
+                          alt={member.name}
+                          className="w-14 h-14 rounded-full object-cover"
+                        />
+                        <div>
+                          <p className="text-lg font-semibold text-gray-800">
+                            {member.name}
+                          </p>
+
+                          {/* <p className="text-sm text-gray-500">
+                                    {member.credits} Credits
+                                </p> */}
+                        </div>
+                      </div>
+                    ))}
                 </div>
-              ))}
-            </div>
+              ),
+              "No members found for this group."
+            )}
           </div>
         </div>
       ),
@@ -165,7 +397,12 @@ const GroupPage: React.FC = () => {
             ref={messagesEndRef}
             className="flex-1 overflow-y-auto p-4 space-y-4"
           >
-            {messages.map((message) => (
+            {isLoadingMessages ? (
+              <div className="text-center py-4 text-gray-500">Loading messages...</div>
+            ) : messages.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">No messages yet</div>
+            ) : (
+            messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -173,7 +410,7 @@ const GroupPage: React.FC = () => {
                 }`}
               >
                 <Avatar
-                  fallback="U"
+                  fallback={message.senderName?.charAt(0) || "U"}
                   src={message.senderAvatar}
                   alt={message.senderName}
                   className="w-8 h-8 rounded-full object-cover"
@@ -209,7 +446,8 @@ const GroupPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-            ))}
+            ))
+          )}
           </div>
           <div className="border-t border-gray-200 p-4 flex items-center gap-3">
             <input
@@ -236,65 +474,104 @@ const GroupPage: React.FC = () => {
       label: "Leaderboard",
       content: (
         <div className="overflow-x-auto">
-          <table className="min-w-full bg-white rounded-md shadow-sm overflow-hidden">
-            <thead className="bg-gray-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Rank
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Time Credits
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {leaderboard.map((member, index) => (
-                <tr key={member.id} className="border-t border-gray-200">
-                  {" "}
-                  <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
-                    {index === 0 ? (
-                      <span className="inline-flex items-center font-semibold text-yellow-500">
-                        <Trophy className="h-5 w-5 mr-1" /> 1
-                      </span>
-                    ) : (
-                      index + 1
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap flex items-center space-x-3">
-                    <Avatar
-                      fallback={member.user.name || "U"}
-                      src={member.user.profile_picture}
-                      alt={member.user.name}
-                      className="w-8 h-8 rounded-full"
-                    />
-                    <span className="text-sm font-medium text-gray-800">
-                      {member.user.name}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {member.user.time_wallet} credits
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {renderContent(
+            isLoadingLeaderboard,
+            errorLeaderboard,
+            groupLeaderboard,
+            (leaderboard) => (
+              <table className="min-w-full bg-white rounded-md shadow-sm overflow-hidden">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Rank
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Time Credits
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {Array.isArray(leaderboard) &&
+                    leaderboard.map((entry, index) => (
+                      <tr
+                        key={entry.user.id}
+                        className="border-t border-gray-200"
+                      >
+                        <td className="px-6 py-4 text-sm text-gray-700 whitespace-nowrap">
+                          {index === 0 ? (
+                            <span className="inline-flex items-center font-semibold text-yellow-500">
+                              <Trophy className="h-5 w-5 mr-1" /> 1
+                            </span>
+                          ) : (
+                            index + 1
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap flex items-center space-x-3">
+                          <Avatar
+                            fallback={
+                              entry.user.first_name?.charAt(0) ||
+                              entry.user.username?.charAt(0) ||
+                              "U"
+                            }
+                            src={entry.user.profile_picture}
+                            alt={entry.user.first_name || entry.user.username}
+                            className="w-8 h-8 rounded-full"
+                          />
+                          <span className="text-sm font-medium text-gray-800">
+                            {entry.user.first_name || entry.user.username}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {entry.net_contribution} credits
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            ),
+            "No leaderboard data available for this group."
+          )}
         </div>
       ),
     },
   ];
 
+  if (isLoadingGroup && !group) {
+    return (
+      <div className="text-center py-10 text-gray-500">
+        Loading group details...
+      </div>
+    );
+  }
+
+  if (errorGroup && !group) {
+    return (
+      <div className="text-center py-10 text-red-500">
+        Error loading group: {errorGroup}
+      </div>
+    );
+  }
+
+  if (!group && !errorGroup) {
+    return (
+      <div className="text-center py-10 text-gray-500">
+        Please provide a valid group ID.
+      </div>
+    );
+  }
+
   return (
-    <div className="p-6 space-y-6 min-h-screen">
+    <div className="p-6 space-y-6 flex-grow">
       <div className="max-w-7xl mx-auto">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-gray-900">
-            Community
+            {group?.name || "Community"}
           </h1>
           <p className="text-gray-600 mt-1">
-            Browse members and check the leaderboard
+            {group?.description || "Browse members and check the leaderboard"}
           </p>
         </div>
         <div className="mt-6">
@@ -304,9 +581,68 @@ const GroupPage: React.FC = () => {
             tabsListClassName="mb-4"
           />
         </div>
+
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">My Groups</h2>
+          {renderContent(
+            isLoadingMyGroups,
+            errorMyGroups,
+            myGroups,
+            (groups) => (
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {Array.isArray(groups) &&
+                  groups.map((myGroup) => (
+                    <div
+                      key={myGroup.id}
+                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition"
+                    >
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {myGroup.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {myGroup.description}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            ),
+            "You are not a member of any groups yet."
+          )}
+        </div>
+
+        <div className="mt-10">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Groups</h2>
+          {renderContent(
+            isLoadingAllGroups,
+            errorAllGroups,
+            allGroups,
+            (groups) => (
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                {Array.isArray(groups) &&
+                  groups.map((allGroup) => (
+                    <div
+                      key={allGroup.id}
+                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition"
+                    >
+                      <h3 className="text-lg font-semibold text-gray-800">
+                        {allGroup.name}
+                      </h3>
+                      <p className="text-sm text-gray-600 mt-1">
+                        {allGroup.description}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-2">
+                        Members: {allGroup.member_count}
+                      </p>
+                    </div>
+                  ))}
+              </div>
+            ),
+            "No groups available."
+          )}
+        </div>
       </div>
     </div>
   );
 };
 
-export default GroupPage;
+export default GroupsPage;

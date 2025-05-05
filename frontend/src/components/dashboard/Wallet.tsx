@@ -1,7 +1,6 @@
 "use client";
-
-import { useState } from "react";
-import { useAuthStore } from "../../store/authStore";
+import { useState, useMemo } from "react";
+import { useWallet } from "../../hooks/useWallet";
 import {
   Card,
   CardContent,
@@ -10,7 +9,6 @@ import {
   CardTitle,
 } from "../ui/Card";
 import Tabs, { TabItem } from "../ui/Tabs";
-
 import Button from "../ui/Button";
 import {
   Clock,
@@ -31,58 +29,60 @@ import {
 } from "../ui/Table";
 
 export default function WalletPage() {
-  const { user, transactions: initialTransactions } = useAuthStore();
-  const [transactions] = useState(initialTransactions);
+  const { balance, transactions, isLoading, error } = useWallet();
+
   const [timeRange, setTimeRange] = useState("all");
 
-  // Filter transactions based on time range
-  const filteredTransactions = transactions.filter((transaction) => {
-    if (timeRange === "all") return true;
+  const filteredTransactions = useMemo(() => {
+    if (!transactions || transactions.length === 0) return [];
 
-    const transactionDate = parseISO(transaction.timestamp);
     const now = new Date();
+    now.setHours(0, 0, 0, 0); // Reset time to midnight
 
-    switch (timeRange) {
-      case "week":
-        const oneWeekAgo = new Date(
-          now.getFullYear(),
-          now.getMonth(),
-          now.getDate() - 7
-        );
-        console.log(transactionDate, oneWeekAgo)
-        return transactionDate >= oneWeekAgo;
-      case "month":
-        const oneMonthAgo = new Date(
-          now.getFullYear(),
-          now.getMonth() - 1,
-          now.getDate()
-        );
-        console.log('Transaction:', transactionDate.toISOString());
-console.log('Cutoff:', oneMonthAgo.toISOString());
-console.log('Valid:', transactionDate >= oneMonthAgo);
+    return transactions.filter((transaction) => {
+      if (timeRange === "all") return true;
 
-        return transactionDate >= oneMonthAgo;
-      case "year":
-        const oneYearAgo = new Date(
-          now.getFullYear() - 1,
-          now.getMonth(),
-          now.getDate()
-        );
-        console.log(transactionDate, oneYearAgo)
-        return transactionDate >= oneYearAgo;
-      default:
-        return true;
-    }
-  });
+      const transactionDate = new Date(transaction.timestamp);
+      transactionDate.setHours(0, 0, 0, 0);
 
-  // Calculate statistics
-  const totalEarned = filteredTransactions
-    .filter((t) => t.amount > 0)
-    .reduce((sum, t) => sum + t.amount, 0);
+      switch (timeRange) {
+        case "week":
+          const oneWeekAgo = new Date(now);
+          oneWeekAgo.setDate(now.getDate() - 7);
+          return transactionDate >= oneWeekAgo;
+        case "month":
+          const oneMonthAgo = new Date(now);
+          oneMonthAgo.setMonth(now.getMonth() - 1);
+          return transactionDate >= oneMonthAgo;
+        case "year":
+          const oneYearAgo = new Date(now);
+          oneYearAgo.setFullYear(now.getFullYear() - 1);
+          return transactionDate >= oneYearAgo;
+        default:
+          return true;
+      }
+    });
+  }, [transactions, timeRange]);
 
-  const totalSpent = filteredTransactions
-    .filter((t) => t.amount < 0)
-    .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+  const { totalEarned, totalSpent } = useMemo(() => {
+    let earned = 0;
+    let spent = 0;
+
+    filteredTransactions.forEach((t) => {
+      if (t.amount > 0) earned += t.amount;
+      if (t.amount < 0) spent += Math.abs(t.amount);
+    });
+
+    return { totalEarned: earned, totalSpent: spent };
+  }, [filteredTransactions]);
+
+  if (error) {
+    return <div className="p-6 text-red-500">{error}</div>;
+  }
+
+  if (isLoading) {
+    return <div className="p-6">Loading wallet data...</div>;
+  }
 
   const walletTabs: TabItem[] = [
     {
@@ -288,7 +288,7 @@ console.log('Valid:', transactionDate >= oneMonthAgo);
             <CardTitle className="text-3xl">
               <div className="flex items-center">
                 <Clock className="mr-2 h-5 w-5 text-primary" />
-                {user?.time_wallet} hrs
+                {balance} hrs
               </div>
             </CardTitle>
           </CardHeader>

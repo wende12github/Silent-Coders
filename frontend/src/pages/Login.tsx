@@ -6,10 +6,9 @@ import { useNavigate } from "react-router-dom";
 
 import Button from "../components/ui/Button";
 import { Input } from "../components/ui/Form";
-import { useAuthStore } from "../store/authStore";
 import { toast } from "sonner";
+import { useLogin } from "../hooks/hooks";
 
-// Define Zod schema
 const loginSchema = z.object({
   email: z
     .string()
@@ -23,7 +22,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 const Login: React.FC = () => {
   const navigate = useNavigate();
 
-  const { login } = useAuthStore();
+  const { login } = useLogin();
   const [loading, setIsLoading] = useState(false);
 
   const [formData, setFormData] = useState<LoginFormData>({
@@ -90,8 +89,8 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-8">
+    <div className="py-10 flex-grow flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-10">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
             Welcome back

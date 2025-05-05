@@ -4,12 +4,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from .serializers import LoginSerializer, TokenObtainPairSerializer, UserSerializer, UserProfileSerializer, UserSkillSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .serializers import UserSerializer, UserProfileSerializer, UserSkillSerializer
-from .models import UserSkill
+from .serializers import (
+    LoginSerializer,
+    TokenObtainPairSerializer,
+    UserSerializer,
+    UserProfileSerializer,
+    PublicUserSerializer,
+    UserSkillSerializer,
+    UserProfileUpdateSerializer,
+    PasswordChangeSerializer,
+    EmailPreferenceSerializer
+)
+from .models import UserSkill, EmailNotificationPreference
 from django.contrib.auth import get_user_model
+from notifications.services import notify_user
 
 
 User = get_user_model()
@@ -98,7 +108,43 @@ class EndorseUserSkillView(APIView):
             skill.endorsements += 1
             skill.save()
             request.session[key] = True
+            notify_user(skill.user, "review", f"Your skill '{skill.skill.name}' was endorsed!")
             return Response(UserSkillSerializer(skill).data)
 
         except UserSkill.DoesNotExist:
             return Response({"detail": "Skill not found."}, status=status.HTTP_404_NOT_FOUND)
+
+class UpdateProfileView(generics.UpdateAPIView):
+    serializer_class = UserProfileUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+
+class UpdatePasswordView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def post(self, request):
+        serializer = PasswordChangeSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.validated_data['old_password']):
+                return Response({'detail': 'Wrong old password.'}, status=400)
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({'detail': 'Password updated successfully.'})
+        return Response(serializer.errors, status=400)
+
+
+class UpdateEmailPreferencesView(generics.RetrieveUpdateAPIView):
+    serializer_class = EmailPreferenceSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        preferences, created = EmailNotificationPreference.objects.get_or_create(user=self.request.user)
+        return preferences
+class PublicUserDetailView(generics.RetrieveAPIView):
+    queryset = User.objects.all()
+    serializer_class = PublicUserSerializer
+    permission_classes = [permissions.AllowAny]  

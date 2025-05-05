@@ -15,6 +15,7 @@ import Avatar from "../ui/Avatar";
 import { useAuthStore } from "../../store/authStore";
 
 import { useThemeStore } from "../../store/themeStore";
+import { useLogout } from "../../hooks/hooks";
 
 const ThemeToggle: React.FC = () => {
   const { theme, toggleTheme } = useThemeStore();
@@ -25,9 +26,7 @@ const ThemeToggle: React.FC = () => {
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      <span className="w-5 h-5 rounded-full">
-        {theme === "dark" ? <Moon /> : <Sun />}
-      </span>
+      {theme === "dark" ? <Moon /> : <Sun />}
     </Button>
   );
 };
@@ -37,13 +36,15 @@ const MobileNav: React.FC = () => {
 
   return (
     <div>
-      <button
-        className="p-2 rounded-md hover:bg-gray-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 md:hidden"
+      <Button
+        size="icon"
+        variant="ghost"
+        className="md:hidden"
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Toggle mobile navigation"
       >
         <Menu />
-      </button>
+      </Button>
 
       <AnimatePresence>
         {isOpen && (
@@ -71,16 +72,17 @@ const MobileNav: React.FC = () => {
   );
 };
 export default function DashboardHeader() {
-  const { user, logout } = useAuthStore();
+  const { user } = useAuthStore();
 
   if (!user) return null;
+  const { logout } = useLogout();
 
   return (
     <header className="sticky top-0 z-30 flex min-h-14 items-center gap-4 border-b border-border bg-white px-4 sm:px-6 ">
       <MobileNav />
       <div className="flex-1" />
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="default" className="h-8 w-8 p-0">
+        <Button variant="ghost" size="icon">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
         </Button>
@@ -91,8 +93,8 @@ export default function DashboardHeader() {
             <button className="relative rounded-full p-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 cursor-pointer">
               <Avatar
                 src={user.profile_picture}
-                alt={user.name}
-                fallback={user.name || "John Doe"}
+                alt={user.first_name || "U"}
+                fallback={user.first_name || "John Doe"}
                 className=""
               />
             </button>

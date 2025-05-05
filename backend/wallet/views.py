@@ -10,6 +10,9 @@ from .serializers import WalletSerializer, TransactionSerializer
 from .permissions import IsSender
 from django.conf import settings
 from django.core.mail import send_mail
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 User = settings.AUTH_USER_MODEL
 
@@ -23,6 +26,11 @@ class TransactionPagination(PageNumberPagination):
 class WalletView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
+    @swagger_auto_schema(
+        operation_description="Retrieve the authenticated user's wallet balance.",
+        responses={200: WalletSerializer()}
+    )
+
     def get(self, request):
         wallet = Wallet.objects.get(user=request.user)
         serializers = WalletSerializer(wallet)
@@ -31,6 +39,25 @@ class WalletView(APIView):
 # Transfer Time View (making the tansaction Manually)
 class AdminTransferTimeView(APIView):
     permission_classes = [IsAdminUser]
+
+    @swagger_auto_schema(
+        operation_description="Transfer time (currency) from admin to another user manually.",
+        request_body=openapi.Schema(
+            type=openapi.TYPE_OBJECT,
+            required=['receiver_id', 'amount'],
+            properties={
+                'receiver_id': openapi.Schema(type=openapi.TYPE_INTEGER, description='ID of the receiver user'),
+                'amount': openapi.Schema(type=openapi.TYPE_NUMBER, format='float', description='Amount to transfer'),
+                'reason': openapi.Schema(type=openapi.TYPE_STRING, description='Reason for transfer', default="")
+            }
+        ),
+        responses={
+            200: openapi.Response(description="Transfer successful"),
+            400: openapi.Response(description="Insufficient balance or invalid input"),
+            404: openapi.Response(description="Receiver not found"),
+            500: openapi.Response(description="Transaction failed")
+        }
+    )
 
     def post(self, request):
         sender = request.user
@@ -74,6 +101,21 @@ class TransactionHistoryView(ListAPIView):
     queryset = Transaction.objects.all().order_by('-created_at')
     serializer_class = TransactionSerializer
     pagination_class = TransactionPagination
+
+    @swagger_auto_schema(
+        operation_description="Get list of transactions with optional filters for 'earned' or 'spent'.",
+        manual_parameters=[
+            openapi.Parameter(
+                'type',
+                openapi.IN_QUERY,
+                description="Filter by type: 'earned' or 'spent'",
+                type=openapi.TYPE_STRING
+            )
+        ],
+        responses={200: TransactionSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
         filter_type = self.request.query_params.get('type', None)

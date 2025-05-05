@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from leaderboard.services import update_user_stats
 from rest_framework import generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.response import Response
 from django.db import models
@@ -9,8 +9,8 @@ from rest_framework.views import APIView
 from rest_framework.generics import RetrieveAPIView, UpdateAPIView
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
-from .models import AvailabilitySlot, Booking, BookingStatus
-from .serializers import AvailabilitySlotSerializer, BookingCreateSerializer, BookingActionSerializer, BookingDetailSerializer, BookingRescheduleSerializer, ReviewSerializer
+from .models import AvailabilitySlot, Booking, BookingStatus, Review
+from .serializers import AvailabilitySlotSerializer, BookingCancelSerializer, BookingCreateSerializer, BookingActionSerializer, BookingDetailSerializer, BookingRescheduleSerializer, BookingStatusOnlySerializer, ReviewSerializer
 from wallet.utils import process_booking_confirmation, process_booking_completion
 
 
@@ -19,6 +19,9 @@ class BookingCreateView(generics.CreateAPIView):
     serializer_class = BookingCreateSerializer
     permission_classes = [IsAuthenticated]
 
+    def perform_create(self, serializer):
+        serializer.save(booked_by=self.request.user)
+    
     @swagger_auto_schema(
         operation_description="Create a new booking.",
         responses={201: BookingCreateSerializer(), 400: "Validation error"}
@@ -40,79 +43,60 @@ class BookingListView(generics.ListAPIView):
 
     def get_queryset(self):
         user = self.request.user
-        return Booking.objects.filter(models.Q(requester=user) | models.Q(provider=user))
+        return Booking.objects.filter(models.Q(booked_by=user) | models.Q(booked_for=user))
 
 
 class BookingConfirmView(generics.UpdateAPIView):
     queryset = Booking.objects.all()
-    serializer_class = BookingActionSerializer
+    serializer_class = BookingStatusOnlySerializer
     permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_description="Confirm a pending booking (provider only).",
-        responses={200: BookingActionSerializer(), 403: "Forbidden", 400: "Invalid booking state"}
-    )
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         booking = self.get_object()
-        if self.request.user != booking.provider:
-            raise PermissionDenied("Only provider can confirm the booking.")
+        if self.request.user != booking.booked_for:
+            raise PermissionDenied("Only booked_for can confirm the booking.")
         if booking.status != BookingStatus.PENDING:
             raise ValidationError("Booking must be pending to confirm.")
+
+        process_booking_confirmation(booking)
+        serializer.save(status=BookingStatus.CONFIRMED)
         
-        # Wallet deduction (requester pays at confirmation)
+        # Wallet deduction (booked_by pays at confirmation)
         process_booking_confirmation(booking)
         serializer.save(status=BookingStatus.CONFIRMED)
 
 
-class BookingCancelView(generics.UpdateAPIView):
+class BookingCancelView(UpdateAPIView):
     queryset = Booking.objects.all()
-    serializer_class = BookingActionSerializer
+    serializer_class = BookingCancelSerializer
     permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_description="Cancel a booking (requester or provider).",
-        responses={200: BookingActionSerializer(), 400: "Invalid booking state", 403: "Forbidden"}
-    )
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
 
     def perform_update(self, serializer):
         booking = self.get_object()
-        if self.request.user not in [booking.requester, booking.provider]:
-            raise PermissionDenied("Only requester or provider can cancel.")
+        if self.request.user not in [booking.booked_by, booking.booked_for]:
+            raise PermissionDenied("Only booked_by or booked_for can cancel.")
         if booking.status in [BookingStatus.CANCELLED, BookingStatus.COMPLETED]:
             raise ValidationError("Cannot cancel completed or already cancelled bookings.")
+
         serializer.save(status=BookingStatus.CANCELLED)
 
 
-class BookingCompleteView(generics.UpdateAPIView):
-    queryset = Booking.objects.all()
-    serializer_class = BookingActionSerializer
-    permission_classes = [IsAuthenticated]
 
-    @swagger_auto_schema(
-        operation_description="Complete a booking (provider only).",
-        responses={200: BookingActionSerializer(), 400: "Invalid booking state", 403: "Forbidden"}
-    )
-    def patch(self, request, *args, **kwargs):
-        return super().patch(request, *args, **kwargs)
+class BookingCompleteView(UpdateAPIView):
+    queryset = Booking.objects.all()
+    serializer_class = BookingStatusOnlySerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_update(self, serializer):
         booking = self.get_object()
-        if self.request.user != booking.provider:
-            raise PermissionDenied("Only provider can complete the session.")
+        if self.request.user != booking.booked_for:
+            raise PermissionDenied("Only booked_for can complete the session.")
         if booking.status != BookingStatus.CONFIRMED:
             raise ValidationError("Booking must be confirmed before completing.")
-        
-        # Wallet credit (provider receives points on completion)
-        process_booking_completion(booking)
 
+        process_booking_completion(booking)
         serializer.save(status=BookingStatus.COMPLETED)
-        
-        update_user_stats(booking.provider) #Update user stats
+        update_user_stats(booking.booked_for)#Update user stats
 
 
 
@@ -120,12 +104,12 @@ class MyBookingsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="Get all bookings where the user is requester or provider.",
+        operation_description="Get all bookings where the user is booked_by or booked_for.",
         responses={200: BookingDetailSerializer(many=True)}
     )
     def get(self, request):
         user = request.user
-        bookings = Booking.objects.filter(models.Q(requester=user) | models.Q(provider=user)).order_by('-scheduled_time')
+        bookings = Booking.objects.filter(models.Q(booked_by=user) | models.Q(booked_for=user)).order_by('-scheduled_time')
         serializer = BookingDetailSerializer(bookings, many=True)
         return Response(serializer.data)
 
@@ -145,7 +129,7 @@ class BookingDetailView(RetrieveAPIView):
     def get_object(self):
         obj = super().get_object()
         user = self.request.user
-        if obj.requester != user and obj.provider != user:
+        if obj.booked_by != user and obj.booked_for != user:
             raise PermissionDenied("You are not allowed to view this booking.")
         return obj
 
@@ -156,7 +140,7 @@ class BookingRescheduleView(UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_description="Reschedule a booking (only requester can reschedule).",
+        operation_description="Reschedule a booking (only booked_by can reschedule).",
         responses={200: BookingRescheduleSerializer(), 403: "Forbidden"}
     )
     def patch(self, request, *args, **kwargs):
@@ -164,12 +148,13 @@ class BookingRescheduleView(UpdateAPIView):
 
     def perform_update(self, serializer):
         booking = self.get_object()
-        if self.request.user != booking.requester:
-            raise PermissionDenied("Only the requester can reschedule the booking.")
+        if self.request.user != booking.booked_by:
+            raise PermissionDenied("Only the booked_by can reschedule the booking.")
         serializer.save()
 
 
 class SubmitReviewView(generics.CreateAPIView):
+    queryset = Review.objects.all() 
     serializer_class = ReviewSerializer
     permission_classes = [IsAuthenticated]
 
@@ -196,4 +181,24 @@ class AvailabilitySlotListCreateView(generics.ListCreateAPIView):
     serializer_class = AvailabilitySlotSerializer
 
     def get_queryset(self):
-        return AvailabilitySlot.objects.filter(provider=self.request.user)
+        return AvailabilitySlot.objects.filter(booked_for=self.request.user)
+    
+
+class AvailabilitySlotDetailView(generics.RetrieveUpdateDestroyAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = AvailabilitySlotSerializer
+    queryset = AvailabilitySlot.objects.all()
+
+    def get_object(self):
+        obj = super().get_object()
+        if obj.booked_for != self.request.user:
+            raise PermissionDenied("You do not have permission to modify this slot.")
+        return obj
+    
+class UserAvailabilityView(generics.ListAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = AvailabilitySlotSerializer
+
+    def get_queryset(self):
+        user_id = self.kwargs['user_id']
+        return AvailabilitySlot.objects.filter(booked_for__id=user_id)

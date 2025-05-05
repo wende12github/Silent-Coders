@@ -3,12 +3,12 @@ export interface User {
   id: number;
   email: string;
   username: string;
-  name: string;
+  first_name: string;
+  last_name: string;
   bio?: string | null;
   profile_picture?: string | null; // URI
   user_skills: number[]; // unique integers
   availability?: string | null;
-  // is_provider: boolean;
 }
 
 export interface Skill {
@@ -24,6 +24,28 @@ export interface Skill {
   created_at?: string;
   updated_at?: string;
 }
+// { booked_for: number; skill: number; scheduled_time: any; duration: number; booked_by: number; }
+export interface Booking {
+  id: number;
+  booked_by: string;
+  booked_for: string | number;
+  skill: Skill | number;
+  status?: "pending" | "confirmed" | "completed" | "cancelled";
+  scheduled_time: string;
+  duration?: number;
+  created_at?: string;
+  cancel_reason?: string | null;
+}
+
+export interface Notification {
+  id: number;
+  type: "booking_request" | "booking_status" | "message" | "review";
+  content: string;
+  is_read: boolean;
+  created_at: string;
+  user: number;
+}
+
 
 /* OLD TYPES */
 
@@ -39,16 +61,16 @@ export interface Skill {
 //   location: "local" | "remote";
 // };
 
-export type Session = {
-  id: number;
-  scheduled_time: string;
-  duration: number;
-  status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
-  created_at: string;
-  skill: Skill;
-  requester: User;
-  provider: User;
-};
+// export type Session = {
+//   id: number;
+//   scheduled_time: string;
+//   duration: number;
+//   status: "Pending" | "Confirmed" | "Completed" | "Cancelled";
+//   created_at: string;
+//   skill: Skill;
+//   requester: User;
+//   provider: User;
+// };
 
 export type WalletTransaction = {
   id: number;
@@ -58,10 +80,10 @@ export type WalletTransaction = {
 };
 
 export type LeaderboardEntry = {
-  id: number;
-  week: number;
-  score: number;
-  timestamp: string;
+  total_hours_given: number;
+  total_hours_received: number;
+  sessions_completed: number;
+  net_contribution: string;
   user: User;
 };
 
@@ -123,7 +145,8 @@ export const mockUser: User = {
   id: 1,
   email: "john.doe@example.com",
   username: "johndoe",
-  name: "John Doe",
+  first_name: "John",
+  last_name: "Doe",
   bio: "Computer Science student passionate about web development and machine learning.",
   profile_picture: "/placeholder.svg?height=200&width=200",
   user_skills: [],
@@ -134,7 +157,8 @@ const saraAhmed: User = {
   id: 2,
   email: "sara@example.com",
   username: "saradev",
-  name: "Sara Ahmed",
+  first_name: "Sara",
+  last_name: "Ahmed",
   bio: "Frontend developer specializing in React",
   profile_picture: null,
   user_skills: [],
@@ -144,7 +168,8 @@ const michaelJohnson: User = {
   id: 3,
   email: "michael@example.com",
   username: "michaelj",
-  name: "Michael Johnson",
+  first_name: "Michael",
+  last_name: "Johnson",
   bio: "Beginner programmer looking to improve",
   profile_picture: null,
   user_skills: [],
@@ -154,7 +179,8 @@ const alexChen: User = {
   id: 4,
   email: "alex@example.com",
   username: "alextech",
-  name: "Alex Chen",
+  first_name: "Alex",
+  last_name: "Chen",
   bio: "Teaching programming for 3 years",
   profile_picture: null,
   user_skills: [],
@@ -165,7 +191,8 @@ const emilyDavis: User = {
   id: 5,
   email: "emily.davis@example.com",
   username: "emilyd",
-  name: "Emily Davis",
+  first_name: "Emily",
+  last_name: "Davis",
   bio: "Graphic designer with a passion for illustration.",
   profile_picture: null,
   user_skills: [],
@@ -175,7 +202,8 @@ const davidWilson: User = {
   id: 6,
   email: "david.w@example.com",
   username: "davidw",
-  name: "David Wilson",
+  first_name: "David",
+  last_name: "Wilson",
   bio: "Musician and music theory tutor.",
   profile_picture: null,
   user_skills: [],
@@ -185,7 +213,8 @@ const oliviaMartinez: User = {
   id: 7,
   email: "olivia.m@example.com",
   username: "oliviam",
-  name: "Olivia Martinez",
+  first_name: "Olivia",
+  last_name: "Martinez",
   bio: "Yoga instructor and mindfulness coach.",
   profile_picture: null,
   user_skills: [],
@@ -281,66 +310,39 @@ export const mockSkills: Skill[] = [
   },
 ];
 
-// Helper to find a skill by ID
-const findSkillById = (id: number) =>
-  mockSkills.find((skill) => skill.id === id);
-// Helper to find a user by ID (including the new ones)
-
-const findUserById = (id: number) => allUsers.find((user) => user.id === id);
-
-export const mockSessions: Session[] = [
+export const mockSessions: Booking[] = [
   {
     id: 1,
     scheduled_time: "2024-11-25T15:00:00Z",
     duration: 60,
-    status: "Confirmed",
+    status: "confirmed",
     created_at: "2024-11-20T10:30:00Z",
-    skill: findSkillById(4)!, // React Development
-    requester: findUserById(1)!, // John Doe
-    provider: findUserById(2)!, // Sara Ahmed
+    cancel_reason: null,
+    booked_by: "",
+    booked_for: "",
+    skill: mockSkills[0],
   },
   {
     id: 2,
     scheduled_time: "2024-11-28T14:00:00Z",
     duration: 90,
-    status: "Pending",
+    status: "pending",
     created_at: "2024-11-22T09:15:00Z",
-    skill: findSkillById(1)!, // JavaScript Programming
-    requester: findUserById(3)!, // Michael Johnson
-    provider: findUserById(1)!, // John Doe
+    cancel_reason: null,
+    booked_by: "",
+    booked_for: "",
+    skill: mockSkills[1],
   },
   {
-    // New Booking 1
     id: 3,
     scheduled_time: "2024-04-10T11:00:00Z",
     duration: 45,
-    status: "Completed",
+    status: "completed",
     created_at: "2024-04-05T15:00:00Z",
-    skill: findSkillById(5)!, // Illustration Basics
-    requester: findUserById(1)!, // John Doe
-    provider: findUserById(5)!, // Emily Davis
-  },
-  {
-    // New Booking 2
-    id: 4,
-    scheduled_time: "2024-04-12T16:00:00Z",
-    duration: 60,
-    status: "Confirmed",
-    created_at: "2024-04-08T10:00:00Z",
-    skill: findSkillById(6)!, // Beginner Piano Lessons
-    requester: findUserById(3)!, // Michael Johnson
-    provider: findUserById(6)!, // David Wilson
-  },
-  {
-    // New Booking 3
-    id: 5,
-    scheduled_time: "2024-04-15T09:30:00Z",
-    duration: 30,
-    status: "Pending",
-    created_at: "2024-04-10T14:00:00Z",
-    skill: findSkillById(7)!, // Mindfulness Meditation
-    requester: findUserById(2)!, // Sara Ahmed
-    provider: findUserById(7)!, // Olivia Martinez
+    cancel_reason: null,
+    booked_by: "",
+    booked_for: "",
+    skill: mockSkills[2],
   },
 ];
 
@@ -395,33 +397,68 @@ export const mockTransactions: WalletTransaction[] = [
 
 export const mockLeaderboard: LeaderboardEntry[] = [
   {
-    id: 1,
-    week: 45,
-    score: 22.5,
-    timestamp: "2024-11-12T00:00:00Z", // Start of the week timestamp
-    user: findUserById(4)!, // Alex Chen
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 1,
+      email: "john.doe@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
   {
-    id: 2,
-    week: 45,
-    score: 82.5,
-    timestamp: "2024-11-12T00:00:00Z",
-    user: findUserById(2)!, // Sara Ahmed
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 2,
+      email: "alex@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
   {
-    id: 3,
-    week: 45,
-    score: 5.5,
-    timestamp: "2024-11-12T00:00:00Z",
-    user: findUserById(1)!, // John Doe
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 3,
+      email: "jane.doe@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
   {
-    // New Leaderboard Entry 2 (different week)
-    id: 5,
-    week: 15,
-    score: 10.0,
-    timestamp: "2024-04-07T00:00:00Z",
-    user: findUserById(5)!, // Emily Davis
+    total_hours_given: 0,
+    total_hours_received: 0,
+    sessions_completed: 0,
+    net_contribution: "",
+    user: {
+      id: 4,
+      email: "tjay@example.com",
+      username: "alextech",
+      first_name: "Alex",
+      last_name: "Chen",
+      bio: "Teaching programming for 3 years",
+      profile_picture: null,
+      user_skills: [],
+    },
   },
 ];
 
