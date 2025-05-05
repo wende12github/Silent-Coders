@@ -20,7 +20,15 @@ class BookingCreateView(generics.CreateAPIView):
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        serializer.save(booked_by=self.request.user)
+        availability_id = self.request.data.get('availability_id')
+        try:
+            availability = AvailabilitySlot.objects.get(id=availability_id, is_booked=False)
+        except AvailabilitySlot.DoesNotExist:
+            raise ValidationError("Invalid or already booked availability slot.")
+
+        serializer.save(booked_by=self.request.user, availability=availability)
+        availability.is_booked = True
+        availability.save()
     
     @swagger_auto_schema(
         operation_description="Create a new booking.",
@@ -79,7 +87,9 @@ class BookingCancelView(UpdateAPIView):
             raise ValidationError("Cannot cancel completed or already cancelled bookings.")
 
         serializer.save(status=BookingStatus.CANCELLED)
-
+        if booking.availability:
+            booking.availability.is_booked = False
+            booking.availability.save()
 
 
 class BookingCompleteView(UpdateAPIView):
@@ -96,6 +106,9 @@ class BookingCompleteView(UpdateAPIView):
 
         process_booking_completion(booking)
         serializer.save(status=BookingStatus.COMPLETED)
+        if booking.availability:
+            booking.availability.is_booked = False
+            booking.availability.save()
         update_user_stats(booking.booked_for)#Update user stats
 
 
@@ -202,3 +215,22 @@ class UserAvailabilityView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.kwargs['user_id']
         return AvailabilitySlot.objects.filter(booked_for__id=user_id)
+
+
+class ReviewListView(generics.ListAPIView):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+    permission_classes = [AllowAny]
+
+    def get_queryset(self):
+        booking_id = self.request.query_params.get('booking_id')
+        if booking_id:
+            return self.queryset.filter(booking_id=booking_id)
+        return self.queryset
+
+    @swagger_auto_schema(
+        operation_description="Retrieve a list of reviews. Optionally filter by booking_id.",
+        responses={200: ReviewSerializer(many=True)}
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
