@@ -103,6 +103,7 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     booked_by = serializers.StringRelatedField()
     booked_for = serializers.StringRelatedField()
     skill = SkillSerializer(read_only=True)
+    is_booked = serializers.BooleanField(source='availability.is_booked', read_only=True)
 
     class Meta:
         model = Booking
