@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from .models import ChatMessage, PrivateChatMessage
 from .serializers import ChatMessageSerializer, PrivateChatMessageSerializer
 from django.db.models import Q
+from groups.models import Group
 
 User =  get_user_model()
 
