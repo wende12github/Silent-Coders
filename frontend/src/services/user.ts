@@ -5,6 +5,7 @@ const getUser = async (userId: number): Promise<User> => {
   const response = await apiClient.get(`/users/${userId}`);
   return response.data;
 };
+
 export async function fetchUser(userId: number) {
   const userData = await getUser(userId);
   return userData;
