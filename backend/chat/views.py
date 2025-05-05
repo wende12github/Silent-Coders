@@ -8,7 +8,7 @@ from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from rest_framework.response import Response
 from .models import ChatMessage, PrivateChatMessage
-from .serializers import ChatMessageSerializer, PrivateChatMessageSerializer
+from .serializers import ChatMessageSerializer, PrivateChatMessageSerializer, PrivateConversationSerializer
 from django.db.models import Q
 from groups.models import Group
 
@@ -167,3 +167,16 @@ class ChatBotView(APIView):
 
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserPrivateConversationsView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        # Fetch distinct conversations where the user is the sender
+        conversations = PrivateChatMessage.objects.filter(sender=request.user).values(
+            'receiver__id', 'receiver__username'
+        ).distinct()
+
+        # Use the serializer to format the response
+        serializer = PrivateConversationSerializer(conversations, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)

@@ -6,6 +6,7 @@ from datetime import timedelta
 
 from skills.serializers import SkillSerializer
 
+
 class BookingCreateSerializer(serializers.ModelSerializer):
     availability_id = serializers.IntegerField(write_only=True, required=True)
 
@@ -104,6 +105,7 @@ class BookingDetailSerializer(serializers.ModelSerializer):
     booked_for = serializers.StringRelatedField()
     skill = SkillSerializer(read_only=True)
 
+
     class Meta:
         model = Booking
         fields = '__all__'
@@ -141,10 +143,12 @@ class ReviewListSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'booking', 'reviewer', 'created_at']
 
 class AvailabilitySlotSerializer(serializers.ModelSerializer):
+    is_booked = serializers.BooleanField(read_only=True)
+
     class Meta:
         model = AvailabilitySlot
-        fields = ['id', 'booked_for', 'weekday', 'start_time', 'end_time']
-        read_only_fields = ['booked_for']
+        fields = ['id', 'booked_for', 'weekday', 'start_time', 'end_time', 'is_booked']
+        read_only_fields = ['booked_for', 'is_booked']
 
     def create(self, validated_data):
         validated_data['booked_for'] = self.context['request'].user
