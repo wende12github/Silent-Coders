@@ -62,6 +62,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         booked_by = self.context['request'].user
+        validated_data.pop("booked_by", None)
         availability = validated_data.pop('availability')
         booking = Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
         availability.is_booked = True

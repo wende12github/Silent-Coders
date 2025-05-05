@@ -37,6 +37,7 @@ export default function NotificationsPage() {
   const handleLoadMore = () => {
     if (nextPage) {
       loadNotifications(nextPage);
+      loadNotifications(nextPage);
     }
   };
 
@@ -60,7 +61,6 @@ export default function NotificationsPage() {
           notif.id === notification.id ? { ...notif, is_read: false } : notif
         )
       );
-
       alert(`Failed to mark notification as read: ${err.message}`);
     }
   };
@@ -138,7 +138,6 @@ export default function NotificationsPage() {
         )}
       </div>
 
-      {/* Load More Button */}
       {nextPage && (
         <div className="text-center mt-4">
           <Button

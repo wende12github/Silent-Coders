@@ -49,6 +49,7 @@ function AppRoutes() {
               element={<Notifications />}
             />
             <Route path="/dashboard/chat" element={<ChatLayout />} />
+            <Route path="/dashboard/chat" element={<ChatLayout />} />
           </Route>
         </Route>
       </Routes>

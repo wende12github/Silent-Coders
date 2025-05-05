@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from decimal import Decimal
 
 User = settings.AUTH_USER_MODEL
 
@@ -10,11 +11,14 @@ class Wallet(models.Model):
     def has_sufficient_balance(self, amount):
         return self.balance >= amount
 
+
     def deduct(self, amount):
+        amount = Decimal(str(amount))  # ✅ Convert float to Decimal
         self.balance -= amount
         self.save()
 
     def credit(self, amount):
+        amount = Decimal(str(amount))  # ✅ Convert float to Decimal
         self.balance += amount
         self.save()
 
@@ -23,9 +27,10 @@ class Wallet(models.Model):
 
 
 class Transaction(models.Model):
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE, related_name="transactions")
     sender = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='sent_transactions')
     receiver = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, related_name='received_transactions')
-    transaction_type = models.CharField(max_length=10, choices=[('debit', 'Debit'), ('credit', 'Credit')], default='debit')
+    transaction_type = models.CharField(max_length=10, choices=[('debit', 'Debit'), ('credit', 'Credit'), ('pending', 'Pending')], default='debit')
     amount = models.DecimalField(max_digits=5, decimal_places=2)  # Amount in hours
     reason = models.CharField(max_length=255, blank=True)
     booking = models.ForeignKey('bookings.Booking', on_delete=models.SET_NULL, null=True, blank=True)

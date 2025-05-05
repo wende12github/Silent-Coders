@@ -1,7 +1,13 @@
 import { apiClient } from "./api";
 import axios from "axios";
 import { Notification } from "../store/types";
-import { PaginatedResponse } from "./api";
+
+interface PaginatedResponse<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
 
 /**
  * Fetches notifications for the current user.
@@ -37,7 +43,11 @@ export const fetchNotifications = async (
   }
 };
 
-// Marks a specific notification as read
+/**
+ * Marks a specific notification as read
+ * @param notificationId - ID of the notification to mark as read
+ * @returns {Promise<Notification>} - The updated notification
+ */
 export const markNotificationAsRead = async (
   notification: Notification
 ): Promise<Notification> => {
@@ -73,9 +83,17 @@ export const deleteNotification = async (
 ): Promise<void> => {
   try {
     await apiClient.delete(`/notifications/${notificationId}/`);
-    console.log(`Deleted notification ${notificationId}`);
   } catch (error) {
     console.error(`Error deleting notification ${notificationId}:`, error);
-    throw error;
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.detail ||
+          error.message ||
+          `Failed to delete notification ${notificationId}.`
+      );
+    }
+    throw new Error(
+      `An unexpected error occurred while deleting notification ${notificationId}.`
+    );
   }
 };
