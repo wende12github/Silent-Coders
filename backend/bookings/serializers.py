@@ -15,38 +15,16 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         duration = data['duration']
         booked_for = data['booked_for']
 
-        # Convert scheduled_time to UTC if it is not in UTC
-        if scheduled_time.tzinfo is None:  # If no timezone is attached
-            scheduled_time = timezone.localtime(scheduled_time)  # Convert to local time
-        scheduled_time = timezone.utc.localize(scheduled_time)  # Convert to UTC
-
-        # Get the current UTC time
-        now = timezone.now()
-
-        # Check if the selected time is in the past
-        if scheduled_time <= now:
-            # If it's already past the selected time, find the next available time
-            days_to_next_selected_day = (7 - now.weekday() + scheduled_time.weekday()) % 7
-            next_occurrence = now + timedelta(days=days_to_next_selected_day)
-
-            # Adjust the scheduled time to the next available time (same time next week)
-            scheduled_time = scheduled_time.replace(year=next_occurrence.year, month=next_occurrence.month, day=next_occurrence.day)
-
-        # Check that the selected time is still in the future after adjustment
-        if scheduled_time <= now:
+        if scheduled_time <= timezone.now():
             raise serializers.ValidationError("Scheduled time must be in the future.")
 
-        # Calculate the end time based on the duration
         end_time = scheduled_time + timedelta(minutes=duration)
-
-        # Get the weekday of the scheduled time
         weekday = scheduled_time.weekday()
 
-        # Convert to time only (start and end time)
-        start_clock = scheduled_time.time()
-        end_clock = end_time.time()
+        # Force UTC extraction
+        start_clock = scheduled_time.astimezone(timezone.utc).time()
+        end_clock = end_time.astimezone(timezone.utc).time()
 
-        # Ensure AvailabilitySlot times are in UTC
         available = AvailabilitySlot.objects.filter(
             booked_for=booked_for,
             weekday=weekday,
@@ -57,7 +35,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         if not available:
             raise serializers.ValidationError("booked_for is not available during the selected time.")
 
-        # Prevent overlapping bookings for booked_for
+        # Prevent overlapping bookings
         overlap = Booking.objects.filter(
             booked_for=booked_for,
             scheduled_time__lt=end_time,
@@ -74,6 +52,7 @@ class BookingCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         booked_by = self.context['request'].user
         return Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
+
 class BookingActionSerializer(serializers.ModelSerializer):
     cancel_reason = serializers.CharField(required=False, allow_blank=True)
 
