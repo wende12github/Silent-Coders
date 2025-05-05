@@ -18,8 +18,15 @@ import {
   AllGroups,
   sendGroupMessage,
   ChatMessage,
-  fetchGroupMessages
+  fetchGroupMessages,
+  SendAnnouncementRequest,
+  sendAnnouncement,
+  createAnnouncementRequest,
+  AnnouncementResponse,
+  fetchAnnouncements
 } from "../services/groups";
+import Button from "../components/ui/Button";
+import { Input, Label, Textarea } from "../components/ui/Form";
 
 const GroupsPage: React.FC = () => {
   const { user: currentUser } = useAuthStore();
@@ -51,56 +58,20 @@ const GroupsPage: React.FC = () => {
   const [isLoadingAllGroups, setIsLoadingAllGroups] = useState(false);
   const [errorAllGroups, setErrorAllGroups] = useState<string | null>(null);
 
-  const mockAnnouncements: Announcement[] = [
-    {
-      id: "1",
-      title: "System Update Scheduled",
-      content:
-        "We will be performing a system update on May 5th. Expect downtime between 2:00 AM and 4:00 AM.",
-      author: {
-        id: 1,
-        username: "admin",
-        first_name: "Admin",
-        profile_picture: "",
-        email: "",
-        last_name: "",
-        user_skills: [],
-      },
-      timestamp: "2025-05-01T10:00:00Z",
-    },
-    {
-      id: "2",
-      title: "New Feature Release",
-      content:
-        "We&nbsp;re excited to introduce a new feature that enhances user experience. Check it out in your settings!",
-      author: {
-        id: 1,
-        username: "admin",
-        first_name: "Admin",
-        profile_picture: "",
-        email: "",
-        last_name: "",
-        user_skills: [],
-      },
-      timestamp: "2025-05-02T09:30:00Z",
-    },
-    {
-      id: "3",
-      title: "Upcoming Event: Developer Meetup",
-      author: {
-        id: 1,
-        username: "admin",
-        first_name: "Admin",
-        profile_picture: "",
-        email: "",
-        last_name: "",
-        user_skills: [],
-      },
-      content:
-        "Join us for an exclusive developer meetup on May 10th! Register now to secure your spot.",
-      timestamp: "2025-05-02T11:00:00Z",
-    },
-  ];
+  const [isFormVisible, setIsFormVisible] = useState(false);
+  const [formData, setFormData] = useState<createAnnouncementRequest>({
+    title: "",
+    message: "",
+  });
+  const [isAddingAnnouncement, setIsAddingAnnouncement] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+
+  const [announcementData, setAnnouncementData] = useState<AnnouncementResponse[] | null>(null);
+  const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(false);
+  const [errorAnnouncements, setErrorAnnouncements] = useState<string | null>(null);
+  
+  const [currentPage] = useState(1);
 
   useEffect(() => {
     if (!groupId) return;
@@ -178,7 +149,7 @@ const GroupsPage: React.FC = () => {
   }, []);
 
   const loadMessages = useCallback(async () => {
-    if (!group?.name) return; // Guard clause
+    if (!group?.name) return;
     
     setIsLoadingMessages(true);
     try {
@@ -189,7 +160,7 @@ const GroupsPage: React.FC = () => {
     } finally {
       setIsLoadingMessages(false);
     }
-  }, [group?.name]); // Add dependency
+  }, [group?.name]);
 
   useEffect(() => {
     if (group?.name) {
@@ -211,23 +182,19 @@ const GroupsPage: React.FC = () => {
 
   const handleSendMessage = async () => {
     if (newMessageText.trim() === "") return;
+    if (!group?.name || !currentUser?.id) return;
 
-    if (!group?.name) {
-      console.error("No group name available");
-      return;
-    }
-  
     const tempId = Date.now();
   
     const newMessage: ChatMessage = {
       id: tempId,
-      senderId: currentUser?.id || 0,
-      senderName: currentUser?.first_name || currentUser?.username || "Unknown User",
+      senderId: currentUser.id,
+      senderName: currentUser.first_name || currentUser.username || "Unknown User",
       senderAvatar:
-        currentUser?.profile_picture ||
+        currentUser.profile_picture ||
         `https://placehold.co/100x100/ff7f7f/ffffff?text=${
-          currentUser?.first_name?.charAt(0) ||
-          currentUser?.username?.charAt(0) ||
+          currentUser.first_name?.charAt(0) ||
+          currentUser.username?.charAt(0) ||
           "U"
         }`,
       text: newMessageText,
@@ -242,7 +209,7 @@ const GroupsPage: React.FC = () => {
       const response = await sendGroupMessage({
         is_group_chat: true,
         message: newMessageText,
-        room_name: group.name// Replace with your room name
+        room_name: group.name
       });
   
       setMessages(prev => prev.map(msg => 
@@ -267,6 +234,78 @@ const GroupsPage: React.FC = () => {
       ));
     }
   };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+    setFormError(null);
+  };
+  
+  const handleAddAnnouncement = async (e: React.FormEvent) => {
+    e.preventDefault();
+  
+    if (!formData.title.trim()) {
+      setFormError("Title is required.");
+      return;
+    }
+    if (!formData.message.trim()) {
+      setFormError("Message is required.");
+      return;
+    }
+  
+    setIsAddingAnnouncement(true);
+    setFormError(null);
+    setSuccessMessage(null);
+  
+    try {
+      if (!group?.id) return;
+
+      const announcementRequest: SendAnnouncementRequest = {
+        group: group.id,
+        title: formData.title,
+        message: formData.message
+      };
+      
+      await sendAnnouncement(group.id, announcementRequest);
+      setSuccessMessage("Announcement created successfully");
+      setFormData({ title: "", message: "" });
+      setIsFormVisible(false);
+      // Refresh announcements after creating a new one
+      loadAnnouncements();
+    } catch (err: any) {
+      console.error("Error creating announcement:", err);
+      setFormError(err.message || "Failed to create announcement");
+    } finally {
+      setIsAddingAnnouncement(false);
+    }
+  };
+
+  const loadAnnouncements = useCallback(async () => {
+    setIsLoadingAnnouncements(true);
+    setErrorAnnouncements(null);
+    if (!group?.id) return;
+
+    try {
+      const data = await fetchAnnouncements(group.id, undefined, currentPage);
+      setAnnouncementData(data);
+    } catch (err: any) {
+      console.error("Error fetching announcements:", err);
+      setErrorAnnouncements(err.message || "Failed to fetch announcements.");
+    } finally {
+      setIsLoadingAnnouncements(false);
+    }
+  }, [group?.id, currentPage]);
+
+  useEffect(() => {
+    if (group?.id) {
+      loadAnnouncements();
+    }
+  }, [group?.id, loadAnnouncements]);
 
   const formatTimestamp = (timestamp: string): string => {
     const date = new Date(timestamp);
@@ -315,35 +354,94 @@ const GroupsPage: React.FC = () => {
       content: (
         <div className="">
           <div className="w-full max-w- mx-auto p4 mb-10">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Announcements
-            </h2>
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Announcements
+              </h2>
+              {currentUser?.id === group?.owner && (
+                <Button onClick={() => setIsFormVisible(!isFormVisible)}>
+                  {isFormVisible ? "Cancel" : "Add Announcement"}
+                </Button>
+              )}
+            </div>
 
-            {mockAnnouncements.length === 0 ? (
-              <p className="text-gray-600">
-                No announcements available at this time.
-              </p>
-            ) : (
-              <div className="space-y-4">
-                {mockAnnouncements.map((announcement) => (
-                  <div
-                    key={announcement.id}
-                    className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
+            {isFormVisible && (
+              <form
+                onSubmit={handleAddAnnouncement}
+                className="mb-6 bg-white p-6 rounded-lg shadow-md border border-gray-200"
+              >
+                <h3 className="text-xl font-semibold text-gray-900 mb-4">Add Announcement</h3>
+                <div className="mb-4">
+                  <Label htmlFor="title">Title:</Label>
+                  <Input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={formData.title}
+                    onChange={handleInputChange}
+                    required
+                    className={formError && formData.title.trim() === "" ? "border-red-500" : ""}
+                  />
+                </div>
+                <div className="mb-4">
+                  <Label htmlFor="message">Message:</Label>
+                  <Textarea
+                    id="message"
+                    name="message"
+                    value={formData.message}
+                    onChange={handleInputChange}
+                    required
+                    className={formError && formData.message.trim() === "" ? "border-red-500" : ""}
+                  />
+                </div>
+                {formError && (
+                  <p className="text-red-500 text-sm mb-4">{formError}</p>
+                )}
+                {successMessage && (
+                  <p className="text-green-600 text-sm mb-4">{successMessage}</p>
+                )}
+                <div className="flex gap-2">
+                  <Button type="submit" disabled={isAddingAnnouncement}>
+                    {isAddingAnnouncement ? "Creating..." : "Create Announcement"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setIsFormVisible(false)}
                   >
-                    <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                      {announcement.title}
-                    </h3>
-                    <p
-                      className="text-gray-700 mb-3"
-                      dangerouslySetInnerHTML={{ __html: announcement.content }}
-                    ></p>
-                    <div className="flex justify-between items-center text-sm text-gray-500">
-                      <span>Posted by: {announcement.author.first_name}</span>
-                      <span>{formatTimestamp(announcement.timestamp)}</span>
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
+
+            {renderContent(
+              isLoadingAnnouncements,
+              errorAnnouncements,
+              announcementData,
+              (announcements) => (
+                <div className="space-y-4">
+                  {announcements.map((announcement) => (
+                    <div
+                      key={announcement.id}
+                      className="bg-white p-6 rounded-lg shadow-md border border-gray-200"
+                    >
+                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                        {announcement.title}
+                      </h3>
+                      <p
+                        className="text-gray-700 mb-3"
+                        dangerouslySetInnerHTML={{ __html: announcement.message }}
+                      ></p>
+                      <div className="flex justify-between items-center text-sm text-gray-500">
+                        <span>Posted by: {announcement.posted_by}</span>
+                        <span>{formatTimestamp(announcement.created_at)}</span>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ),
+              "No announcements available at this time."
             )}
           </div>
           <div className="flex flex-col gap-5">
@@ -375,10 +473,6 @@ const GroupsPage: React.FC = () => {
                           <p className="text-lg font-semibold text-gray-800">
                             {member.name}
                           </p>
-
-                          {/* <p className="text-sm text-gray-500">
-                                    {member.credits} Credits
-                                </p> */}
                         </div>
                       </div>
                     ))}
@@ -404,52 +498,52 @@ const GroupsPage: React.FC = () => {
             ) : messages.length === 0 ? (
               <div className="text-center py-4 text-gray-500">No messages yet</div>
             ) : (
-            [...messages].reverse().map((message) => (
-              <div
-                key={message.id}
-                className={`flex items-start gap-3 ${
-                  message.senderId === currentUser?.id ? "flex-row-reverse" : ""
-                }`}
-              >
-                <Avatar
-                  fallback={message.senderName?.charAt(0) || "U"}
-                  src={message.senderAvatar}
-                  alt={message.senderName}
-                  className="w-8 h-8 rounded-full object-cover"
-                />
+              [...messages].reverse().map((message) => (
                 <div
-                  className={`flex flex-col ${
-                    message.senderId === currentUser?.id
-                      ? "items-end"
-                      : "items-start"
+                  key={message.id}
+                  className={`flex items-start gap-3 ${
+                    message.senderId === currentUser?.id ? "flex-row-reverse" : ""
                   }`}
                 >
+                  <Avatar
+                    fallback={message.senderName?.charAt(0) || "U"}
+                    src={message.senderAvatar}
+                    alt={message.senderName}
+                    className="w-8 h-8 rounded-full object-cover"
+                  />
                   <div
-                    className={`rounded-lg p-3 ${
+                    className={`flex flex-col ${
                       message.senderId === currentUser?.id
-                        ? "bg-blue-500 text-white"
-                        : "bg-gray-100 text-gray-800"
+                        ? "items-end"
+                        : "items-start"
                     }`}
                   >
-                    <p className="text-sm">{message.text}</p>
+                    <div
+                      className={`rounded-lg p-3 ${
+                        message.senderId === currentUser?.id
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-100 text-gray-800"
+                      }`}
+                    >
+                      <p className="text-sm">{message.text}</p>
+                    </div>
+                    <span
+                      className={`text-xs text-gray-500 mt-1 ${
+                        message.senderId === currentUser?.id
+                          ? "text-right"
+                          : "text-left"
+                      }`}
+                    >
+                      {message.senderName} •{" "}
+                      {new Date(message.timestamp).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })}
+                    </span>
                   </div>
-                  <span
-                    className={`text-xs text-gray-500 mt-1 ${
-                      message.senderId === currentUser?.id
-                        ? "text-right"
-                        : "text-left"
-                    }`}
-                  >
-                    {message.senderName} •{" "}
-                    {new Date(message.timestamp).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
-                  </span>
                 </div>
-              </div>
-            ))
-          )}
+              ))
+            )}
           </div>
           <div className="border-t border-gray-200 p-4 flex items-center gap-3">
             <input
@@ -583,7 +677,7 @@ const GroupsPage: React.FC = () => {
             tabsListClassName="mb-4"
           />
         </div>
-        </div>
+      </div>
     </div>
   );
 };

@@ -1,9 +1,10 @@
 import { useState } from "react";
-
 import { Clock, Menu } from "lucide-react";
 import Button from "../ui/Button";
 import { useLogout } from "../../hooks/hooks";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, NavLink } from "react-router-dom";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faHouse, faUsers, faTrophy, faChartSimple, faUser } from '@fortawesome/free-solid-svg-icons'
 
 const Header = () => {
   const { logout } = useLogout();
@@ -25,32 +26,47 @@ const Header = () => {
           </div>
         </Link>
 
-        <div className="hidden md:flex items-center gap-4">
-          <a
-            href="/dashboard"
-            className="text-gray-700 hover:text-primary transition duration-200"
-          >
-            Dashboard
-          </a>
-          <a
-            href="/groups"
-            className="text-gray-700 hover:text-primary transition duration-200"
+        <div className="hidden md:flex items-center gap-8 px-4">
+          <NavLink
+              to="/"
+              className={({ isActive }) => 
+                `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}`
+              }
+            >
+            Home
+          </NavLink>
+          <NavLink
+            to="/groups"
+            className={({ isActive }) => 
+              `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}`
+            }
           >
             Groups
-          </a>
-          <a
-            href="/dashboard/settings"
-            className="text-gray-700 hover:text-primary transition duration-200"
+          </NavLink>
+          <NavLink
+            to="/leaderboard"
+            className={({ isActive }) => 
+              `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}`
+            }
+          >
+            Leaderboard
+          </NavLink>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) => 
+              `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}`
+            }
+          >
+            Dashboard
+          </NavLink>
+          <NavLink
+            to="/dashboard/settings"
+            className={({ isActive }) => 
+              `transition duration-200 py-2 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}`
+            }
           >
             Profile
-          </a>
-          <a
-            href="/dashboard/settings"
-            className="text-gray-700 hover:text-primary transition duration-200"
-          >
-            Settings
-          </a>
-
+          </NavLink>
           <Button onClick={onLogout} variant="gradient" className="">
             Logout
           </Button>
@@ -68,32 +84,52 @@ const Header = () => {
 
       {mobileMenuOpen && (
         <div className="md:hidden bg-white py-4 px-4 border-t animate-fade-in border-t-primary">
-          <div className="flex flex-col space-y-1">
-            <a
-              href="/dashboard"
-              className="text-gray-700 hover:text-primary transition duration-200 py-2"
+          <div className="flex flex-col space-y-3">
+            <NavLink
+                to="/"
+                className={({ isActive }) => 
+                  `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'} flex gap-6 items-center`
+                }
+              >
+              <FontAwesomeIcon icon={faHouse} />
+              Home
+            </NavLink>
+            <NavLink
+              to="/groups"
+              className={({ isActive }) => 
+                `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}  flex gap-6 items-center`
+              }
             >
+              <FontAwesomeIcon icon={faUsers} />
+              Groups
+            </NavLink>
+            <NavLink
+              to="/leaderboard"
+              className={({ isActive }) => 
+                `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}  flex gap-6 items-center`
+              }
+            >
+              <FontAwesomeIcon icon={faTrophy} />
+              Leaderboard
+            </NavLink>
+            <NavLink
+              to="/dashboard"
+              className={({ isActive }) => 
+                `transition duration-200 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}  flex gap-6 items-center`
+              }
+            >
+              <FontAwesomeIcon icon={faChartSimple} />
               Dashboard
-            </a>
-            <a
-            href="/groups"
-            className="text-gray-700 hover:text-primary transition duration-200"
-          >
-            Groups
-          </a>
-            <a
-              href="/profile"
-              className="text-gray-700 hover:text-primary transition duration-200 py-2"
+            </NavLink>
+            <NavLink
+              to="/dashboard/settings"
+              className={({ isActive }) => 
+                `transition duration-200 py-2 ${isActive ? 'text-[var(--color-primary)] font-medium' : 'text-gray-700 hover:text-primary'}  flex gap-6 items-center`
+              }
             >
+              <FontAwesomeIcon icon={faUser} />
               Profile
-            </a>
-            <a
-              href="/settings"
-              className="text-gray-700 hover:text-primary transition duration-200 py-2"
-            >
-              Settings
-            </a>
-
+            </NavLink>
             <Button onClick={onLogout} variant="destructive" size="lg">
               Logout
             </Button>

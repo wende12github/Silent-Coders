@@ -2,7 +2,6 @@ import { LeaderboardEntry } from "../store/types";
 import { apiClient } from "./api";
 import axios, { AxiosResponse } from "axios";
 import { fetchUser } from "./user";
-import { User } from "../store/types";
 
 export interface Group {
   id: number;
@@ -193,13 +192,10 @@ export const sendGroupMessage = async (
 
 export const fetchGroupMessages = async (groupName: string): Promise<ChatMessage[]> => {
   try {
-    // 1. Fetch messages
     const response = await apiClient.get(`/chatbot/group/${groupName}/`);
     
-    // 2. Process each message
     const messages = await Promise.all(
       response.data.map(async (msg: any) => {
-        // 3. Get user details for each message
         const user = await fetchUser(msg.user);
         
         return {
@@ -217,6 +213,64 @@ export const fetchGroupMessages = async (groupName: string): Promise<ChatMessage
     return messages;
   } catch (error) {
     console.error(`Error fetching messages:`, error);
+    throw error;
+  }
+};
+
+export interface createAnnouncementRequest {
+  title: string;
+  message: string;
+}
+
+export interface SendAnnouncementRequest {
+  group: number;
+  title: string;
+  message: string;
+}
+
+export interface AnnouncementResponse {
+  id: number;
+  group: number;
+  title: string;
+  message: string;
+  created_at: string;
+  posted_by: string;
+}
+
+export const sendAnnouncement = async (
+  groupId: number,
+  messageData: SendAnnouncementRequest
+): Promise<AnnouncementResponse> => {
+  try {
+    const response = await apiClient.post<AnnouncementResponse>(`groups/${groupId}/announcements/`, messageData);
+    return response.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const serverMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        JSON.stringify(error.response?.data);
+      throw new Error(serverMessage || "Failed to create group");
+    }
+    throw new Error("Network error - could not connect to server");
+  }
+};
+
+export const fetchAnnouncements = async (
+  groupId: number,
+  search?: string,
+  page: number = 1
+): Promise<AnnouncementResponse[]> => {
+  try {
+    const response = await apiClient.get(`/groups/${groupId}/announcements`, {
+      params: {
+        search,
+        page,
+      },
+    });
+    return response.data.results;
+  } catch (error) {
+    console.error("Error fetching announcements:", error);
     throw error;
   }
 };
