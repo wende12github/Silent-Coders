@@ -1,22 +1,20 @@
+import {apiClient} from "./api";
+import { PaginatedResponse } from "./api"; // ✅ important!
 import { LeaderboardEntry } from "../store/types";
-import { apiClient } from "./api";
 
+// ✅ Updated fetchLeaderboard with pagination
 export const fetchLeaderboard = async (
   page: number = 1,
   limit: number = 10
-) => {
+): Promise<PaginatedResponse<LeaderboardEntry>> => {
   const response = await apiClient.get("/leaderboard/", {
-    params: {
-      page: page,
-      limit: limit,
-    },
+    params: { page, limit },
   });
-  return response.data.results;
+  return response.data;
 };
 
-export const fetchUserLeaderboard = async (
-  userId: number
-): Promise<LeaderboardEntry> => {
+// ✅ Keep this if you're using it to fetch the current user's rank or data
+export const fetchUserLeaderboard = async (userId: number) => {
   const response = await apiClient.get(`/leaderboard/${userId}/`);
   return response.data;
 };
