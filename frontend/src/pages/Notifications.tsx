@@ -12,29 +12,35 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [nextPage, setNextPage] = useState<string | null>(null); // State for pagination
+
+  const loadNotifications = async (url?: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const data = await fetchNotifications(url || "/notifications/");
+      setNotifications((prev) => [...prev, ...data.results]); // Append new notifications
+      setNextPage(data.next); // Update the next page URL
+    } catch (err: any) {
+      console.error("Error loading notifications:", err);
+      setError(err.message || "Failed to load notifications.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const loadNotifications = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const data = await fetchNotifications();
-
-        const sortedData = data.sort(
-          (a, b) =>
-            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        );
-        setNotifications(sortedData);
-      } catch (err: any) {
-        console.error("Error loading notifications:", err);
-        setError(err.message || "Failed to load notifications.");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadNotifications();
+    loadNotifications(); // Load the first page of notifications on component mount
   }, []);
+
+  const handleLoadMore = () => {
+    if (nextPage) {
+      const nextPageNumber = new URL(nextPage).searchParams.get("page");
+      if (nextPageNumber) {
+        loadNotifications(nextPageNumber);
+      }
+    }
+  };
 
   const handleMarkAsRead = async (id: number) => {
     setNotifications((prevNotifications) =>
@@ -75,7 +81,7 @@ export default function NotificationsPage() {
       </div>
 
       <div className="space-y-4">
-        {isLoading ? (
+        {isLoading && notifications.length === 0 ? (
           <div className="text-center text-gray-500">
             Loading notifications...
           </div>
@@ -130,6 +136,19 @@ export default function NotificationsPage() {
           ))
         )}
       </div>
+
+      {/* Load More Button */}
+      {nextPage && (
+        <div className="text-center mt-4">
+          <Button
+            variant="outline"
+            onClick={handleLoadMore}
+            disabled={isLoading}
+          >
+            {isLoading ? "Loading..." : "Load More"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }
