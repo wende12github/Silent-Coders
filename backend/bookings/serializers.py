@@ -15,7 +15,12 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         duration = data['duration']
         booked_for = data['booked_for']
 
-        # Get the current time
+        # Convert scheduled_time to UTC if it is not in UTC
+        if scheduled_time.tzinfo is None:  # If no timezone is attached
+            scheduled_time = timezone.localtime(scheduled_time)  # Convert to local time
+        scheduled_time = timezone.utc.localize(scheduled_time)  # Convert to UTC
+
+        # Get the current UTC time
         now = timezone.now()
 
         # Check if the selected time is in the past
@@ -33,13 +38,15 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
         # Calculate the end time based on the duration
         end_time = scheduled_time + timedelta(minutes=duration)
+
+        # Get the weekday of the scheduled time
         weekday = scheduled_time.weekday()
 
         # Convert to time only (start and end time)
         start_clock = scheduled_time.time()
         end_clock = end_time.time()
 
-        # Check if the booked_for user is available during the selected time slot
+        # Ensure AvailabilitySlot times are in UTC
         available = AvailabilitySlot.objects.filter(
             booked_for=booked_for,
             weekday=weekday,
@@ -67,7 +74,6 @@ class BookingCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         booked_by = self.context['request'].user
         return Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
-
 class BookingActionSerializer(serializers.ModelSerializer):
     cancel_reason = serializers.CharField(required=False, allow_blank=True)
 
