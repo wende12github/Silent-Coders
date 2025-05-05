@@ -4,7 +4,6 @@ import { useParams } from "react-router-dom";
 import Tabs, { TabItem } from "../components/ui/Tabs";
 import { useAuthStore } from "../store/authStore";
 import {
-  ChatMessage,
   initialMockMessages,
   LeaderboardEntry,
 } from "../store/types";
@@ -17,6 +16,9 @@ import {
   fetchAllGroups,
   Group,
   AllGroups,
+  sendGroupMessage,
+  ChatMessage,
+  fetchGroupMessages
 } from "../services/groups";
 
 const GroupsPage: React.FC = () => {
@@ -26,12 +28,13 @@ const GroupsPage: React.FC = () => {
 
   const [messages, setMessages] = useState<ChatMessage[]>(initialMockMessages);
   const [newMessageText, setNewMessageText] = useState("");
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
   const [group, setGroup] = useState<Group | null>(null);
   const [groupLeaderboard, setGroupLeaderboard] = useState<
     LeaderboardEntry[] | null
   >(null);
-  const [myGroups, setMyGroups] = useState<Omit<Group, "members">[] | null>(
+  const [myGroups, setMyGroups] = useState<AllGroups[] | null>(
     null
   );
   const [allGroups, setAllGroups] = useState<AllGroups[] | null>(null);
@@ -147,8 +150,8 @@ const GroupsPage: React.FC = () => {
         const data = await fetchMyGroups();
         setMyGroups(data);
       } catch (error: any) {
-        console.error("Error fetching my groups:", error);
-        setErrorMyGroups(`Failed to fetch your groups: ${error.message}`);
+        console.error("Error fetching all groups:", error);
+        setErrorMyGroups(`Failed to fetch all groups: ${error.message}`);
       } finally {
         setIsLoadingMyGroups(false);
       }
@@ -175,6 +178,25 @@ const GroupsPage: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    if (!group?.name) return;
+  
+    const loadMessages = async () => {
+      setIsLoadingMessages(true);
+      try {
+        const fetchedMessages = await fetchGroupMessages(group.name);
+        setMessages(() => fetchedMessages);
+      } catch (error) {
+        console.error("Failed to load messages:", error);
+        // Keep existing messages if reload fails
+      } finally {
+        setIsLoadingMessages(false);
+      }
+    };
+  
+    loadMessages();
+  }, [group?.name]); // Re-fetch when group changes
+
+  useEffect(() => {
     if (messagesEndRef.current) {
       messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
     }
@@ -186,11 +208,18 @@ const GroupsPage: React.FC = () => {
     }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (newMessageText.trim() === "") return;
 
+    if (!group?.name) {
+      console.error("No group name available");
+      return;
+    }
+  
+    const tempId = Date.now();
+  
     const newMessage: ChatMessage = {
-      id: messages.length + 1,
+      id: tempId,
       senderId: currentUser?.id || 0,
       senderName: currentUser?.first_name || "Unknown User",
       senderAvatar:
@@ -202,12 +231,39 @@ const GroupsPage: React.FC = () => {
         }`,
       text: newMessageText,
       timestamp: new Date().toISOString(),
+      status: 'sending',
     };
-
-    setMessages([...messages, newMessage]);
+  
+    setMessages(prev => [...prev, newMessage]);
     setNewMessageText("");
-
-    console.log("Sending message:", newMessage);
+  
+    try {
+      const response = await sendGroupMessage({
+        is_group_chat: true,
+        message: newMessageText,
+        room_name: group.name// Replace with your room name
+      });
+  
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId
+          ? {
+              ...msg,
+              timestamp: response.created_at,
+              status: 'delivered',
+            }
+          : msg
+      ));
+    } catch (error) {
+      setMessages(prev => prev.map(msg => 
+        msg.id === tempId
+          ? {
+              ...msg,
+              status: 'failed',
+              error: error instanceof Error ? error.message : 'Failed to send',
+            }
+          : msg
+      ));
+    }
   };
 
   const formatTimestamp = (timestamp: string): string => {
@@ -341,7 +397,12 @@ const GroupsPage: React.FC = () => {
             ref={messagesEndRef}
             className="flex-1 overflow-y-auto p-4 space-y-4"
           >
-            {messages.map((message) => (
+            {isLoadingMessages ? (
+              <div className="text-center py-4 text-gray-500">Loading messages...</div>
+            ) : messages.length === 0 ? (
+              <div className="text-center py-4 text-gray-500">No messages yet</div>
+            ) : (
+            messages.map((message) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -385,7 +446,8 @@ const GroupsPage: React.FC = () => {
                   </span>
                 </div>
               </div>
-            ))}
+            ))
+          )}
           </div>
           <div className="border-t border-gray-200 p-4 flex items-center gap-3">
             <input
