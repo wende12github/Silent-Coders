@@ -15,6 +15,7 @@ export default function ChatLayout() {
   const [listError, setListError] = useState<string | null>(null);
 
   // --- Fetch list of conversations/users ---
+  console.log('User:', user?.id, 'Token:', accessToken); // Add this before the API call
   const fetchConversations = async () => {
      if (!user?.id || !accessToken) {
           setIsListLoading(false);
