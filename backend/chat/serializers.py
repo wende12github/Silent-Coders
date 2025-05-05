@@ -10,3 +10,7 @@ class PrivateChatMessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = PrivateChatMessage
         fields = ['sender', 'receiver', 'message', 'message_type', 'created_at']
+
+class PrivateConversationSerializer(serializers.Serializer):
+    receiver_id = serializers.IntegerField()
+    receiver_username = serializers.CharField()
