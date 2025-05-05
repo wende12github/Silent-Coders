@@ -10,8 +10,13 @@ from rest_framework.response import Response
 from .models import ChatMessage, PrivateChatMessage
 from .serializers import ChatMessageSerializer, PrivateChatMessageSerializer
 from django.db.models import Q
+from rest_framework.pagination import PageNumberPagination
 
 User =  get_user_model()
+
+class ChatPagination(PageNumberPagination):
+    page_size = 20
+    max_page_size = 100    
 
 class GroupChatMessagesView(APIView):
     permission_classes = [permissions.IsAuthenticated]
