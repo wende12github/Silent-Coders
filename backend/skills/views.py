@@ -1,50 +1,86 @@
 from rest_framework import generics, filters
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.response import Response
 from .models import Skill
 from .serializers import SkillSerializer
 
-# List and Create Skills
+# ✅ Retrieve all unique skill tags
+class SkillTagsView(APIView):
+    """Get all unique skill tags"""
+    def get(self, request):
+        all_tags = Skill.objects.values_list('tags', flat=True)
+        unique_tags = set()
+
+        # SQLite workaround: Extract and merge tags manually
+        for tags in all_tags:
+            if isinstance(tags, list):  # Ensure tags are a list
+                unique_tags.update(tags)
+
+        return Response(sorted(unique_tags))
+
+# ✅ List and Create Skills with SQLite-Friendly Tag Filtering
 class SkillListCreateView(generics.ListCreateAPIView):
-    queryset = Skill.objects.filter(is_visible=True)
     serializer_class = SkillSerializer
 
-# Retrieve, Update, and Delete a Skill
+    def get_queryset(self):
+        queryset = Skill.objects.filter(is_visible=True)
+        tag = self.request.query_params.get('tag', None)
+
+        if tag:
+            # SQLite workaround: filter manually in Python
+            queryset = [skill for skill in queryset if tag in skill.tags]
+
+        return queryset
+
+# ✅ Retrieve, Update, and Delete a Skill
 class SkillRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     queryset = Skill.objects.all()
     serializer_class = SkillSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        """Ensure users can only modify their own skills"""
         return Skill.objects.filter(user=self.request.user)
 
-# View all offered skills (those available for teaching or work)
+# ✅ Offered Skills View with SQLite-Friendly Tag Filtering
 class OfferedSkillsView(generics.ListAPIView):
     serializer_class = SkillSerializer
 
     def get_queryset(self):
-        return Skill.objects.filter(is_offered=True, is_visible=True)
+        queryset = Skill.objects.filter(is_offered=True, is_visible=True)
+        tag = self.request.query_params.get('tag', None)
 
-# View all requested skills (those users are seeking)
+        if tag:
+            queryset = [skill for skill in queryset if tag in skill.tags]
+
+        return queryset
+
+# ✅ Requested Skills View with SQLite-Friendly Tag Filtering
 class RequestedSkillsView(generics.ListAPIView):
     serializer_class = SkillSerializer
 
     def get_queryset(self):
-        return Skill.objects.filter(is_offered=False, is_visible=True)
+        queryset = Skill.objects.filter(is_offered=False, is_visible=True)
+        tag = self.request.query_params.get('tag', None)
 
-# View a specific authenticated user's skills
+        if tag:
+            queryset = [skill for skill in queryset if tag in skill.tags]
+
+        return queryset
+
+# ✅ View a specific authenticated user's skills
 class MySkillsView(generics.ListAPIView):
     serializer_class = SkillSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Skill.objects.filter(user=self.request.user, is_visible=True)
+        return Skill.objects.filter(user=self.request.user)
 
-# Skill search functionality
+
 class SkillSearchView(generics.ListAPIView):
     serializer_class = SkillSerializer
-    filter_backends = [filters.SearchFilter]
-    search_fields = ['name', 'description', 'tags']
 
     def get_queryset(self):
-        return Skill.objects.filter(is_visible=True)
+        query = self.request.query_params.get('query', '')
+        return Skill.objects.filter(name__icontains=query)
+

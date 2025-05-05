@@ -1,6 +1,6 @@
 # booking/urls.py
 from django.urls import path
-from .views import AvailabilitySlotListCreateView, BookingCreateView, BookingDetailView, BookingListView, BookingConfirmView, BookingCancelView, BookingCompleteView, BookingRescheduleView, MyBookingsView, SubmitReviewView
+from .views import AvailabilitySlotDetailView, AvailabilitySlotListCreateView, BookingCreateView, BookingDetailView, BookingListView, BookingConfirmView, BookingCancelView, BookingCompleteView, BookingRescheduleView, MyBookingsView, SubmitReviewView, UserAvailabilityView
 
 app_name = 'bookings'
 
@@ -15,5 +15,7 @@ urlpatterns = [
     path('<int:pk>/complete/', BookingCompleteView.as_view(), name='booking-complete'),
     path('bookings/<int:pk>/review/', SubmitReviewView.as_view(), name='submit-review'),
     path('availability/', AvailabilitySlotListCreateView.as_view(), name='availability'),
-
+    path('availability/', AvailabilitySlotListCreateView.as_view(), name='availability-list-create'),
+    path('availability/<int:pk>/', AvailabilitySlotDetailView.as_view(), name='availability-detail'),
+    path('availability/user/<int:user_id>/', UserAvailabilityView.as_view(), name='user-availability'),
 ]

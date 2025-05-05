@@ -10,6 +10,7 @@ from rest_framework.response import Response
 from .models import ChatMessage, PrivateChatMessage
 from .serializers import ChatMessageSerializer, PrivateChatMessageSerializer
 from django.db.models import Q
+from groups.models import Group
 
 User =  get_user_model()
 
@@ -92,7 +93,9 @@ class SendMessageView(APIView):
             except ValueError:
                 # If 'other_user_id' is not a valid integer
                 return Response({"error": "Invalid user ID"}, status=status.HTTP_400_BAD_REQUEST)
-            except ObjectDoesNotExist:
+            
+            except User.DoesNotExist:
+
                 # If receiver user doesn't exist
                 return Response({"error": "Receiver user not found"}, status=status.HTTP_404_NOT_FOUND)
 
