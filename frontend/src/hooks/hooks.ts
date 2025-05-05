@@ -82,6 +82,8 @@ export interface RegisterUserData {
   last_name: string;
 }
 export const useSignup = () => {
+  const { login } = useLogin(); // Import login function
+
   const signupUser = async (userData: RegisterUserData) => {
     try {
       const response: AxiosResponse<AuthResponse> = await apiClient.post(
@@ -89,7 +91,11 @@ export const useSignup = () => {
         userData
       );
       console.log("Register user response:", response.data);
-      return response.data;
+      const loginResponse = await login({
+        email: userData.email,
+        password: userData.password,
+      });
+      return loginResponse;
     } catch (error: any) {
       console.error("Error signing up user:", error);
       throw error;

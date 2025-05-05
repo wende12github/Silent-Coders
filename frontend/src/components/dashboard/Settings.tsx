@@ -8,7 +8,11 @@ import { Input, Label, Textarea } from "../ui/Form";
 import { updateCurrentUser } from "../../services/user"; // Assuming updateCurrentUser is in services/user.ts
 import { User } from "../../store/types"; // Import User type
 import { ImageUpload } from "../ImageUpload"; // Import the ImageUpload component
-import { resetPassword,updateUserData,updatePreferences } from "../../services/settings";
+import {
+  resetPassword,
+  updateUserData,
+  updatePreferences,
+} from "../../services/settings";
 
 export default function SettingsPage() {
   const { user, setUser } = useAuthStore();
@@ -27,7 +31,6 @@ export default function SettingsPage() {
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
 
-
   const [notificationSettings, setNotificationSettings] = useState({
     emailNotifications: true,
     sessionReminders: true,
@@ -45,18 +48,17 @@ export default function SettingsPage() {
 
   // Effect to update form state if user data in store changes
   useEffect(() => {
-      if (user) {
-          setProfileForm({
-              first_name: user.first_name || "",
-              last_name: user.last_name || "",
-              username: user.username || "",
-              email: user.email || "",
-              bio: user.bio || "",
-              profile_picture: user.profile_picture || null, // Update profile_picture state
-          });
-      }
+    if (user) {
+      setProfileForm({
+        first_name: user.first_name || "",
+        last_name: user.last_name || "",
+        username: user.username || "",
+        email: user.email || "",
+        bio: user.bio || "",
+        profile_picture: user.profile_picture || null, // Update profile_picture state
+      });
+    }
   }, [user]);
-
 
   const handleProfileInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -72,30 +74,29 @@ export default function SettingsPage() {
 
   // Handler for ImageUpload component
   const handleProfilePictureChange = (url: string | null) => {
-      setProfileForm(prev => ({
-          ...prev,
-          profile_picture: url, // Update profile_picture in state
-      }));
-      setProfileError(null);
-      setProfileSuccess(null);
+    setProfileForm((prev) => ({
+      ...prev,
+      profile_picture: url, // Update profile_picture in state
+    }));
+    setProfileError(null);
+    setProfileSuccess(null);
   };
-
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Basic validation
     if (!profileForm.first_name.trim()) {
-        setProfileError("First Name is required.");
-        return;
+      setProfileError("First Name is required.");
+      return;
     }
-     if (!profileForm.last_name.trim()) {
-        setProfileError("Last Name is required.");
-        return;
+    if (!profileForm.last_name.trim()) {
+      setProfileError("Last Name is required.");
+      return;
     }
     if (!profileForm.username.trim()) {
-        setProfileError("Username is required.");
-        return;
+      setProfileError("Username is required.");
+      return;
     }
 
     setIsUpdatingProfile(true);
@@ -119,7 +120,6 @@ export default function SettingsPage() {
       setUser(updatedUser);
 
       setProfileSuccess("Profile updated successfully!");
-
     } catch (error: any) {
       console.error("Error updating profile:", error);
       setProfileError(error.message || "Failed to update profile.");
@@ -149,7 +149,7 @@ export default function SettingsPage() {
       [key]: value,
     });
     // TODO: Add logic to save changes (e.g., API call) for privacy
-     console.log("Privacy settings updated:", { [key]: value });
+    console.log("Privacy settings updated:", { [key]: value });
   };
   // **Added Functions**
 
@@ -217,9 +217,9 @@ export default function SettingsPage() {
               <div className="flex flex-col items-center sm:flex-row sm:items-start gap-6">
                 {/* Image Upload Component */}
                 <ImageUpload
-                    value={profileForm.profile_picture}
-                    onChange={handleProfilePictureChange}
-                 />
+                  value={profileForm.profile_picture}
+                  onChange={handleProfilePictureChange}
+                />
 
                 <div className="flex-1 space-y-4 w-full">
                   {/* First Name Input */}
@@ -238,7 +238,7 @@ export default function SettingsPage() {
                       />
                     </div>
                   </div>
-                   {/* Last Name Input */}
+                  {/* Last Name Input */}
                   <div className="grid gap-2">
                     <Label htmlFor="last_name">Last Name</Label>
                     <div className="relative">
@@ -361,12 +361,16 @@ export default function SettingsPage() {
             </div>
 
             {/* Display error or success messages */}
-            {profileError && <p className="text-red-500 text-sm mt-4">{profileError}</p>}
-            {profileSuccess && <p className="text-green-600 text-sm mt-4">{profileSuccess}</p>}
+            {profileError && (
+              <p className="text-red-500 text-sm mt-4">{profileError}</p>
+            )}
+            {profileSuccess && (
+              <p className="text-green-600 text-sm mt-4">{profileSuccess}</p>
+            )}
 
             <div className="flex justify-start">
               <Button type="submit" disabled={isUpdatingProfile}>
-                 {isUpdatingProfile ? "Saving..." : "Save Changes"}
+                {isUpdatingProfile ? "Saving..." : "Save Changes"}
               </Button>
             </div>
           </form>

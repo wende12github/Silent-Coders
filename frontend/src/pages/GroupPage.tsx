@@ -4,11 +4,9 @@ import { useParams } from "react-router-dom";
 import Tabs, { TabItem } from "../components/ui/Tabs";
 import { useAuthStore } from "../store/authStore";
 import {
-  initialMockMessages,
   LeaderboardEntry,
 } from "../store/types";
 import Avatar from "../components/ui/Avatar";
-import { Announcement } from "../store/types";
 import {
   fetchGroupById,
   getGroupLeaderboard,
@@ -488,7 +486,7 @@ const GroupsPage: React.FC = () => {
       value: "chat",
       label: "Chat",
       content: (
-        <div className="flex flex-col h-full max-h-[700px] mb-10 bg-white rounded-lg shadow-sm border border-gray-200">
+        <div className="flex flex-col h-full max-h-[700px] mb-10 bg-white rounded-lg shadow-sm border border-gray-200 min-h-1/2">
           <div
             ref={messagesEndRef}
             className="flex-1 overflow-y-auto p-4 space-y-4"

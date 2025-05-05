@@ -42,7 +42,7 @@ export default function WalletPage() {
     return transactions.filter((transaction) => {
       if (timeRange === "all") return true;
 
-      const transactionDate = new Date(transaction.timestamp);
+      const transactionDate = new Date(transaction.created_at);
       transactionDate.setHours(0, 0, 0, 0);
 
       switch (timeRange) {
@@ -69,10 +69,13 @@ export default function WalletPage() {
     let spent = 0;
 
     filteredTransactions.forEach((t) => {
-      if (t.amount > 0) earned += t.amount;
-      if (t.amount < 0) spent += Math.abs(t.amount);
+      const amount = Number(t.amount); // ✅ Ensures correct numerical operations
+    
+      if (amount > 0) earned += amount;
+      if (amount < 0) spent += Math.abs(amount);
     });
-
+    console.log("Total Earned:", earned);
+    console.log("Total Spent:", spent);
     return { totalEarned: earned, totalSpent: spent };
   }, [filteredTransactions]);
 
@@ -110,7 +113,7 @@ export default function WalletPage() {
                   filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {format(parseISO(transaction.timestamp), "MMM d, yyyy")}
+                        {format(parseISO(transaction.created_at), "MMM d, yyyy")}
                       </TableCell>
                       <TableCell>{transaction.reason}</TableCell>
                       <TableCell
@@ -169,7 +172,7 @@ export default function WalletPage() {
                       <TableRow key={transaction.id}>
                         <TableCell>
                           {format(
-                            parseISO(transaction.timestamp),
+                            parseISO(transaction.created_at),
                             "MMM d, yyyy"
                           )}
                         </TableCell>
@@ -223,7 +226,7 @@ export default function WalletPage() {
                       <TableRow key={transaction.id}>
                         <TableCell>
                           {format(
-                            parseISO(transaction.timestamp),
+                            parseISO(transaction.created_at),
                             "MMM d, yyyy"
                           )}
                         </TableCell>
@@ -299,7 +302,7 @@ export default function WalletPage() {
             <CardTitle className="text-3xl">
               <div className="flex items-center text-green-500">
                 <TrendingUp className="mr-2 h-5 w-5" />
-                {totalEarned.toFixed(1)} hrs
+                {totalEarned} hrs
               </div>
             </CardTitle>
           </CardHeader>

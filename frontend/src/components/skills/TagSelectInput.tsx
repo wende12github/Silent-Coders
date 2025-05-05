@@ -64,7 +64,6 @@ export const TagInput: FC<TagInputProps> = ({
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
-
     setShowSuggestions(true);
   };
 
@@ -77,9 +76,7 @@ export const TagInput: FC<TagInputProps> = ({
         setAvailableTags([...availableTags, tag]);
       }
     }
-
     setInputValue("");
-
     setShowSuggestions(false);
   };
 
@@ -95,7 +92,6 @@ export const TagInput: FC<TagInputProps> = ({
       }
 
       setInputValue("");
-
       setShowSuggestions(false);
     }
   };
@@ -103,19 +99,20 @@ export const TagInput: FC<TagInputProps> = ({
   const handleRemoveTag = (tagToRemove: string) => {
     const newSelectedTags = selectedTags.filter((tag) => tag !== tagToRemove);
     onSelectedTagsChange(newSelectedTags);
-
     if (inputValue) {
       setShowSuggestions(true);
     }
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full relative">
       <input
         ref={inputRef}
         type="text"
         id="tag-input-field"
-        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+        className="w-full px-3 py-2 rounded-md focus:outline-none focus:ring-2
+                   border border-input bg-background text-foreground focus:ring-ring focus:border-ring
+                   dark:border-input-dark dark:bg-background-dark dark:text-foreground-dark dark:focus:ring-ring-dark dark:focus:border-ring-dark"
         placeholder="Search or add tags..."
         value={inputValue}
         onChange={handleInputChange}
@@ -130,12 +127,16 @@ export const TagInput: FC<TagInputProps> = ({
       {showSuggestions && (inputValue || filteredSuggestions.length > 0) && (
         <div
           ref={suggestionsRef}
-          className="tag-dropdown absolute w-3/4 mt-1 bg-white border border-gray-300 rounded-md shadow-lg z-20 max-h-60 overflow-auto"
+          className="absolute w-full mt-1 rounded-md border shadow-lg z-20 max-h-60 overflow-auto
+                     border-border bg-popover text-popover-foreground
+                     dark:border-border-dark dark:bg-popover-dark dark:text-popover-foreground-dark"
         >
           {filteredSuggestions.map((tag) => (
             <div
               key={tag}
-              className="px-3 py-2 cursor-pointer hover:bg-gray-200"
+              className="px-3 py-2 cursor-pointer transition-colors
+                         hover:bg-accent hover:text-accent-foreground
+                         dark:hover:bg-accent-dark dark:hover:text-accent-foreground-dark"
               onClick={() => handleSelectTag(tag)}
             >
               {tag}
@@ -144,7 +145,9 @@ export const TagInput: FC<TagInputProps> = ({
 
           {filteredSuggestions.length === 0 && inputValue.trim() !== "" && (
             <div
-              className="px-3 py-2 cursor-pointer hover:bg-gray-200 text-blue-600 font-medium"
+              className="px-3 py-2 cursor-pointer transition-colors font-medium
+                         text-primary hover:bg-accent hover:text-primary-foreground
+                         dark:text-primary-dark dark:hover:bg-accent-dark dark:hover:text-primary-foreground-dark"
               onClick={handleAddTag}
             >
               Add "{inputValue.trim()}"
@@ -156,12 +159,18 @@ export const TagInput: FC<TagInputProps> = ({
         {selectedTags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-blue-100 text-blue-800"
+            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium
+                       bg-secondary text-secondary-foreground
+                       dark:bg-secondary-dark dark:text-secondary-foreground-dark"
           >
             {tag}
             <button
               type="button"
-              className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center text-blue-400 hover:bg-blue-200 hover:text-blue-500 focus:outline-none focus:bg-blue-500 focus:text-white"
+              className="flex-shrink-0 ml-1.5 h-4 w-4 rounded-full inline-flex items-center justify-center transition-colors
+                         text-muted-foreground hover:bg-accent hover:text-accent-foreground
+                         focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background
+                         dark:text-muted-foreground-dark dark:hover:bg-accent-dark dark:hover:text-accent-foreground-dark
+                         dark:focus:ring-ring-dark dark:focus:ring-offset-background-dark"
               onClick={() => handleRemoveTag(tag)}
             >
               <span className="sr-only">Remove tag</span>

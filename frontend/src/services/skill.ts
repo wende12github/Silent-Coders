@@ -1,11 +1,11 @@
 import { AxiosResponse } from "axios";
-import { apiClient, PaginatedResponse } from "./api";
+import { apiClient, fetchCurrentUser, PaginatedResponse } from "./api";
 import { Skill } from "../store/types";
 
 export interface FetchSkillsParams {
   searchTerm?: string | null;
   page?: number | null;
-  type?: "request" | "offer" | null;
+  type?: "requested" | "offered" | null;
 }
 
 /**
@@ -18,14 +18,15 @@ export const fetchSkills = async ({
   searchTerm = null,
   page = 1,
   type = null,
-}: FetchSkillsParams): Promise<Skill[]> => {
+}: FetchSkillsParams): Promise<PaginatedResponse<Skill>> => {
   try {
     let endpoint = "/skills/";
-    if (type === "request") {
+    if (type === "requested") {
       endpoint = "/skills/requested/";
-    } else if (type === "offer") {
+    } else if (type === "offered") {
       endpoint = "/skills/offered/";
     }
+    console.log("endpoint:", endpoint);
 
     const response = await apiClient.get<PaginatedResponse<Skill>>(endpoint, {
       params: {
@@ -34,7 +35,7 @@ export const fetchSkills = async ({
       },
     });
 
-    return response.data.results;
+    return response.data;
   } catch (error) {
     console.error("Error fetching skills:", error);
     throw error;
@@ -99,6 +100,8 @@ export const fetchSkill = async (skillId: number): Promise<Skill> => {
 export const fetchMySkills = async (): Promise<Skill[]> => {
   try {
     const response: AxiosResponse<PaginatedResponse<Skill>> = await apiClient.get("/skills/me/");
+    const user = await fetchCurrentUser();
+    console.log(user);
     return response.data.results;
   } catch (error) {
     console.error("Error fetching my skills:", error);

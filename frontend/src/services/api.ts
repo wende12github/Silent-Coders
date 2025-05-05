@@ -25,6 +25,22 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
+
+export async function fetchPaginatedData<T>(
+  endpoint: string,
+  page: number = 1
+): Promise<PaginatedResponse<T>> {
+  try {
+    const response = await apiClient.get<PaginatedResponse<T>>(endpoint, {
+      params: { page },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching data from ${endpoint}?page=${page}:`, error);
+    throw error;
+  }
+}
+
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {

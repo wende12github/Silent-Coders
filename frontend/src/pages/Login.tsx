@@ -1,6 +1,6 @@
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { z } from "zod";
 import { useNavigate } from "react-router-dom";
 
@@ -8,6 +8,7 @@ import Button from "../components/ui/Button";
 import { Input } from "../components/ui/Form";
 import { toast } from "sonner";
 import { useLogin } from "../hooks/hooks";
+import { useAuthStore } from "../store/authStore";
 
 const loginSchema = z.object({
   email: z
@@ -21,6 +22,12 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, []);
 
   const { login } = useLogin();
   const [loading, setIsLoading] = useState(false);

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Image as ImageIcon, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "sonner"; // Assuming sonner is available
 
 interface ImageUploadProps {
   value: string | null;
@@ -64,9 +64,13 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
       <label
         htmlFor="imageUpload"
         className={`
-          flex items-center justify-center w-24 h-24 rounded-full 
-          border-2 border-dashed cursor-pointer transition-all
-          ${value ? "border-transparent" : "border-gray-300 hover:border-gray-400"}
+          flex items-center justify-center w-24 h-24 rounded-full
+          border-2 border-dashed cursor-pointer transition-all duration-200
+          ${
+            value
+              ? "border-transparent"
+              : "border-border hover:border-muted-foreground dark:border-border-dark dark:hover:border-muted-foreground-dark"
+          }
           ${isLoading ? "opacity-50 cursor-not-allowed" : ""}
         `}
       >
@@ -77,7 +81,10 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
             className="w-full h-full rounded-full object-cover"
           />
         ) : (
-          <div className="flex flex-col items-center justify-center text-gray-500">
+          <div
+            className="flex flex-col items-center justify-center
+                          text-muted-foreground dark:text-muted-foreground-dark"
+          >
             <ImageIcon size={24} />
             <span className="text-xs mt-1">Upload</span>
           </div>
@@ -97,10 +104,13 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
         <button
           type="button"
           onClick={() => onChange("")}
-          className="absolute cursor-pointer -top-2 -right-2 bg-red-500 text-white rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs shadow-sm hover:bg-red-600"
+          className="absolute cursor-pointer -top-2 -right-2 rounded-full p-1 w-6 h-6 flex items-center justify-center text-xs shadow-sm transition-colors
+                     bg-destructive text-destructive-foreground hover:bg-destructive/90
+                     dark:bg-destructive-dark dark:text-destructive-foreground-dark dark:hover:bg-destructive-dark/90"
           disabled={isLoading}
         >
-          <X/>
+          <X className="h-3 w-3" />
+          <span className="sr-only">Remove image</span>
         </button>
       )}
     </div>

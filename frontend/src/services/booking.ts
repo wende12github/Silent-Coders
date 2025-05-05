@@ -1,4 +1,4 @@
-import { Booking } from "../store/types";
+import { Booking, Skill } from "../store/types";
 import { apiClient, PaginatedResponse } from "./api";
 interface CreateBookingPayload {
   booked_for: number;
@@ -25,18 +25,7 @@ export const createBooking = async (
   }
 };
 
-export const fetchAllBookings = async (): Promise<Booking[]> => {
-  try {
-    const response = await apiClient.get("/bookings/");
-    console.log("Fetch all bookings response:", response.data);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching bookings:", error);
-    throw error;
-  }
-};
-
-export const fetchMyBookings = async (): Promise<Booking[]> => {
+export const fetchMyBookings = async (): Promise<Booking<Skill>[]> => {
   try {
     const response = await apiClient.get("/bookings/my/bookings/");
     console.log("Fetch my bookings response:", response.data);
@@ -47,7 +36,7 @@ export const fetchMyBookings = async (): Promise<Booking[]> => {
   }
 };
 
-export const fetchBooking = async (id: number): Promise<Booking> => {
+export const fetchBooking = async (id: number): Promise<Booking<Skill>> => {
   try {
     const response = await apiClient.get(`/bookings/${id}/`);
     console.log("Fetch booking response:", response.data);
@@ -58,49 +47,46 @@ export const fetchBooking = async (id: number): Promise<Booking> => {
   }
 };
 
-export const cancelBooking = async (
-  bookingId: number,
-  cancelReason: string
-): Promise<Booking> => {
-  try {
-    const response = await apiClient.patch(`/bookings/${bookingId}/cancel/`, {
-      status: "cancelled",
-      cancel_reason: cancelReason,
-    });
-    console.log(`Cancel booking ${bookingId} response:`, response.data);
-    return response.data;
-  } catch (error) {
-    console.error(`Error canceling booking ${bookingId}:`, error);
-    throw error;
-  }
-};
-
 interface BookingStatusReturn {
   id: number;
   status: "pending" | "confirmed" | "canceled";
 }
-export const confitmBooking = async (
-  bookingId: number
+export const updateBookingStatus = async (
+  bookingId: number,
+  status:  "confirmed" | "cancelled" | "completed",
+  cancelReason?: string
 ): Promise<BookingStatusReturn> => {
+  let statusEndpoint = "";
   try {
-    const response = await apiClient.patch(`/bookings/${bookingId}/confirm/`);
-    console.log(`Confirm booking ${bookingId} response:`, response.data);
-    return response.data;
-  } catch (error) {
-    console.error(`Error confirming booking ${bookingId}:`, error);
-    throw error;
-  }
-};
+    switch (status) {
+      case "confirmed":
+        statusEndpoint = "confirm";
+        break;
+      case "cancelled":
+        statusEndpoint = "cancel";
+        break;
+      case "completed":
+        statusEndpoint = "complete";
+        break;
+    }
 
-export const completeBooking = async (
-  bookingId: number
-): Promise<BookingStatusReturn> => {
-  try {
-    const response = await apiClient.patch(`/bookings/${bookingId}/complete/`);
-    console.log(`Complete booking ${bookingId} response:`, response.data);
+    const endpoint = `/bookings/${bookingId}/${statusEndpoint}/`;
+    console.log("encpoint: " ,endpoint)
+    const payload =
+      status === "cancelled"
+        ? { status, cancel_reason: cancelReason }
+        : { status };
+
+    const response = await apiClient.patch(endpoint, payload);
+    console.log(
+      `${
+        status.charAt(0).toUpperCase() + status.slice(1)
+      } booking ${bookingId} response:`,
+      response.data
+    );
     return response.data;
   } catch (error) {
-    console.error(`Error completing booking ${bookingId}:`, error);
+    console.error(`Error updating booking ${bookingId} to ${status}:`, error);
     throw error;
   }
 };
@@ -122,6 +108,19 @@ export const reScheduleBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error rescheduling booking ${bookingId}:`, error);
+    throw error;
+  }
+};
+
+export const getBookingById = async (bookingId: number) => {
+  try {
+    const response = await apiClient.get(
+      `/bookings/${bookingId}`
+    );
+    console.log(`Get booking by id ${bookingId} response:`, response.data);
+    return response.data as Booking<Skill>;
+  } catch (error) {
+    console.error(`Error getting booking by id ${bookingId}:`, error);
     throw error;
   }
 };
@@ -148,7 +147,7 @@ export const fetchUserAvailability = async (
     const response = await apiClient.get<PaginatedResponse<Availability>>(
       `/bookings/availability/user/${userId}/`
     );
-
+    console.log("Fetched availability:", response.data.results);
     return response.data.results;
   } catch (error) {
     console.error(`Failed to fetch availability for user ${userId}:`, error);
@@ -175,13 +174,13 @@ export const fetchMyAvailability = async (): Promise<Availability[]> => {
 };
 
 export interface CreateAvailabilityPayload {
-  weekday: number;
+  // weekday: number;
   start_time: string;
   end_time: string;
 }
 
 export interface UpdateAvailabilityPayload {
-  weekday?: number;
+  // weekday?: number;
   start_time?: string;
   end_time?: string;
 }

@@ -178,7 +178,7 @@ class SubmitReviewView(generics.CreateAPIView):
         except Booking.DoesNotExist:
             raise ValidationError("Booking not found.")
 
-        if booking.user != self.request.user:
+        if booking.booked_for != self.request.user:
             raise ValidationError("You can only review your own bookings.")
 
         if booking.status != 'completed':

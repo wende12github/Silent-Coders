@@ -22,7 +22,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ children }) => {
       }
     }
   });
-  
+
   const handleClickOutside = (event: MouseEvent) => {
     if (
       wrapperRef.current &&
@@ -62,7 +62,7 @@ export const DropdownMenu: React.FC<DropdownMenuProps> = ({ children }) => {
       <AnimatePresence>
         {isOpen && (
           <>
-            <div className="inset-0 z-20" onClick={handleClose}></div>
+            <div className="fixed inset-0 z-20" onClick={handleClose}></div>
 
             <motion.div
               className="absolute z-30 origin-top-right right-0"
@@ -117,7 +117,8 @@ export const DropdownMenuContent: React.FC<DropdownMenuContentProps> = ({
   return (
     <div
       className={clsx(
-        "absolute z-30 mt-2 w-48 rounded-md border border-border bg-white text-gray-900 shadow-lg p-1",
+        "absolute z-30 mt-2 w-48 rounded-md border border-border bg-popover text-popover-foreground shadow-lg p-1",
+        "dark:border-border-dark dark:bg-popover-dark dark:text-popover-foreground-dark",
         alignClass,
         className
       )}
@@ -161,7 +162,9 @@ export const DropdownMenuItem: React.FC<DropdownMenuItemProps> = ({
   return (
     <div
       className={clsx(
-        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors hover:bg-gray-100 focus:bg-gray-100 data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "relative flex cursor-pointer select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none transition-colors data-[disabled]:pointer-events-none data-[disabled]:opacity-50",
+        "text-foreground hover:bg-accent focus:bg-accent hover:text-accent-foreground focus:text-accent-foreground",
+        "dark:text-foreground-dark dark:hover:bg-accent-dark dark:focus:bg-accent-dark dark:hover:text-accent-foreground-dark dark:focus:text-accent-foreground-dark",
         inset && "pl-8",
         className
       )}
@@ -186,7 +189,8 @@ export const DropdownMenuLabel: React.FC<DropdownMenuLabelProps> = ({
 }) => (
   <div
     className={clsx(
-      "px-2 py-1.5 text-sm font-semibold text-gray-900",
+      "px-2 py-1.5 text-sm font-semibold",
+      "text-foreground dark:text-foreground-dark",
       inset && "pl-8",
       className
     )}
@@ -201,4 +205,8 @@ interface DropdownMenuSeparatorProps {
 
 export const DropdownMenuSeparator: React.FC<DropdownMenuSeparatorProps> = ({
   className,
-}) => <div className={clsx("-mx-1 my-1 h-px bg-gray-200", className)} />;
+}) => (
+  <div
+    className={clsx("-mx-1 my-1 h-px bg-border dark:bg-border-dark", className)}
+  />
+);

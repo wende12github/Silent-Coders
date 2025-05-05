@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
 import { z } from "zod";
@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { Checkbox } from "../components/ui/Checkbox";
 import { Input, Textarea } from "../components/ui/Form";
 import { useSignup } from "../hooks/hooks";
+import { useAuthStore } from "../store/authStore";
 
 const signupSchema = z
   .object({
@@ -45,6 +46,14 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>;
 
 const SignUp = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuthStore();
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/");
+    }
+  }, []);
+
   const [formData, setFormData] = useState<SignupFormData>({
     email: "",
     username: "",
@@ -55,7 +64,6 @@ const SignUp = () => {
     agreedToTerms: false,
     bio: "",
   });
-  const navigate = useNavigate();
   const { signup } = useSignup();
 
   const [loading, setIsLoading] = useState(false);

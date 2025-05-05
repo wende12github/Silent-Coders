@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Edit, Plus, Trash2, MapPin, Clock } from "lucide-react"; // Added Clock icon
+import { BookOpen, Edit, Plus, Trash2, MapPin, Clock } from "lucide-react";
 
 import Tabs, { TabItem } from "../ui/Tabs";
 import Button from "../ui/Button";
@@ -37,12 +37,12 @@ import {
   createAvailability,
   updateAvailability,
   deleteAvailability,
-} from "../../services/booking"; // Import new availability services
-import { Select, SelectItem } from "../ui/Select"; // Import Select components
+} from "../../services/booking";
+import { Select, SelectItem } from "../ui/Select";
 
 const MySkills = () => {
   const [skills, setSkills] = useState<Skill[]>([]);
-  const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false); // Renamed skill dialog state
+  const [isSkillDialogOpen, setIsSkillDialogOpen] = useState(false);
   const [editingSkill, setEditingSkill] = useState<Skill | null>(null);
 
   const [newSkill, setNewSkill] = useState<Partial<Skill>>({
@@ -57,9 +57,9 @@ const MySkills = () => {
 
   const [myAvailability, setMyAvailability] = useState<Availability[]>([]);
   const [isAvailabilityDialogOpen, setIsAvailabilityDialogOpen] =
-    useState(false); // State for availability dialog
+    useState(false);
   const [editingAvailability, setEditingAvailability] =
-    useState<Availability | null>(null); // State for availability being edited
+    useState<Availability | null>(null);
   const [newAvailability, setNewAvailability] = useState({
     weekday: 0,
     start_time: "09:00",
@@ -86,9 +86,8 @@ const MySkills = () => {
         toast.error("Failed to fetch skills.");
         setSkills([]);
       });
-  }, []); 
+  }, []);
 
-  // Fetch availability on component mount
   useEffect(() => {
     fetchMyAvailability()
       .then((availability) => {
@@ -100,7 +99,7 @@ const MySkills = () => {
         toast.error("Failed to fetch availability.");
         setMyAvailability([]);
       });
-  }, []); // Empty dependency array ensures this runs only once on mount
+  }, []);
 
   const initialTags = [
     "All",
@@ -115,19 +114,11 @@ const MySkills = () => {
     "Health",
   ];
 
-  // Filter skills for tabs - based on the existing logic
   const offeredSkills = skills.filter((skill) => skill.is_offered);
   const neededSkills = skills.filter((skill) => !skill.is_offered);
-  // Note: The current tabs show 'All', 'Local', 'Remote'. The logic inside
-  // them seems to display offered skills filtered by location. This might
-  // need adjustment based on desired behavior (e.g., "Local Skills" shows
-  // *both* offered and needed skills that are local). For now, preserving
-  // the existing rendering logic which seems to filter offered skills by location.
 
   const handleAddSkill = () => {
-    // Check for availability before allowing skill creation if needed (original logic)
     if (myAvailability.length === 0 && newSkill.is_offered) {
-      // Only check if offering
       toast.error(
         "Please add at least one availability slot before offering a skill."
       );
@@ -145,7 +136,7 @@ const MySkills = () => {
       location: newSkill.location || "local",
       address:
         (newSkill.location === "local" ? newSkill.address?.trim() : null) ||
-        null, // Only send address if location is local
+        null,
       tags: newSkill.tags || [],
       is_visible: newSkill.is_visible ?? true,
     };
@@ -156,7 +147,6 @@ const MySkills = () => {
         setSkills([...skills, response]);
 
         setNewSkill({
-          // Reset new skill form
           name: "",
           description: "",
           is_offered: false,
@@ -165,7 +155,7 @@ const MySkills = () => {
           tags: [],
           is_visible: true,
         });
-        setIsSkillDialogOpen(false); // Close skill dialog
+        setIsSkillDialogOpen(false);
       })
       .catch((error) => {
         console.error("Error creating skill:", error);
@@ -181,9 +171,7 @@ const MySkills = () => {
       return;
     }
 
-    // Check for availability before allowing skill creation if needed (original logic)
     if (myAvailability.length === 0 && editingSkill.is_offered) {
-      // Only check if offering
       toast.error(
         "Please add at least one availability slot before offering a skill."
       );
@@ -198,7 +186,7 @@ const MySkills = () => {
       address:
         (editingSkill.location === "local"
           ? editingSkill.address?.trim()
-          : null) || null, // Only send address if location is local
+          : null) || null,
       tags: editingSkill.tags,
       is_visible: editingSkill.is_visible ?? true,
     };
@@ -211,8 +199,8 @@ const MySkills = () => {
           skill.id === response.id ? response : skill
         );
         setSkills(updatedSkills);
-        setEditingSkill(null); // Clear editing state
-        setIsSkillDialogOpen(false); // Close skill dialog
+        setEditingSkill(null);
+        setIsSkillDialogOpen(false);
       })
       .catch((error) => {
         console.error("Error updating skill:", error);
@@ -227,10 +215,9 @@ const MySkills = () => {
       return;
     }
 
-    // Optimistically remove the skill from the UI
     const skillsAfterDelete = skills.filter((skill) => skill.id !== id);
     setSkills(skillsAfterDelete);
-    toast.info("Deleting skill..."); // Show pending state
+    toast.info("Deleting skill...");
 
     deleteSkill(id)
       .then(() => {
@@ -241,26 +228,22 @@ const MySkills = () => {
         toast.error(
           `Failed to delete skill: ${error.message || "Unknown error"}`
         );
-        // If delete fails, revert the UI state (refetch or add back)
-        // A full refetch is simpler for now:
+
         fetchMySkills()
           .then(setSkills)
-          .catch(() => setSkills(skills)); // Revert or show error
+          .catch(() => setSkills(skills));
       });
   };
 
   const openEditSkillDialog = (skill: Skill) => {
-    // Renamed
     setEditingSkill(skill);
     setIsSkillDialogOpen(true);
   };
 
   const openAddSkillDialog = () => {
-    // Renamed
-    setEditingSkill(null); // Clear editing state
+    setEditingSkill(null);
 
     setNewSkill({
-      // Reset new skill form
       name: "",
       description: "",
       is_offered: false,
@@ -269,74 +252,64 @@ const MySkills = () => {
       tags: [],
       is_visible: true,
     });
-    setIsSkillDialogOpen(true); // Open skill dialog
+    setIsSkillDialogOpen(true);
   };
 
-  // --- Availability Handlers ---
-
   const openAddAvailabilityDialog = () => {
-    setEditingAvailability(null); // Clear editing state
+    setEditingAvailability(null);
     setNewAvailability({
-      // Reset new availability form
-      weekday: 0, // Monday
+      weekday: 0,
       start_time: "09:00",
       end_time: "17:00",
     });
-    setIsAvailabilityDialogOpen(true); // Open availability dialog
+    setIsAvailabilityDialogOpen(true);
   };
 
   const openEditAvailabilityDialog = (availability: Availability) => {
     setEditingAvailability(availability);
-    // Set the form state based on the availability being edited
+
     setNewAvailability({
       weekday: availability.weekday,
       start_time: availability.start_time,
       end_time: availability.end_time,
     });
-    setIsAvailabilityDialogOpen(true); // Open availability dialog
+    setIsAvailabilityDialogOpen(true);
   };
 
   const handleSaveAvailability = async () => {
-    // Determine if adding or editing
     const isEditing = editingAvailability !== null;
 
-    // Get data from current form state (using newAvailability state)
     const payload = {
       weekday: newAvailability.weekday,
       start_time: newAvailability.start_time,
       end_time: newAvailability.end_time,
     };
 
-    // Basic validation
     if (payload.start_time >= payload.end_time) {
       toast.error("Start time must be before end time.");
       return;
     }
-    // Add more robust time format validation if needed
 
     try {
       if (isEditing && editingAvailability) {
-        // Call the external updateAvailability function
         const updatedAvailability = await updateAvailability(
           editingAvailability.id,
           payload
         );
         toast.success("Availability updated successfully!");
-        // Update the local state with the updated availability
+
         setMyAvailability(
           myAvailability.map((avail) =>
             avail.id === updatedAvailability.id ? updatedAvailability : avail
           )
         );
       } else {
-        // Call the external createAvailability function
         const createdAvailability = await createAvailability(payload);
         toast.success("Availability added successfully!");
-        // Add the new availability to the local state
+
         setMyAvailability([...myAvailability, createdAvailability]);
       }
 
-      // Close dialog and reset state
       setIsAvailabilityDialogOpen(false);
       setEditingAvailability(null);
       setNewAvailability({
@@ -345,10 +318,7 @@ const MySkills = () => {
         end_time: "17:00",
       });
 
-      // If adding availability, check if there are now slots for offering skills
       if (!isEditing && myAvailability.length === 0) {
-        // Potentially re-evaluate the skills list or notify user they can now offer skills
-        // For now, just showing a message.
         toast.info("You can now add skills you offer!");
       }
     } catch (error: any) {
@@ -366,7 +336,6 @@ const MySkills = () => {
       return;
     }
 
-    // Optimistically remove from UI
     const availabilityAfterDelete = myAvailability.filter(
       (avail) => avail.id !== id
     );
@@ -374,10 +343,9 @@ const MySkills = () => {
     toast.info("Deleting availability...");
 
     try {
-      // Call the external deleteAvailability function
       await deleteAvailability(id);
       toast.success("Availability deleted successfully!");
-      // Check if there are now no availability slots left
+
       if (availabilityAfterDelete.length === 0) {
         toast.warning(
           "You have no availability slots. Skills you offer may not be bookable."
@@ -388,104 +356,90 @@ const MySkills = () => {
       toast.error(
         `Failed to delete availability: ${error.message || "Unknown error"}`
       );
-      // Revert UI on failure
+
       fetchMyAvailability()
         .then(setMyAvailability)
-        .catch(() => setMyAvailability(myAvailability)); // Revert or show error
+        .catch(() => setMyAvailability(myAvailability));
     }
   };
 
-  // Tabs definition (remains largely the same, filtering handled by state)
   const skillTabs: TabItem[] = [
     {
       value: "all",
       label: "All Skills",
-      // Content logic remains as before, displaying all skills
+
       content: (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {/* Display skills. Decide if you want to show *all* here, or filter offered/needed */}
-          {/* Current logic shows only 'offeredSkills' in 'all' tab - this seems incorrect based on label*/}
-          {/* Let's display ALL skills here, and filter in the other tabs */}
           {skills.length > 0 ? (
-            skills.map(
-              (
-                skill // Use 'skills' array for 'all' tab
-              ) => (
-                <Card key={skill.id} className="">
-                  <CardHeader className="pb-2">
-                    <div className="flex items-start justify-between ">
-                      <div className="space-y-1">
-                        <CardTitle className="flex items-center text-2xl font-semibold">
-                          <BookOpen className="mr-2 h-4 w-4 text-blue-600" />
-                          {skill.name}
-                        </CardTitle>
+            skills.map((skill) => (
+              <Card key={skill.id} className="">
+                <CardHeader className="pb-2">
+                  <div className="flex items-start justify-between ">
+                    <div className="space-y-2">
+                      <CardTitle className="flex items-center text-2xl font-semibold text-foreground dark:text-foreground-dark">
+                        <BookOpen className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                        {skill.name}
+                      </CardTitle>
 
-                        <CardDescription className="flex items-center text-gray-600">
-                          <MapPin className="mr-1 h-4 w-4 text-gray-500" />
-                          {skill.location === "local"
-                            ? `Local${
-                                skill.address ? ` (${skill.address})` : ""
-                              }`
-                            : "Remote"}
-                        </CardDescription>
-                      </div>
-
-                      <Badge
-                        variant="outline"
-                        className={
-                          skill.is_offered
-                            ? "bg-blue-100 text-blue-600"
-                            : "bg-gray-200 text-gray-900"
-                        }
-                      >
-                        {skill.is_offered ? "Offering" : "Learning"}
-                      </Badge>
+                      <CardDescription className="flex items-center text-muted-foreground dark:text-muted-foreground-dark">
+                        <MapPin className="mr-1 h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
+                        {skill.location === "local"
+                          ? `Local${skill.address ? ` (${skill.address})` : ""}`
+                          : "Remote"}
+                      </CardDescription>
                     </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-gray-600">
-                      {skill.description || "No description provided."}
-                    </p>
-                  </CardContent>
 
-                  <CardFooter className="flex flex-wrap gap-1 justify-end">
+                    <Badge
+                      variant="outline"
+                      className={
+                        skill.is_offered
+                          ? "bg-primary/10 text-primary dark:bg-primary-dark/10 dark:text-primary-dark"
+                          : "bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark"
+                      }
+                    >
+                      {skill.is_offered ? "Offering" : "Learning"}
+                    </Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-1">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                    {skill.description || "No description provided."}
+                  </p>
+
+                  <div className="flex flex-wrap gap-1">
                     {skill.tags.map((tag) => (
-                      <Badge
-                        key={tag}
-                        variant="outline"
-                        className="bg-gray-100 text-gray-700"
-                      >
+                      <Badge key={tag} variant="secondary">
                         {tag}
                       </Badge>
                     ))}
-                  </CardFooter>
+                  </div>
+                </CardContent>
 
-                  <CardFooter className="flex justify-between">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openEditSkillDialog(skill)}
-                    >
-                      <Edit className="mr-2 h-3 w-3" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDeleteSkill(skill.id)}
-                    >
-                      <Trash2 className="mr-2 h-3 w-3 text-red-600" />
-                      Delete
-                    </Button>
-                  </CardFooter>
-                </Card>
-              )
-            )
+                <CardFooter className="flex justify-between">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => openEditSkillDialog(skill)}
+                  >
+                    <Edit className="mr-2 h-3 w-3" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDeleteSkill(skill.id)}
+                  >
+                    <Trash2 className="mr-2 h-3 w-3 text-destructive dark:text-destructive-dark" />
+                    Delete
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))
           ) : (
             <Card className="col-span-full py-10">
               <CardContent className="flex flex-col items-center justify-center py-10">
-                <BookOpen className="h-10 w-10 text-gray-600 mb-4" />
-                <p className="text-center text-gray-600 mb-4">
+                <BookOpen className="h-10 w-10 text-muted-foreground dark:text-muted-foreground-dark mb-4" />
+                <p className="text-center text-muted-foreground dark:text-muted-foreground-dark mb-4">
                   You don't have any skills added yet.
                 </p>
                 <Button onClick={openAddSkillDialog}>
@@ -499,24 +453,23 @@ const MySkills = () => {
       ),
     },
     {
-      value: "offering", // Changed value to 'offering' for clarity
-      label: "Offering Skills", // Changed label
+      value: "offering",
+      label: "Offering Skills",
       content: (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {offeredSkills.length > 0 ? (
             offeredSkills.map((skill) => (
-              // Card rendering logic for offered skills
               <Card key={skill.id} className="">
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between ">
                     <div className="space-y-1">
-                      <CardTitle className="flex items-center text-2xl font-semibold">
-                        <BookOpen className="mr-2 h-4 w-4 text-blue-600" />
+                      <CardTitle className="flex items-center text-2xl font-semibold text-foreground dark:text-foreground-dark">
+                        <BookOpen className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
                         {skill.name}
                       </CardTitle>
 
-                      <CardDescription className="flex items-center text-gray-600">
-                        <MapPin className="mr-1 h-4 w-4 text-gray-500" />
+                      <CardDescription className="flex items-center text-muted-foreground dark:text-muted-foreground-dark">
+                        <MapPin className="mr-1 h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
                         {skill.location === "local"
                           ? `Local${skill.address ? ` (${skill.address})` : ""}`
                           : "Remote"}
@@ -525,25 +478,23 @@ const MySkills = () => {
 
                     <Badge
                       variant="outline"
-                      className={"bg-blue-100 text-blue-600"} // Always offering in this tab
+                      className={
+                        "bg-primary/10 text-primary dark:bg-primary-dark/10 dark:text-primary-dark"
+                      }
                     >
                       Offering
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">
+                <CardContent className="space-y-1">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                     {skill.description || "No description provided."}
                   </p>
                 </CardContent>
 
                 <CardFooter className="flex flex-wrap gap-1 justify-end">
                   {skill.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="bg-gray-100 text-gray-700"
-                    >
+                    <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>
                   ))}
@@ -563,7 +514,7 @@ const MySkills = () => {
                     size="sm"
                     onClick={() => handleDeleteSkill(skill.id)}
                   >
-                    <Trash2 className="mr-2 h-3 w-3 text-red-600" />
+                    <Trash2 className="mr-2 h-3 w-3 text-destructive dark:text-destructive-dark" />
                     Delete
                   </Button>
                 </CardFooter>
@@ -572,8 +523,8 @@ const MySkills = () => {
           ) : (
             <Card className="col-span-full py-10">
               <CardContent className="flex flex-col items-center justify-center py-10">
-                <BookOpen className="h-10 w-10 text-gray-600 mb-4" />
-                <p className="text-center text-gray-600 mb-4">
+                <BookOpen className="h-10 w-10 text-muted-foreground dark:text-muted-foreground-dark mb-4" />
+                <p className="text-center text-muted-foreground dark:text-muted-foreground-dark mb-4">
                   You haven't added any skills you offer yet.
                 </p>
                 <Button onClick={openAddSkillDialog}>
@@ -587,24 +538,23 @@ const MySkills = () => {
       ),
     },
     {
-      value: "seeking", // Changed value to 'seeking' for clarity
-      label: "Needed Skills", // Changed label
+      value: "seeking",
+      label: "Needed Skills",
       content: (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {neededSkills.length > 0 ? (
             neededSkills.map((skill) => (
-              // Card rendering logic for needed skills
               <Card key={skill.id}>
                 <CardHeader className="pb-2">
                   <div className="flex items-start justify-between">
                     <div className="space-y-1">
-                      <CardTitle className="flex items-center text-2xl font-semibold">
-                        <BookOpen className="mr-2 h-4 w-4 text-blue-600" />
+                      <CardTitle className="flex items-center text-2xl font-semibold text-foreground dark:text-foreground-dark">
+                        <BookOpen className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
                         {skill.name}
                       </CardTitle>
 
-                      <CardDescription className="flex items-center text-gray-600">
-                        <MapPin className="mr-1 h-4 w-4 text-gray-500" />
+                      <CardDescription className="flex items-center text-muted-foreground dark:text-muted-foreground-dark">
+                        <MapPin className="mr-1 h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
                         {skill.location === "local"
                           ? `Local${skill.address ? ` (${skill.address})` : ""}`
                           : "Remote"}
@@ -613,25 +563,23 @@ const MySkills = () => {
 
                     <Badge
                       variant="outline"
-                      className={"bg-gray-200 text-gray-900"} // Always learning in this tab
+                      className={
+                        "bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark"
+                      }
                     >
                       Learning
                     </Badge>
                   </div>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-gray-600">
+                <CardContent className="space-y-1">
+                  <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                     {skill.description || "No description provided."}
                   </p>
                 </CardContent>
 
                 <CardFooter className="flex flex-wrap gap-1 justify-end">
                   {skill.tags.map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="outline"
-                      className="bg-gray-100 text-gray-700"
-                    >
+                    <Badge key={tag} variant="secondary">
                       {tag}
                     </Badge>
                   ))}
@@ -651,7 +599,7 @@ const MySkills = () => {
                     size="sm"
                     onClick={() => handleDeleteSkill(skill.id)}
                   >
-                    <Trash2 className="mr-2 h-3 w-3 text-red-600" />
+                    <Trash2 className="mr-2 h-3 w-3 text-destructive dark:text-destructive-dark" />
                     Delete
                   </Button>
                 </CardFooter>
@@ -660,8 +608,8 @@ const MySkills = () => {
           ) : (
             <Card className="col-span-full py-10">
               <CardContent className="flex flex-col items-center justify-center py-10">
-                <BookOpen className="h-10 w-10 text-gray-600 mb-4" />
-                <p className="text-center text-gray-600 mb-4">
+                <BookOpen className="h-10 w-10 text-muted-foreground dark:text-muted-foreground-dark mb-4" />
+                <p className="text-center text-muted-foreground dark:text-muted-foreground-dark mb-4">
                   You haven't added any skills you want to learn yet.
                 </p>
                 <Button onClick={openAddSkillDialog}>
@@ -677,13 +625,16 @@ const MySkills = () => {
   ];
 
   return (
-    <div className="p-6 space-y-6 bg-white h-full w-full">
+    <div
+      className="p-6 space-y-6 h-full w-full
+                   bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark"
+    >
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-2xl font-bold tracking-tight text-foreground dark:text-foreground-dark">
             My Skills & Availability
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground dark:text-muted-foreground-dark">
             Manage your skills, whether you offer or want to learn them, and
             your availability.
           </p>
@@ -700,19 +651,20 @@ const MySkills = () => {
         </div>
       </div>
 
-      {/* --- Availability Section --- */}
       <div className="space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">My Availability</h2>
+        <h2 className="text-xl font-semibold text-foreground dark:text-foreground-dark">
+          My Availability
+        </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {myAvailability.length > 0 ? (
             myAvailability.map((avail) => (
               <Card key={avail.id}>
                 <CardContent className="flex justify-between items-center py-4!">
                   <div>
-                    <p className="text-sm font-medium text-gray-900">
+                    <p className="text-sm font-medium text-foreground dark:text-foreground-dark">
                       {weekdays[avail.weekday]?.label || "Unknown Day"}
                     </p>
-                    <p className="text-xs text-gray-600">
+                    <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
                       {avail.start_time} - {avail.end_time}
                     </p>
                   </div>
@@ -729,7 +681,7 @@ const MySkills = () => {
                       size="sm"
                       onClick={() => handleDeleteAvailability(avail.id)}
                     >
-                      <Trash2 className="h-3 w-3 text-red-600" />
+                      <Trash2 className="h-3 w-3 text-destructive dark:text-destructive-dark" />
                     </Button>
                   </div>
                 </CardContent>
@@ -738,8 +690,8 @@ const MySkills = () => {
           ) : (
             <Card className="col-span-full py-6">
               <CardContent className="flex flex-col items-center justify-center py-6">
-                <Clock className="h-8 w-8 text-gray-600 mb-3" />
-                <p className="text-center text-gray-600 mb-3">
+                <Clock className="h-8 w-8 text-muted-foreground dark:text-muted-foreground-dark mb-3" />
+                <p className="text-center text-muted-foreground dark:text-muted-foreground-dark mb-3">
                   You haven't added any availability yet.
                 </p>
                 <Button onClick={openAddAvailabilityDialog}>
@@ -751,7 +703,6 @@ const MySkills = () => {
           )}
         </div>
       </div>
-      {/* --- End Availability Section --- */}
 
       <Tabs
         defaultValue="all"
@@ -759,13 +710,12 @@ const MySkills = () => {
         tabsListClassName="w-full grid grid-cols-3 gap-1 mb-6"
       />
 
-      {/* Skill Add/Edit Dialog */}
       <Dialog
         open={isSkillDialogOpen}
         onOpenChange={setIsSkillDialogOpen}
         className="max-h-screen overflow-y-auto"
       >
-        <div className="sm:max-w-[425px]">
+        <div className="">
           <DialogHeader>
             <DialogTitle>
               {editingSkill ? "Edit Skill" : "Add New Skill"}
@@ -839,7 +789,7 @@ const MySkills = () => {
 
             <div className="grid gap-2">
               <Label htmlFor="skill-location">Mode</Label>
-              {/* Using Shadcn Select for consistency */}
+
               <Select
                 value={
                   editingSkill
@@ -944,13 +894,12 @@ const MySkills = () => {
         </div>
       </Dialog>
 
-      {/* Availability Add/Edit Dialog */}
       <Dialog
         open={isAvailabilityDialogOpen}
         onOpenChange={setIsAvailabilityDialogOpen}
         className="max-h-screen"
       >
-        <div className="sm:max-w-[425px]">
+        <div className="">
           <DialogHeader>
             <DialogTitle>
               {editingAvailability
@@ -966,9 +915,9 @@ const MySkills = () => {
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="availability-weekday">Day of the Week</Label>
-              {/* Using Shadcn Select for consistency */}
+
               <Select
-                value={newAvailability.weekday.toString()} // Select value should be string
+                value={newAvailability.weekday.toString()}
                 onValueChange={(value) =>
                   setNewAvailability({
                     ...newAvailability,
@@ -989,7 +938,7 @@ const MySkills = () => {
                 <Label htmlFor="availability-start-time">Start Time</Label>
                 <Input
                   id="availability-start-time"
-                  type="time" // Use type="time" for time input
+                  type="time"
                   value={newAvailability.start_time}
                   onChange={(e) =>
                     setNewAvailability({
@@ -1003,7 +952,7 @@ const MySkills = () => {
                 <Label htmlFor="availability-end-time">End Time</Label>
                 <Input
                   id="availability-end-time"
-                  type="time" // Use type="time" for time input
+                  type="time"
                   value={newAvailability.end_time}
                   onChange={(e) =>
                     setNewAvailability({

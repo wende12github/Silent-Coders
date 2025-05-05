@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import { X } from "lucide-react";
 import { useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -8,6 +11,7 @@ interface DialogProps {
   children: React.ReactNode;
   className?: string;
 }
+
 export const Dialog: React.FC<DialogProps> = ({
   open,
   onOpenChange,
@@ -50,16 +54,20 @@ export const Dialog: React.FC<DialogProps> = ({
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.95, opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className={`relative w-full max-w-lg p-6 bg-white rounded-lg shadow-lg ${
-              className || ""
-            }`}
+            className={`relative w-full max-w-lg p-6 rounded-lg shadow-lg
+                       bg-background text-foreground
+                       dark:bg-background-dark dark:text-foreground-dark
+                       ${className || ""}`}
           >
             {children}
             <button
-              className="cursor-pointer hover:bg-gray-200 absolute top-4 right-4 rounded-sm opacity-70 ring-offset-white transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:pointer-events-none"
+              className="cursor-pointer absolute top-4 right-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none
+                         hover:bg-accent hover:text-accent-foreground
+                         dark:ring-offset-background-dark dark:focus:ring-ring-dark
+                         dark:hover:bg-accent-dark dark:hover:text-accent-foreground-dark"
               onClick={() => onOpenChange(false)}
             >
-              <X />
+              <X className="h-4 w-4" />
               <span className="sr-only">Close</span>
             </button>
           </motion.div>
@@ -97,9 +105,9 @@ export const DialogTitle: React.FC<DialogTitleProps> = ({
   className,
 }) => (
   <h3
-    className={`text-lg font-semibold leading-none tracking-tight ${
-      className || ""
-    }`}
+    className={`text-lg font-semibold leading-none tracking-tight
+                text-foreground dark:text-foreground-dark
+                ${className || ""}`}
   >
     {children}
   </h3>
@@ -113,7 +121,15 @@ interface DialogDescriptionProps {
 export const DialogDescription: React.FC<DialogDescriptionProps> = ({
   children,
   className,
-}) => <p className={`text-sm text-gray-600 ${className || ""}`}>{children}</p>;
+}) => (
+  <p
+    className={`text-sm text-muted-foreground dark:text-muted-foreground-dark ${
+      className || ""
+    }`}
+  >
+    {children}
+  </p>
+);
 
 interface DialogFooterProps {
   children: React.ReactNode;
