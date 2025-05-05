@@ -1,6 +1,8 @@
 import { LeaderboardEntry } from "../store/types";
 import { apiClient } from "./api";
 import axios, { AxiosResponse } from "axios";
+import { fetchUser } from "./user";
+import { User } from "../store/types";
 
 export interface Group {
   id: number;
@@ -189,54 +191,32 @@ export const sendGroupMessage = async (
   }
 };
 
-// export const sendChatbotMessage = async (
-//   messageData: SendMessageRequest
-// ): Promise<ChatbotResponse> => {
-//   try {
-//     const response = await apiClient.post<ChatbotResponse>(
-//       "/chatbot/sendMessage/",
-//       {
-//         is_group_chat: messageData.is_group_chat,
-//         message: messageData.message,
-//         room_name: messageData.room_name
-//       }
-//     );
-//     return response.data;
-//   } catch (error) {
-//     if (axios.isAxiosError(error)) {
-//       const serverMessage =
-//         error.response?.data?.message ||
-//         error.response?.data?.error ||
-//         JSON.stringify(error.response?.data);
-//       throw new Error(serverMessage || "Failed to send message to chatbot");
-//     }
-//     throw new Error("Network error - could not connect to server");
-//   }
-// };
-
-interface GroupMessage {
-  user: number;
-  room: number;
-  message: string;
-  message_type: string;
-  created_at: string;
-}
-
 export const fetchGroupMessages = async (groupName: string): Promise<ChatMessage[]> => {
   try {
+    // 1. Fetch messages
     const response = await apiClient.get(`/chatbot/group/${groupName}/`);
     
-    return response.data.map((apiMessage: any) => ({
-      id: `${apiMessage.user}-${apiMessage.created_at}`, // Create unique ID
-      senderId: apiMessage.user,
-      senderName: `User ${apiMessage.user}`, // Or fetch actual username
-      senderAvatar: `https://placehold.co/100x100/ff7f7f/ffffff?text=U${apiMessage.user}`,
-      text: apiMessage.message,
-      timestamp: apiMessage.created_at,
-      status: 'delivered' as const,
-    }));
+    // 2. Process each message
+    const messages = await Promise.all(
+      response.data.map(async (msg: any) => {
+        // 3. Get user details for each message
+        const user = await fetchUser(msg.user);
+        
+        return {
+          id: `${msg.user}-${msg.created_at}`,
+          senderId: msg.user,
+          senderName: user.username, // Now using actual username
+          senderAvatar: user.profile_picture || `https://placehold.co/100x100?text=${user.username.charAt(0)}`,
+          text: msg.message,
+          timestamp: msg.created_at,
+          status: 'delivered' as const,
+        };
+      })
+    );
+    
+    return messages;
   } catch (error) {
-    console.error(`Error fetching messages for ${groupName}:`, error);
+    console.error(`Error fetching messages:`, error);
     throw error;
   }
 };

@@ -1,5 +1,5 @@
 import { Send, Trophy } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import Tabs, { TabItem } from "../components/ui/Tabs";
 import { useAuthStore } from "../store/authStore";
@@ -26,7 +26,7 @@ const GroupsPage: React.FC = () => {
   const { groupId } = useParams<{ groupId: string }>();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const [messages, setMessages] = useState<ChatMessage[]>(initialMockMessages);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessageText, setNewMessageText] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
@@ -177,24 +177,25 @@ const GroupsPage: React.FC = () => {
     loadAllGroups();
   }, []);
 
+  const loadMessages = useCallback(async () => {
+    if (!group?.name) return; // Guard clause
+    
+    setIsLoadingMessages(true);
+    try {
+      const fetchedMessages = await fetchGroupMessages(group.name);
+      setMessages(fetchedMessages);
+    } catch (error) {
+      console.error("Failed to load messages:", error);
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  }, [group?.name]); // Add dependency
+
   useEffect(() => {
-    if (!group?.name) return;
-  
-    const loadMessages = async () => {
-      setIsLoadingMessages(true);
-      try {
-        const fetchedMessages = await fetchGroupMessages(group.name);
-        setMessages(() => fetchedMessages);
-      } catch (error) {
-        console.error("Failed to load messages:", error);
-        // Keep existing messages if reload fails
-      } finally {
-        setIsLoadingMessages(false);
-      }
-    };
-  
-    loadMessages();
-  }, [group?.name]); // Re-fetch when group changes
+    if (group?.name) {
+      loadMessages();
+    }
+  }, [group?.name, loadMessages]);
 
   useEffect(() => {
     if (messagesEndRef.current) {
@@ -221,7 +222,7 @@ const GroupsPage: React.FC = () => {
     const newMessage: ChatMessage = {
       id: tempId,
       senderId: currentUser?.id || 0,
-      senderName: currentUser?.first_name || "Unknown User",
+      senderName: currentUser?.first_name || currentUser?.username || "Unknown User",
       senderAvatar:
         currentUser?.profile_picture ||
         `https://placehold.co/100x100/ff7f7f/ffffff?text=${
@@ -253,6 +254,7 @@ const GroupsPage: React.FC = () => {
             }
           : msg
       ));
+      loadMessages();
     } catch (error) {
       setMessages(prev => prev.map(msg => 
         msg.id === tempId
@@ -402,7 +404,7 @@ const GroupsPage: React.FC = () => {
             ) : messages.length === 0 ? (
               <div className="text-center py-4 text-gray-500">No messages yet</div>
             ) : (
-            messages.map((message) => (
+            [...messages].reverse().map((message) => (
               <div
                 key={message.id}
                 className={`flex items-start gap-3 ${
@@ -581,66 +583,7 @@ const GroupsPage: React.FC = () => {
             tabsListClassName="mb-4"
           />
         </div>
-
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">My Groups</h2>
-          {renderContent(
-            isLoadingMyGroups,
-            errorMyGroups,
-            myGroups,
-            (groups) => (
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {Array.isArray(groups) &&
-                  groups.map((myGroup) => (
-                    <div
-                      key={myGroup.id}
-                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition"
-                    >
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {myGroup.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {myGroup.description}
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            ),
-            "You are not a member of any groups yet."
-          )}
         </div>
-
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Groups</h2>
-          {renderContent(
-            isLoadingAllGroups,
-            errorAllGroups,
-            allGroups,
-            (groups) => (
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                {Array.isArray(groups) &&
-                  groups.map((allGroup) => (
-                    <div
-                      key={allGroup.id}
-                      className="bg-white rounded-lg shadow-sm p-4 hover:shadow-md transition"
-                    >
-                      <h3 className="text-lg font-semibold text-gray-800">
-                        {allGroup.name}
-                      </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {allGroup.description}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Members: {allGroup.member_count}
-                      </p>
-                    </div>
-                  ))}
-              </div>
-            ),
-            "No groups available."
-          )}
-        </div>
-      </div>
     </div>
   );
 };
