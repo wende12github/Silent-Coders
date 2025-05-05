@@ -1,4 +1,5 @@
-from django.utils import timezone
+from django.utils.timezone import now
+from datetime import timedelta, timezone
 from bookings.models import AvailabilitySlot, Booking, BookingStatus,Review
 from rest_framework import serializers
 from datetime import timedelta
@@ -15,42 +16,43 @@ class BookingCreateSerializer(serializers.ModelSerializer):
         duration = data['duration']
         booked_for = data['booked_for']
 
-        if scheduled_time <= timezone.now():
+        if scheduled_time <= now():
             raise serializers.ValidationError("Scheduled time must be in the future.")
 
         end_time = scheduled_time + timedelta(minutes=duration)
-        weekday = scheduled_time.weekday()
+        # weekday = scheduled_time.weekday()
 
-        # Force UTC extraction
-        start_clock = scheduled_time.astimezone(timezone.utc).time()
-        end_clock = end_time.astimezone(timezone.utc).time()
+        # # Force UTC extraction
+        # start_clock = scheduled_time.astimezone(timezone.utc).time()
+        # end_clock = end_time.astimezone(timezone.utc).time()
 
-        available = AvailabilitySlot.objects.filter(
-            booked_for=booked_for,
-            weekday=weekday,
-            start_time__lte=start_clock,
-            end_time__gte=end_clock
-        ).exists()
+        # available = AvailabilitySlot.objects.filter(
+        #     booked_for=booked_for,
+        #     weekday=weekday,
+        #     start_time__lte=start_clock,
+        #     end_time__gte=end_clock
+        # ).exists()
 
-        if not available:
-            raise serializers.ValidationError("booked_for is not available during the selected time.")
+        # if not available:
+        #     raise serializers.ValidationError("booked_for is not available during the selected time.")
 
         # Prevent overlapping bookings
-        overlap = Booking.objects.filter(
-            booked_for=booked_for,
-            scheduled_time__lt=end_time,
-            status__in=[BookingStatus.PENDING, BookingStatus.CONFIRMED]
-        ).filter(
-            scheduled_time__gte=scheduled_time - timedelta(minutes=duration)
-        ).exists()
+        # overlap = Booking.objects.filter(
+        #     booked_for=booked_for,
+        #     scheduled_time__lt=end_time,
+        #     status__in=[BookingStatus.PENDING, BookingStatus.CONFIRMED]
+        # ).filter(
+        #     scheduled_time__gte=scheduled_time - timedelta(minutes=duration)
+        # ).exists()
 
-        if overlap:
-            raise serializers.ValidationError("booked_for has another booking that overlaps with this time.")
+        # if overlap:
+        #     raise serializers.ValidationError("booked_for has another booking that overlaps with this time.")
 
         return data
 
     def create(self, validated_data):
         booked_by = self.context['request'].user
+        validated_data.pop("booked_by", None)
         return Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
 
 class BookingActionSerializer(serializers.ModelSerializer):
@@ -102,7 +104,7 @@ class BookingRescheduleSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if self.instance.status not in [BookingStatus.PENDING, BookingStatus.CONFIRMED]:
             raise serializers.ValidationError("Only pending or confirmed bookings can be rescheduled.")
-        if data['scheduled_time'] <= timezone.now():
+        if data['scheduled_time'] <= now():
             raise serializers.ValidationError("Scheduled time must be in the future.")
         return data
 

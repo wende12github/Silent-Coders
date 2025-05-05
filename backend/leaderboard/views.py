@@ -12,8 +12,7 @@ class LeaderboardViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
 
         if self.action == 'retrieve':
-       
-            return UserStats.objects.all() 
+            return UserStats.objects.all()
         
         sort_by = self.request.query_params.get('sort_by', 'given')  # default: given
         top_n = int(self.request.query_params.get('top', 10))
