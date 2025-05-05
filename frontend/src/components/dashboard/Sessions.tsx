@@ -31,7 +31,6 @@ export default function Sessions() {
     loadSessions();
   }, [sessions]);
 
-
   if (!sessions || sessions.length === 0) {
     return <div>No sessions found</div>;
   }
@@ -64,15 +63,16 @@ export default function Sessions() {
     return format(new Date(dateString), "h:mm a");
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Confirmed":
+  const getStatusBadge = (status: string | undefined) => {
+    if (!status) return null;
+    switch (status.toLowerCase()) {
+      case "confirmed":
         return <Badge variant="success">Confirmed</Badge>;
-      case "Pending":
+      case "pending":
         return <Badge variant="warning">Pending</Badge>;
-      case "Completed":
+      case "completed":
         return <Badge variant="info">Completed</Badge>;
-      case "Cancelled":
+      case "cancelled":
         return (
           <Badge variant="outline" className="text-red-500 border-red-500">
             Cancelled
@@ -84,9 +84,6 @@ export default function Sessions() {
   };
 
   const handleStatusChange = (sessionId: number, newStatus: string) => {
-    
-
-
     console.log(`Session ${sessionId} status changed to ${newStatus}`);
   };
 
@@ -106,10 +103,8 @@ export default function Sessions() {
                     <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                       <div className="space-y-1">
                         <CardTitle className="flex items-center text-lg font-semibold">
-                          session.skill.name
-                          {/* {session.skill.name} */}
                           <span className="ml-2">
-                            {getStatusBadge(session.status)}
+                            {session.status && getStatusBadge(session.status)}
                           </span>
                         </CardTitle>
                         <CardDescription>
