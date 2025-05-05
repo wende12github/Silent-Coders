@@ -2,50 +2,78 @@
 
 /* Use what you need. */
 @theme {
-    --color-primary: hsl(221.2 83.2% 53.3%);
-    --color-primary-dark: hsl(217, 91%, 60%);
-    --color-secondary: hsl(210 40% 96.1%);
-    --color-accent: hsl(210 40% 96.1%);
-    --color-muted: hsl(210 40% 96.1%);
-    --color-border: hsl(214.3 31.8% 91.4%);
-    --color-ring: hsl(221.2 83.2% 53.3%);
-    --color-input: hsl(214.3 31.8% 91.4%);
-    --color-popover: hsl(0 0% 100%);
-    --color-card: hsl(0 0% 100%);
-    --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
-    --animate-accordion-down: accordion-down 0.2s ease-out;
-    --animate-accordion-up: accordion-up 0.2s ease-out;
-    --radius-lg: 0.5rem;
-    --radius-md: calc(0.5rem - 2px);
-    --radius-sm: calc(0.5rem - 4px);
-    --color-background: hsl(0 0% 100%);
-    --color-foreground: hsl(222.2 84% 4.9%);
-    --color-card-foreground: hsl(222.2 84% 4.9%);
-    --color-popover-foreground: hsl(222.2 84% 4.9%);
-    --color-primary-foreground: hsl(210 40% 98%);
-    --color-muted-foreground: hsl(215.4 16.3% 46.9%);
-    --color-accent-foreground: hsl(222.2 47.4% 11.2%);
-    --color-destructive: hsl(0 84.2% 60.2%);
-    --color-destructive-foreground: hsl(210 40% 98%);
-    --radius: 0.5rem;
-  
-    /* Dark mode variables */
-    --color-background-dark: hsl(222.2 84% 4.9%);
-    --color-foreground-dark: hsl(210 40% 98%);
-    --color-card-dark: hsl(222.2 84% 4.9%);
-    --color-card-foreground-dark: hsl(210 40% 98%);
-    --color-popover-dark: hsl(222.2 84% 4.9%);
-    --color-popover-foreground-dark: hsl(210 40% 98%);
-    --color-primary-foreground-dark: hsl(222.2 47.4% 11.2%);
-    --color-secondary-dark: hsl(217.2 32.6% 17.5%);
-    --color-secondary-foreground-dark: hsl(210 40% 98%);
-    --color-muted-dark: hsl(217.2 32.6% 17.5%);
-    --color-muted-foreground-dark: hsl(215 20.2% 65.1%);
-    --color-accent-dark: hsl(217.2 32.6% 17.5%);
-    --color-accent-foreground-dark: hsl(210 40% 98%);
-    --color-destructive-dark: hsl(0 62.8% 30.6%);
-    --color-destructive-foreground-dark: hsl(210 40% 98%);
-    --color-border-dark: hsl(217.2 32.6% 17.5%);
-    --color-input-dark: hsl(217.2 32.6% 17.5%);
-    --color-ring-dark: hsl(224.3 76.3% 48%);
+  --color-primary: hsl(221.2 83.2% 53.3%);
+  --color-primary-dark: hsl(217, 91%, 60%);
+  --color-secondary: hsl(210 40% 96.1%);
+  --color-accent: hsl(210 40% 96.1%);
+  --color-muted: hsl(210 40% 96.1%);
+  --color-border: hsl(214.3 31.8% 91.4%);
+  --color-ring: hsl(221.2 83.2% 53.3%);
+  --color-input: hsl(214.3 31.8% 91.4%);
+  --color-popover: hsl(0 0% 100%);
+  --color-card: hsl(0 0% 100%);
+  --color-secondary-foreground: hsl(222.2 47.4% 11.2%);
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --radius-lg: 0.5rem;
+  --radius-md: calc(0.5rem - 2px);
+  --radius-sm: calc(0.5rem - 4px);
+  --color-background: hsl(0 0% 100%);
+  --color-foreground: hsl(222.2 84% 4.9%);
+  --color-card-foreground: hsl(222.2 84% 4.9%);
+  --color-popover-foreground: hsl(222.2 84% 4.9%);
+  --color-primary-foreground: hsl(210 40% 98%);
+  --color-muted-foreground: hsl(215.4 16.3% 46.9%);
+  --color-accent-foreground: hsl(222.2 47.4% 11.2%);
+  --color-destructive: hsl(0 84.2% 60.2%);
+  --color-destructive-foreground: hsl(210 40% 98%);
+  --breakpoint-xsm: 320px;
+
+  --shadow-full: 0 2px 10px rgb(0, 0, 0, 0.2);
+
+  /* Dark mode variables */
+  --color-background-dark: hsl(222.2 84% 4.9%);
+  --color-foreground-dark: hsl(210 40% 98%);
+  --color-card-dark: hsl(222.2 84% 4.9%);
+  --color-card-foreground-dark: hsl(210 40% 98%);
+  --color-popover-dark: hsl(222.2 84% 4.9%);
+  --color-popover-foreground-dark: hsl(210 40% 98%);
+  --color-primary-foreground-dark: hsl(222.2 47.4% 11.2%);
+  --color-secondary-dark: hsl(217.2 32.6% 17.5%);
+  --color-secondary-foreground-dark: hsl(210 40% 98%);
+  --color-muted-dark: hsl(217.2 32.6% 17.5%);
+  --color-muted-foreground-dark: hsl(215 20.2% 65.1%);
+  --color-accent-dark: hsl(217.2 32.6% 17.5%);
+  --color-accent-foreground-dark: hsl(210 40% 98%);
+  --color-destructive-dark: hsl(0 62.8% 30.6%);
+  --color-destructive-foreground-dark: hsl(210 40% 98%);
+  --color-border-dark: hsl(217.2 32.6% 17.5%);
+  --color-input-dark: hsl(217.2 32.6% 17.5%);
+  --color-ring-dark: hsl(224.3 76.3% 48%);
+}
+
+* {
+  font-family: Poppins, serif;
+}
+
+.wiggly-line {
+  position: relative;
+}
+
+.wiggly-line::after {
+  content: "";
+  position: absolute;
+  height: 10px;
+  left: 0;
+  right: 0;
+  bottom: -15px;
+  background-image: url("data:image/svg+xml,%3Csvg width='100' height='10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0,5 C20,-5 35,15 50,5 C65,-5 80,15 100,5' stroke='hsl(221.2 83.2% 53.3%)' stroke-width='2' fill='none' /%3E%3C/svg%3E");
+  background-repeat: repeat-x;
+  background-size: 100px 10px;
+}
+@custom-variant dark (&:where(.dark, .dark *));
+
+
+html {
+  scrollbar-gutter: stable;
 }
