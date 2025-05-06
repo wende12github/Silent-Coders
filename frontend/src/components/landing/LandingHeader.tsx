@@ -20,15 +20,21 @@ export const LandingHeader = () => {
     !location.pathname.includes("/login");
 
   return (
-    <div className="bg-white shadow-sm sticky top-0 z-50">
+    <div
+      className="shadow-sm sticky top-0 z-50
+                   bg-background text-foreground border-b border-border
+                   dark:bg-background-dark dark:text-foreground-dark dark:border-border-dark"
+    >
       <div className="mx-0 md:px-16 px-4 py-4 flex justify-between items-center">
         <Link to={"/"}>
           <div className="flex items-center gap-2">
             <FontAwesomeIcon
               icon={faClock}
-              className="text-[28px] text-primary"
+              className="text-[28px] text-primary dark:text-primary-dark"
             />
-            <h1 className="text-2xl font-bold text-primary">TimeBank</h1>
+            <h1 className="text-2xl font-bold text-primary dark:text-primary-dark">
+              TimeBank
+            </h1>
           </div>
         </Link>
 
@@ -37,19 +43,19 @@ export const LandingHeader = () => {
             <>
               <a
                 href="#how-it-works"
-                className="text-gray-700 hover:text-primary transition duration-200"
+                className="text-muted-foreground hover:text-primary transition duration-200 dark:text-muted-foreground-dark dark:hover:text-primary-dark"
               >
                 How It Works
               </a>
               <a
                 href="#about-us"
-                className="text-gray-700 hover:text-primary transition duration-200"
+                className="text-muted-foreground hover:text-primary transition duration-200 dark:text-muted-foreground-dark dark:hover:text-primary-dark"
               >
                 About Us
               </a>
               <a
                 href="#testimonials"
-                className="text-gray-700 hover:text-primary transition duration-200"
+                className="text-muted-foreground hover:text-primary transition duration-200 dark:text-muted-foreground-dark dark:hover:text-primary-dark"
               >
                 Testimonials
               </a>
@@ -57,14 +63,12 @@ export const LandingHeader = () => {
           )}
           {location.pathname !== "/login" && (
             <Link to="/login">
-              <Button size="lg" className="">
-                Login
-              </Button>
+              <Button size="lg">Login</Button>
             </Link>
           )}
           {location.pathname !== "/signup" && (
             <Link to="/signup">
-              <Button size="lg" variant="secondary" className="">
+              <Button size="lg" variant="secondary">
                 Signup
               </Button>
             </Link>
@@ -75,7 +79,9 @@ export const LandingHeader = () => {
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className="hover:bg-muted px-3 py-2 rounded-md"
+                className="px-3 py-2 rounded-md
+                           hover:bg-muted text-foreground
+                           dark:hover:bg-muted-dark dark:text-foreground-dark"
                 aria-label="Toggle mobile menu"
               >
                 <FontAwesomeIcon icon={faBars} />
@@ -103,24 +109,24 @@ export const LandingHeader = () => {
                 </>
               )}
 
-              <DropdownMenuItem>
-                {location.pathname !== "/login" && (
+              {location.pathname !== "/login" && (
+                <DropdownMenuItem>
                   <Link to="/login" className="w-full block">
                     <Button size="lg" className="w-full">
                       Login
                     </Button>
                   </Link>
-                )}
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                {location.pathname !== "/signup" && (
+                </DropdownMenuItem>
+              )}
+              {location.pathname !== "/signup" && (
+                <DropdownMenuItem>
                   <Link to="/signup" className="w-full block">
                     <Button size="lg" variant="secondary" className="w-full">
                       Signup
                     </Button>
                   </Link>
-                )}
-              </DropdownMenuItem>
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

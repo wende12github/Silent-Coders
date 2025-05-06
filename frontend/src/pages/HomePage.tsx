@@ -275,7 +275,7 @@ const HomePage = () => {
   ];
 
   return (
-    <div className="min-h-full flex-grow">
+    <div className="min-h-full flex-grow mb-10 bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark">
       <SkillSearchAndFilters
         searchTerm={searchTerm}
         selectedCategory={selectedCategory}
@@ -319,28 +319,32 @@ const HomePage = () => {
         />
 
         {isLoading ? (
-          <div className="text-center py-12 text-gray-600">
+          <div className="text-center py-12 text-muted-foreground dark:text-muted-foreground-dark">
             Loading skills...
           </div>
         ) : skills.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {skills.map((skill) => (
-              <UserSkillCard
-                key={skill.id}
-                skill={skill}
-                onRequestSession={() =>
-                  handleRequestSession(skill.user, skill.id)
-                }
-              />
-            ))}
+            {skills
+              .filter((skill) => skill.user !== user!.id)
+              .map((skill) => (
+                <UserSkillCard
+                  key={skill.id}
+                  skill={skill}
+                  onRequestSession={() =>
+                    handleRequestSession(skill.user, skill.id)
+                  }
+                />
+              ))}
           </div>
         ) : (
-          <div className="text-center py-12">
-            <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-lg font-medium text-gray-900">
+          <div className="text-center py-12 text-muted-foreground dark:text-muted-foreground-dark">
+            <Calendar className="mx-auto h-12 w-12 text-muted-foreground dark:text-muted-foreground-dark" />
+
+            <h3 className="mt-2 text-lg font-medium text-foreground dark:text-foreground-dark">
               No skills found
             </h3>
-            <p className="mt-1 text-gray-500">
+
+            <p className="mt-1 text-muted-foreground dark:text-muted-foreground-dark">
               Try adjusting your search or filters to find what you're looking
               for.
             </p>

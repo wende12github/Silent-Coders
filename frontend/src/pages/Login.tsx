@@ -1,3 +1,5 @@
+"use client";
+
 import { Eye, EyeOff, Mail, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import React, { useEffect, useState } from "react";
@@ -27,7 +29,7 @@ const Login: React.FC = () => {
     if (isAuthenticated) {
       navigate("/");
     }
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const { login } = useLogin();
   const [loading, setIsLoading] = useState(false);
@@ -73,9 +75,10 @@ const Login: React.FC = () => {
         email: fieldErrors.email?.[0] || "",
         password: fieldErrors.password?.[0] || "",
       });
+      setIsLoading(false);
       return;
     }
-    // console.log("Form submitted:", result.data);
+
     login(formData)
       .then((res) => {
         if (res.access) {
@@ -84,6 +87,7 @@ const Login: React.FC = () => {
         }
       })
       .catch((err) => {
+        console.error("Login failed:", err);
         toast.error("Login failed", {
           description: err.message,
         });
@@ -96,62 +100,85 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div className="py-10 flex-grow flex flex-col items-center justify-center bg-white px-4 sm:px-6 lg:px-8">
-      <div className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-10">
+    <div
+      className="py-10 flex-grow flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8
+                   bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark"
+    >
+      <div
+        className="w-full max-w-md space-y-8 shadow-full rounded-lg pt-10
+                     bg-card text-card-foreground border border-border
+                     dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+      >
         <div className="text-center">
-          <h1 className="text-3xl font-bold tracking-tight text-gray-900">
+          <h1 className="text-3xl font-bold tracking-tight text-foreground dark:text-foreground-dark">
             Welcome back
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-2 text-sm text-muted-foreground dark:text-muted-foreground-dark">
             Sign in to continue to your account
           </p>
         </div>
 
-        <div className="bg-white py-8 px-6">
+        <div className="py-8 px-6">
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="space-y-2 w-full">
               <Input
                 id="email"
-                icon={<Mail className="h-5 w-5 text-gray-400" />}
+                icon={
+                  <Mail className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+                }
                 name="email"
                 type="email"
                 placeholder="Email address"
                 value={formData.email}
                 onChange={handleChange}
                 className={`${
-                  errors.email ? "border-red-500" : "border-gray-300"
+                  errors.email
+                    ? "border-destructive dark:border-destructive-dark"
+                    : ""
                 }`}
               />
               {errors.email && (
-                <p className="text-xs text-red-500">{errors.email}</p>
+                <p className="text-xs text-destructive dark:text-destructive-dark">
+                  {errors.email}
+                </p>
               )}
             </div>
 
             <div className="relative space-y-2">
               <Input
                 id="password"
-                icon={<Lock className="h-5 w-5 text-gray-400" />}
+                icon={
+                  <Lock className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+                }
                 name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Password"
                 value={formData.password}
                 onChange={handleChange}
-                className={`w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  errors.password ? "border-red-500" : "border-gray-300"
-                }`}
+                className={`w-full pl-10 pr-10 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-ring
+                           border border-input bg-background text-foreground focus:border-ring
+                           dark:border-input-dark dark:bg-background-dark dark:text-foreground-dark dark:focus:ring-ring-dark dark:focus:border-ring-dark
+                           ${
+                             errors.password
+                               ? "border-destructive dark:border-destructive-dark"
+                               : ""
+                           }`}
               />
               <div
-                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+                className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground dark:text-muted-foreground-dark"
                 onClick={() => setShowPassword(!showPassword)}
+                style={{ top: "0", bottom: "0", margin: "auto 0" }}
               >
                 {showPassword ? (
-                  <EyeOff className="h-5 w-5 text-gray-400" />
+                  <EyeOff className="h-5 w-5" />
                 ) : (
-                  <Eye className="h-5 w-5 text-gray-400" />
+                  <Eye className="h-5 w-5" />
                 )}
               </div>
               {errors.password && (
-                <p className="text-xs text-red-500">{errors.password}</p>
+                <p className="text-xs text-destructive dark:text-destructive-dark">
+                  {errors.password}
+                </p>
               )}
             </div>
 
@@ -159,7 +186,7 @@ const Login: React.FC = () => {
               <div className="text-sm">
                 <Link
                   to="/forgot-password"
-                  className="font-medium text-blue-600 hover:text-blue-500"
+                  className="font-medium text-primary hover:text-primary/80 dark:text-primary-dark dark:hover:text-primary-dark/80"
                 >
                   Forgot Password?
                 </Link>
@@ -174,10 +201,15 @@ const Login: React.FC = () => {
           </form>
 
           <div className="mt-6 text-center text-sm">
-            <p className="text-gray-600">
+            <p className="text-muted-foreground dark:text-muted-foreground-dark">
               Don't have an account?{" "}
               <Link to="/signup">
-                <Button variant="link">Sign Up</Button>
+                <Button
+                  variant="link"
+                  className="inline-block align-baseline text-primary hover:text-primary/80 dark:text-primary-dark dark:hover:text-primary-dark/80"
+                >
+                  Sign Up
+                </Button>
               </Link>
             </p>
           </div>

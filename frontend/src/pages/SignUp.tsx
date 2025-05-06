@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff, Mail, Lock, User } from "lucide-react";
@@ -52,7 +54,7 @@ const SignUp = () => {
     if (isAuthenticated) {
       navigate("/");
     }
-  }, []);
+  }, [isAuthenticated, navigate]);
 
   const [formData, setFormData] = useState<SignupFormData>({
     email: "",
@@ -146,128 +148,189 @@ const SignUp = () => {
   };
 
   return (
-    <div className="py-5 flex flex-grow flex-col items-center justify-center px-4 sm:px-6 lg:px-8">
-      <h1 className="text-center font-bold text-3xl mb-3 tracking-tight">
+    <div
+      className="py-5 flex flex-grow flex-col items-center justify-center px-4 sm:px-6 lg:px-8
+                   bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark"
+    >
+      <h1 className="text-center font-bold text-3xl mb-3 tracking-tight text-foreground dark:text-foreground-dark">
         Create Your Account
       </h1>
-      <p className="text-center text-gray-600 text-sm">
+      <p className="text-center text-muted-foreground dark:text-muted-foreground-dark text-sm">
         Join us today and start your journey
       </p>
 
-      <div className="mt-2 px-6 py-8 bg-white shadow-md rounded-lg w-full max-w-sm">
+      <div
+        className="mt-2 px-6 py-8 shadow-md rounded-lg w-full max-w-sm
+                     bg-card text-card-foreground border border-border
+                     dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+      >
         <form
           onSubmit={handleSubmit}
           className="space-y-6 flex flex-col items-center"
         >
           <div className="w-full space-y-1">
             <Input
-              icon={<Mail className="h-5 w-5 text-gray-400" />}
+              icon={
+                <Mail className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+              }
               id="email"
               name="email"
               type="text"
               placeholder="Email Address"
               value={formData.email}
               onChange={handleChange}
+              className={
+                errors.email
+                  ? "border-destructive dark:border-destructive-dark"
+                  : ""
+              }
             />
             {errors.email && (
-              <p className="text-xs text-red-500">{errors.email}</p>
+              <p className="text-xs text-destructive dark:text-destructive-dark">
+                {errors.email}
+              </p>
             )}
           </div>
 
           <div className="w-full space-y-1">
             <Input
-              icon={<User className="h-5 w-5 text-gray-400" />}
+              icon={
+                <User className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+              }
               id="username"
               name="username"
               type="text"
               placeholder="Username"
               value={formData.username}
               onChange={handleChange}
+              className={
+                errors.username
+                  ? "border-destructive dark:border-destructive-dark"
+                  : ""
+              }
             />
             {errors.username && (
-              <p className="text-xs text-red-500">{errors.username}</p>
+              <p className="text-xs text-destructive dark:text-destructive-dark">
+                {errors.username}
+              </p>
             )}
           </div>
 
           <div className="w-full space-y-1">
             <Input
-              icon={<User className="h-5 w-5 text-gray-400" />}
+              icon={
+                <User className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+              }
               id="first_name"
               name="first_name"
               type="text"
               placeholder="First Name"
               value={formData.first_name}
               onChange={handleChange}
+              className={
+                errors.first_name
+                  ? "border-destructive dark:border-destructive-dark"
+                  : ""
+              }
             />
             {errors.first_name && (
-              <p className="text-xs text-red-500">{errors.first_name}</p>
+              <p className="text-xs text-destructive dark:text-destructive-dark">
+                {errors.first_name}
+              </p>
             )}
           </div>
 
           <div className="w-full space-y-1">
             <Input
-              icon={<User className="h-5 w-5 text-gray-400" />}
+              icon={
+                <User className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+              }
               id="last_name"
               name="last_name"
               type="text"
               placeholder="Last Name"
               value={formData.last_name}
               onChange={handleChange}
+              className={
+                errors.last_name
+                  ? "border-destructive dark:border-destructive-dark"
+                  : ""
+              }
             />
             {errors.last_name && (
-              <p className="text-xs text-red-500">{errors.last_name}</p>
+              <p className="text-xs text-destructive dark:text-destructive-dark">
+                {errors.last_name}
+              </p>
             )}
           </div>
 
           <div className="relative w-full space-y-1">
             <Input
-              icon={<Lock className="h-5 w-5 text-gray-400" />}
+              icon={
+                <Lock className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+              }
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
               placeholder="Password"
               value={formData.password}
               onChange={handleChange}
+              className={
+                errors.password
+                  ? "border-destructive dark:border-destructive-dark"
+                  : ""
+              }
             />
             <div
-              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground dark:text-muted-foreground-dark"
               onClick={() => setShowPassword(!showPassword)}
               style={{ top: "0", bottom: "0", margin: "auto 0" }}
             >
               {showPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400" />
+                <EyeOff className="h-5 w-5" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400" />
+                <Eye className="h-5 w-5" />
               )}
             </div>
             {errors.password && (
-              <p className="text-xs text-red-500">{errors.password}</p>
+              <p className="text-xs text-destructive dark:text-destructive-dark">
+                {errors.password}
+              </p>
             )}
           </div>
 
           <div className="relative w-full space-y-1">
             <Input
-              icon={<Lock className="h-5 w-5 text-gray-400" />}
+              icon={
+                <Lock className="h-5 w-5 text-muted-foreground dark:text-muted-foreground-dark" />
+              }
               id="confirmPassword"
               name="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
               placeholder="Confirm Password"
               value={formData.confirmPassword}
               onChange={handleChange}
+              className={
+                errors.confirmPassword
+                  ? "border-destructive dark:border-destructive-dark"
+                  : ""
+              }
             />
             <div
-              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer"
+              className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-muted-foreground dark:text-muted-foreground-dark"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
               style={{ top: "0", bottom: "0", margin: "auto 0" }}
             >
               {showConfirmPassword ? (
-                <EyeOff className="h-5 w-5 text-gray-400" />
+                <EyeOff className="h-5 w-5" />
               ) : (
-                <Eye className="h-5 w-5 text-gray-400" />
+                <Eye className="h-5 w-5" />
               )}
             </div>
             {errors.confirmPassword && (
-              <p className="text-xs text-red-500">{errors.confirmPassword}</p>
+              <p className="text-xs text-destructive dark:text-destructive-dark">
+                {errors.confirmPassword}
+              </p>
             )}
           </div>
 
@@ -282,7 +345,6 @@ const SignUp = () => {
           </div>
 
           <div className="flex items-center space-x-2 mb-2 w-full">
-            {" "}
             <Checkbox
               id="agreedToTerms"
               name="agreedToTerms"
@@ -291,27 +353,30 @@ const SignUp = () => {
             />
             <label
               htmlFor="agreedToTerms"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-foreground dark:text-foreground-dark"
             >
               I agree to the Terms & Conditions
             </label>
           </div>
           {errors.agreedToTerms && (
-            <p className="text-xs text-red-500">{errors.agreedToTerms}</p>
+            <p className="text-xs text-destructive dark:text-destructive-dark">
+              {errors.agreedToTerms}
+            </p>
           )}
 
           <Button type="submit" className="w-full" disabled={loading}>
-            {" "}
-            {loading ? "Creating Account..." : "Create Account"}{" "}
+            {loading ? "Creating Account..." : "Create Account"}
           </Button>
         </form>
 
         <div className="mt-6 text-center text-sm">
-          <p className="text-gray-600">
+          <p className="text-muted-foreground dark:text-muted-foreground-dark">
             Already have an account?{" "}
             <Link to="/login">
-              <Button variant="link" className="inline-block align-baseline">
-                {" "}
+              <Button
+                variant="link"
+                className="inline-block align-baseline text-primary hover:text-primary/80 dark:text-primary-dark dark:hover:text-primary-dark/80"
+              >
                 Login here
               </Button>
             </Link>

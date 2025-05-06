@@ -7,10 +7,9 @@ import {
   fetchAllGroups,
   AllGroups,
   joinGroup,
-} from "../services/groups"; // Adjust path as needed
+} from "../services/groups";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuthStore } from "../store/authStore"; // Adjust path as needed
 
 const GroupsPage = () => {
   const navigate = useNavigate();
@@ -19,7 +18,6 @@ const GroupsPage = () => {
     name: "",
     description: "",
   });
-  const { user: currentUser } = useAuthStore();
   const [isCreatingGroup, setIsCreatingGroup] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -34,7 +32,6 @@ const GroupsPage = () => {
 
   const [currentPage] = useState(1);
   const [joinStates, setJoinStates] = useState<Record<number, string>>({});
-
   useEffect(() => {
     const loadMyGroups = async () => {
       setIsLoadingMyGroups(true);
@@ -234,7 +231,6 @@ const GroupsPage = () => {
           </div>
         </div>
 
-        {/* My Groups Section */}
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-foreground dark:text-foreground-dark mb-6">
             My Groups
@@ -250,7 +246,7 @@ const GroupsPage = () => {
                     key={group.id}
                     className="p-6 rounded-lg shadow-md flex flex-col justify-between
                                bg-card text-card-foreground border border-border
-                               dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+                               dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dar"
                   >
                     <div>
                       <h3 className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-2">
@@ -275,7 +271,6 @@ const GroupsPage = () => {
           )}
         </div>
 
-        {/* All Groups Section */}
         <div className="mt-10">
           <h2 className="text-2xl font-bold text-foreground dark:text-foreground-dark mb-6">
             All Groups
@@ -284,29 +279,43 @@ const GroupsPage = () => {
             isLoadingAllGroups,
             errorAllGroups,
             allGroupData,
-            (groups) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups
-                  .filter((g) => g.owner === currentUser!.id)
-                  .map((group) => (
+            (groups) => {
+              const filteredGroups = groups.filter((group) => {
+                const isMyGroup = myGroupData?.some(
+                  (myGroup) => myGroup.id === group.id
+                );
+
+                return !isMyGroup;
+              });
+
+              if (filteredGroups.length === 0) {
+                return (
+                  <div className="text-center py-4 text-muted-foreground dark:text-muted-foreground-dark text-sm">
+                    No groups available for you to join.
+                  </div>
+                );
+              }
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredGroups.map((group) => (
                     <div
                       key={group.id}
                       className="p-6 rounded-lg shadow-md flex flex-col justify-between
                                  bg-card text-card-foreground border border-border
                                  dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
                     >
-                      <div>
+                      <div className="flex flex-col gap-1">
                         <h3 className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-2">
                           {group.name}
                         </h3>
-                        <p className="text-muted-foreground dark:text-muted-foreground-dark text-sm mt-1">
+                        <p className="text-muted-foreground dark:text-muted-foreground-dark mt-1">
                           {group.description}
                         </p>
-                        <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark mt-2">
+                        <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark mt-2">
                           Members: {group.member_count}
                         </p>
                       </div>
-                      <div className="mt-auto">
+                      <div className="mt-2">
                         <Button
                           size="sm"
                           onClick={() => handleGroupJoin(group.id)}
@@ -314,16 +323,17 @@ const GroupsPage = () => {
                         >
                           {joinStates[group.id] === "loading"
                             ? "Joining..."
-                            : joinStates[group.id] === "success"
-                            ? "View Group"
                             : "Join Group"}
                         </Button>
                       </div>
                     </div>
                   ))}
-              </div>
-            ),
-            "No groups available."
+                </div>
+              );
+            },
+
+            // Fallback content if no groups are available
+            "No groups available for you to join."
           )}
         </div>
       </div>

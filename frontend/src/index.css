@@ -1,14 +1,13 @@
 @import "tailwindcss";
 
-
 @theme {
   --color-primary: hsl(221.2 83.2% 53.3%);
-  --color-primary-dark: hsl(217, 91%, 60%); 
+  --color-primary-dark: hsl(217, 70%, 65%);
   --color-secondary: hsl(210 40% 96.1%);
   --color-accent: hsl(210 40% 96.1%);
   --color-muted: hsl(210 40% 96.1%);
   --color-border: hsl(214.3 31.8% 91.4%);
-  --color-ring: hsl(221.2 83.2% 53.3%);
+  --color-ring: hsl(210 50% 55%);
   --color-input: hsl(214.3 31.8% 91.4%);
   --color-popover: hsl(0 0% 100%);
   --color-card: hsl(0 0% 100%);
@@ -31,27 +30,25 @@
 
   --shadow-full: 0 2px 10px rgb(0, 0, 0, 0.2);
 
-  
-  
-  --color-background-dark: hsl(215 20% 9%); 
-  --color-foreground-dark: hsl(210 40% 98%); 
-  --color-card-dark: hsl(215 20% 9%); 
-  --color-card-foreground-dark: hsl(210 40% 98%); 
-  --color-popover-dark: hsl(215 20% 9%); 
-  --color-popover-foreground-dark: hsl(210 40% 98%); 
-  --color-primary-dark: hsl(217, 70%, 60%); 
-  --color-primary-foreground-dark: hsl(222.2 47.4% 11.2%); 
-  --color-secondary-dark: hsl(210 15% 22%); 
-  --color-secondary-foreground-dark: hsl(210 40% 98%); 
-  --color-muted-dark: hsl(210 15% 22%); 
-  --color-muted-foreground-dark: hsl(210 20.2% 65.1%); 
-  --color-accent-dark: hsl(210 15% 22%); 
-  --color-accent-foreground-dark: hsl(210 40% 98%); 
-  --color-destructive-dark: hsl(0 62.8% 38%); 
-  --color-destructive-foreground-dark: hsl(210 40% 98%); 
-  --color-border-dark: hsl(210 15% 22%); 
-  --color-input-dark: hsl(210 15% 22%); 
-  --color-ring-dark: hsl(210 50% 48%); 
+  --color-background-dark: hsl(215 20% 18%);
+  --color-foreground-dark: hsl(0 0% 100%);
+  --color-card-dark: hsl(215 20% 18%);
+  --color-card-foreground-dark: hsl(0 0% 100%);
+  --color-popover-dark: hsl(215 20% 18%);
+  --color-popover-foreground-dark: hsl(0 0% 100%);
+  --color-primary-dark: hsl(217, 70%, 65%);
+  --color-primary-foreground-dark: hsl(222.2 47.4% 11.2%);
+  --color-secondary-dark: hsl(210 15% 30%);
+  --color-secondary-foreground-dark: hsl(0 0% 100%);
+  --color-muted-dark: hsl(210 15% 30%);
+  --color-muted-foreground-dark: hsl(210 20.2% 75%);
+  --color-accent-dark: hsl(210 15% 30%);
+  --color-accent-foreground-dark: hsl(0 0% 100%);
+  --color-destructive-dark: hsl(0 62.8% 38%);
+  --color-destructive-foreground-dark: hsl(0 0% 100%);
+  --color-border-dark: hsl(210 15% 30%);
+  --color-input-dark: hsl(210 15% 30%);
+  --color-ring-dark: hsl(210 50% 55%);
 }
 * {
   font-family: Poppins, serif;
@@ -73,7 +70,6 @@
   background-size: 100px 10px;
 }
 @custom-variant dark (&:where(.dark, .dark *));
-
 
 html {
   scrollbar-gutter: stable;

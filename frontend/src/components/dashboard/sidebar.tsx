@@ -9,6 +9,7 @@ import {
   BookOpen,
   Wallet,
   Bell,
+  MessageCircle,
 } from "lucide-react";
 import Button from "../ui/Button";
 import clsx from "clsx";
@@ -48,12 +49,11 @@ export default function DashboardSidebar({ visible }: { visible?: boolean }) {
       href: "/dashboard/leaderboard",
       icon: Award,
     },
-    // Removed User Chat as Bubbles icon is not standard LucideReact
-    // {
-    //   name: "User Chat",
-    //   href: "/dashboard/chat",
-    //   icon: Bubbles,
-    // },
+    {
+      name: "User Chat",
+      href: "/dashboard/chat",
+      icon: MessageCircle,
+    },
     {
       name: "Notifications",
       href: "/dashboard/notifications",

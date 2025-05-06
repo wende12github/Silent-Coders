@@ -667,6 +667,8 @@ const MySkills = () => {
                     <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
                       {avail.start_time} - {avail.end_time}
                     </p>
+                    <Badge variant={avail.is_booked ? "success" : "secondary"}
+                    >{avail.is_booked ? "Booked" : "Free"}</Badge>
                   </div>
                   <div className="flex space-x-2">
                     <Button

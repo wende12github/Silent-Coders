@@ -133,6 +133,7 @@ export interface Availability {
   weekday: number;
   start_time: string;
   end_time: string;
+  is_booked: boolean;
 }
 
 /**

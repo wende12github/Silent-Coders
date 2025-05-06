@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import {
   Calendar,
@@ -9,33 +11,33 @@ import {
   Star,
 } from "lucide-react";
 import { format, isPast } from "date-fns";
-import Tabs, { TabItem } from "../ui/Tabs";
+import Tabs, { TabItem } from "../ui/Tabs"; // Adjust path as needed
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/Card";
-import { Badge } from "../ui/Badge";
-import Button from "../ui/Button";
-import { Select, SelectItem } from "../ui/Select";
-import { Booking, Skill } from "../../store/types";
+} from "../ui/Card"; // Adjust path as needed
+import { Badge } from "../ui/Badge"; // Adjust path as needed
+import Button from "../ui/Button"; // Adjust path as needed
+import { Select, SelectItem } from "../ui/Select"; // Adjust path as needed
+import { Booking, Skill } from "../../store/types"; // Adjust path as needed
 
-import { fetchMyBookings, updateBookingStatus } from "../../services/booking";
-import { useAuthStore } from "../../store/authStore";
+import { fetchMyBookings, updateBookingStatus } from "../../services/booking"; // Adjust path as needed
+import { useAuthStore } from "../../store/authStore"; // Adjust path as needed
 import {
   Dialog,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/Dialog";
-import { Input, Textarea } from "../ui/Form";
-import { toast } from "sonner";
+} from "../ui/Dialog"; // Adjust path as needed
+import { Input, Textarea } from "../ui/Form"; // Adjust path as needed
+import { toast } from "sonner"; // Assuming sonner is available
 import { useNavigate } from "react-router-dom";
 
-import { apiClient } from "../../services/api";
+import { apiClient } from "../../services/api"; // Adjust path as needed
 
 export default function Sessions() {
   const [sessions, setSessions] = useState<Booking<Skill>[]>([]);
@@ -86,7 +88,7 @@ export default function Sessions() {
   );
 
   const formatDate = (date: string) =>
-    format(new Date(date), "EEEE, MMMM d, yyyy");
+    format(new Date(date), "EEEE, MMMM d, yyyy"); // Corrected format string
   const formatTime = (date: string) => format(new Date(date), "h:mm a");
 
   const getStatusBadge = (status?: string) => {
@@ -98,13 +100,9 @@ export default function Sessions() {
       case "completed":
         return <Badge variant="info">Completed</Badge>;
       case "cancelled":
-        return (
-          <Badge variant="outline" className="text-red-500 border-red-500">
-            Cancelled
-          </Badge>
-        );
+        return <Badge variant="destructive">Cancelled</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="secondary">{status}</Badge>;
     }
   };
 
@@ -210,38 +208,38 @@ export default function Sessions() {
       ? session.booked_by
       : session.booked_for;
 
-    const participantIdentifierForChat = participantUsername;
+    const participantIdentifierForChat = participantUsername; // Assuming username is used for chat identification
 
     return (
-      <Card key={session.id}>
+      <Card key={session.id} className="flex flex-col">
         <CardHeader className="pb-2">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="space-y-1">
-              <CardTitle className="flex items-center text-lg font-semibold">
+              <CardTitle className="flex items-center text-lg font-semibold text-foreground dark:text-foreground-dark">
                 {session.skill.name}
                 <span className="ml-2">{getStatusBadge(session.status)}</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-muted-foreground dark:text-muted-foreground-dark">
                 {isProvider ? "Teaching" : "Learning from"}{" "}
-                <span className="font-medium text-gray-900">
+                <span className="font-medium text-foreground dark:text-foreground-dark">
                   {participantUsername}
                 </span>
               </CardDescription>
             </div>
-            <div className="text-sm text-gray-600 space-y-1">
+            <div className="text-sm text-muted-foreground dark:text-muted-foreground-dark space-y-1">
               <div className="flex items-center">
-                <Calendar className="mr-2 h-4 w-4" />{" "}
+                <Calendar className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />{" "}
                 {formatDate(session.scheduled_time)}
               </div>
               <div className="flex items-center">
-                <Clock className="mr-2 h-4 w-4" />{" "}
+                <Clock className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />{" "}
                 {formatTime(session.scheduled_time)} ({session.duration} min)
               </div>
               <div className="flex items-center">
                 {session.skill.location === "remote" ? (
-                  <Video className="mr-2 h-4 w-4" />
+                  <Video className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
                 ) : (
-                  <MapPin className="mr-2 h-4 w-4" />
+                  <MapPin className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
                 )}
                 {session.skill.location === "remote"
                   ? "Online Meeting"
@@ -250,13 +248,17 @@ export default function Sessions() {
             </div>
           </div>
         </CardHeader>
-        <CardContent className="flex justify-between items-center flex-wrap gap-4">
+        <CardContent className="flex justify-between items-center flex-wrap gap-4 pt-0">
+          {" "}
+          {/* Added pt-0 */}
           <div className="text-sm">
-            <div className="text-gray-800 font-medium">
+            <div className="text-foreground dark:text-foreground-dark font-medium">
               {participantUsername}
             </div>
 
-            <div className="text-gray-500">@{participantUsername}</div>
+            <div className="text-muted-foreground dark:text-muted-foreground-dark">
+              @{participantUsername}
+            </div>
           </div>
           <div className="flex gap-2 flex-wrap">
             {session.status === "pending" && isProvider && (
@@ -270,7 +272,7 @@ export default function Sessions() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-red-500"
+                  className="text-destructive dark:text-destructive-dark border-destructive dark:border-destructive-dark hover:bg-destructive/10 dark:hover:bg-destructive-dark/10"
                   onClick={() => openCancelDialog(session.id)}
                 >
                   Decline
@@ -281,7 +283,7 @@ export default function Sessions() {
               <Button
                 variant="outline"
                 size="sm"
-                className="text-red-500"
+                className="text-destructive dark:text-destructive-dark border-destructive dark:border-destructive-dark hover:bg-destructive/10 dark:hover:bg-destructive-dark/10"
                 onClick={() => openCancelDialog(session.id)}
               >
                 Decline
@@ -293,7 +295,7 @@ export default function Sessions() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="text-red-500"
+                  className="text-destructive dark:text-destructive-dark border-destructive dark:border-destructive-dark hover:bg-destructive/10 dark:hover:bg-destructive-dark/10"
                   onClick={() => openCancelDialog(session.id)}
                 >
                   Cancel
@@ -337,22 +339,18 @@ export default function Sessions() {
             )}
 
             {session.status === "completed" &&
-              session.booked_by === user?.username && (
+              session.booked_by === user?.username && ( // Only allow the booker to add a review
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => openReviewDialog(session.id)}
                 >
-                  <Star className="mr-2 h-4 w-4 fill-current text-yellow-500" />{" "}
+                  <Star className="mr-2 h-4 w-4 fill-current text-yellow-500 dark:text-yellow-400" />{" "}
                   Add Review
                 </Button>
               )}
 
-            {isPast && (
-              <Button variant="outline" size="sm">
-                View Details
-              </Button>
-            )}
+            {/* Removed the "View Details" button as it wasn't implemented */}
           </div>
         </CardContent>
       </Card>
@@ -368,10 +366,12 @@ export default function Sessions() {
           {upcomingSessions.map((s) => renderSessionCard(s, false))}
         </div>
       ) : (
-        <Card>
+        <Card className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
           <CardContent className="text-center py-10">
-            <Calendar className="mx-auto h-10 w-10 text-gray-600 mb-4" />
-            <p>No upcoming sessions.</p>
+            <Calendar className="mx-auto h-10 w-10 text-muted-foreground dark:text-muted-foreground-dark mb-4" />
+            <p className="text-muted-foreground dark:text-muted-foreground-dark">
+              No upcoming sessions.
+            </p>
           </CardContent>
         </Card>
       ),
@@ -384,10 +384,12 @@ export default function Sessions() {
           {pastSessions.map((s) => renderSessionCard(s, true))}
         </div>
       ) : (
-        <Card>
+        <Card className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
           <CardContent className="text-center py-10">
-            <Calendar className="mx-auto h-10 w-10 text-gray-600 mb-4" />
-            <p>No past sessions.</p>
+            <Calendar className="mx-auto h-10 w-10 text-muted-foreground dark:text-muted-foreground-dark mb-4" />
+            <p className="text-muted-foreground dark:text-muted-foreground-dark">
+              No past sessions.
+            </p>
           </CardContent>
         </Card>
       ),
@@ -395,16 +397,20 @@ export default function Sessions() {
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark">
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Sessions</h1>
-          <p className="text-gray-600 mt-1">
+          <h1 className="text-3xl font-bold text-foreground dark:text-foreground-dark">
+            Sessions
+          </h1>
+          <p className="text-muted-foreground dark:text-muted-foreground-dark mt-1">
             Manage your skill exchange sessions
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-700">Filter by status:</span>
+          <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+            Filter by status:
+          </span>
           <Select
             value={statusFilter}
             onValueChange={setStatusFilter}
@@ -422,7 +428,7 @@ export default function Sessions() {
       <Tabs defaultValue="upcoming" items={sessionTabs} />
 
       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-        <div>
+        <div className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
           <DialogHeader>
             <DialogTitle>Cancel Session</DialogTitle>
             <DialogDescription>
@@ -430,7 +436,10 @@ export default function Sessions() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label htmlFor="reason" className="block text-sm font-medium">
+            <label
+              htmlFor="reason"
+              className="block text-sm font-medium text-foreground dark:text-foreground-dark"
+            >
               Reason
             </label>
             <Input
@@ -460,7 +469,7 @@ export default function Sessions() {
       </Dialog>
 
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <div>
+        <div className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
           <DialogHeader>
             <DialogTitle>Add Review</DialogTitle>
             <DialogDescription>
@@ -471,7 +480,7 @@ export default function Sessions() {
             <div>
               <label
                 htmlFor="rating"
-                className="block text-sm font-medium mb-1"
+                className="block text-sm font-medium mb-1 text-foreground dark:text-foreground-dark"
               >
                 Rating (1-5)
               </label>
@@ -490,7 +499,7 @@ export default function Sessions() {
             <div>
               <label
                 htmlFor="review"
-                className="block text-sm font-medium mb-1"
+                className="block text-sm font-medium mb-1 text-foreground dark:text-foreground-dark"
               >
                 Review
               </label>

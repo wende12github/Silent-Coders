@@ -25,7 +25,7 @@ const LeaderboardPage = () => {
   const location = useLocation();
   const widthClass = location.pathname.includes("/dashboard")
     ? "lg:min-w-7xl lg:px-20 mx-auto"
-    : "lg:min-w-7xl mx-auto";
+    : "lg:min-w-7xl mx-auto flex-1";
 
   useEffect(() => {
     const loadData = async () => {
@@ -57,7 +57,7 @@ const LeaderboardPage = () => {
 
   return (
     <div
-      className={`flex items-center justify-center ${widthClass} flex-1
+      className={`flex items-center justify-center ${widthClass} 
                     bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark`}
     >
       <div
