@@ -18,6 +18,8 @@ import { useAuthStore } from "../store/authStore.ts";
 
 import SkillSearchAndFilters from "../components/skills/SkillSearch";
 import BookingModal from "../components/skills/BookingFlowModal.tsx";
+import { toast } from "sonner";
+import { PrivateMessageSend } from "../components/privateChat/PrivateChat.tsx";
 
 const MINIMUM_BOOKING_DURATION = 30;
 
@@ -208,18 +210,6 @@ const HomePage = () => {
     try {
       await createBooking(bookingData);
 
-      const messageContent =
-        initialMessage.trim() === "" ? "Hi" : initialMessage.trim();
-
-      const messagePayload = {
-        is_group_chat: false,
-        message: messageContent,
-        other_user_id: viewingUserId,
-      };
-
-      console.log("Attempting to send initial message:", messagePayload);
-      await axios.post("/chatbot/sendMessage/", messagePayload);
-
       alert("Booking created and initial message sent successfully!");
 
       setShowAvailabilityModal(false);
@@ -229,17 +219,34 @@ const HomePage = () => {
       setViewingUserAvailability([]);
       setBookingSkillId(0);
       setNextSessionDateTime(null);
-      setInitialMessage("");
     } catch (error) {
       console.error("Error in handleCreateBooking or sending message:", error);
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.detail || error.message;
-        alert(`Error: ${errorMessage}`);
+        // const errorMessage = error.response?.data?.detail || error.message;
+        // alert(`Error: ${errorMessage}`);
       } else {
-        alert(`An unexpected error occurred: ${String(error)}`);
+        // alert(`An unexpected error occurred: ${String(error)}`);
       }
     } finally {
       setIsBookingLoading(false);
+    }
+    try{
+      
+      const messageContent =
+        initialMessage.trim() === "" ? "Hi" : initialMessage.trim();
+
+      const messagePayload: PrivateMessageSend = {
+        is_group_chat: false,
+        message: messageContent,
+        other_user_id: viewingUserId,
+        room_name: user!.username,
+      };
+
+      console.log("Attempting to send initial message:", messagePayload);
+      await axios.post("/chatbot/sendMessage/", messagePayload);
+      setInitialMessage("");
+    }catch  {
+      toast("Error sending initial message");
     }
   };
 

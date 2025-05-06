@@ -102,7 +102,10 @@ const UserSkillCard: React.FC<UserSkillCardProps> = ({
           </p>
           <div className="flex items-center text-sm text-muted-foreground dark:text-muted-foreground-dark mb-3">
             <MapPin className="h-4 w-4 mr-1" />
-            <span>{skill.location}</span>
+            <div className="flex gap-3">
+              <span>{skill.location}</span>{" "}
+              <span>{skill.location === "local" && skill.address}</span>
+            </div>
           </div>
           <div className="flex flex-wrap gap-1 mb-4">
             {skill.tags.map((tag, index) => (
@@ -114,7 +117,7 @@ const UserSkillCard: React.FC<UserSkillCardProps> = ({
         </div>
 
         <Button onClick={onRequestSession} className="w-full">
-          Request Session
+          {isOffering ? "Request to learn" : "Request to teach"}
         </Button>
       </div>
     </div>

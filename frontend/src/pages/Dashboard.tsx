@@ -358,7 +358,7 @@ export default function DashboardPage() {
               (sessions) => (
                 <div className="space-y-4">
                   {Array.isArray(sessions) &&
-                    sessions.map((session) => (
+                    sessions.filter(se => se.status !== "completed").map((session) => (
                       <div
                         key={session.id}
                         className="flex items-start gap-4 rounded-lg border p-4

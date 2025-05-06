@@ -12,6 +12,7 @@ import {
 } from "../ui/DropdownMenu";
 
 import Button from "../ui/Button";
+import { ThemeToggle } from "../dashboard/DashboardHeader";
 
 export const LandingHeader = () => {
   const location = useLocation();
@@ -61,6 +62,7 @@ export const LandingHeader = () => {
               </a>
             </>
           )}
+          <ThemeToggle/>
           {location.pathname !== "/login" && (
             <Link to="/login">
               <Button size="lg">Login</Button>

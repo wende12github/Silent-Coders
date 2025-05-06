@@ -37,8 +37,8 @@ const GroupsPage: React.FC = () => {
   const [groupLeaderboard, setGroupLeaderboard] = useState<
     LeaderboardEntry[] | null
   >(null);
-  const [myGroups, setMyGroups] = useState<AllGroups[] | null>(null);
-  const [allGroups, setAllGroups] = useState<AllGroups[] | null>(null);
+  const [, setMyGroups] = useState<AllGroups[] | null>(null);
+  const [, setAllGroups] = useState<AllGroups[] | null>(null);
 
   const [isLoadingGroup, setIsLoadingGroup] = useState(false);
   const [errorGroup, setErrorGroup] = useState<string | null>(null);
@@ -46,11 +46,11 @@ const GroupsPage: React.FC = () => {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [errorLeaderboard, setErrorLeaderboard] = useState<string | null>(null);
 
-  const [isLoadingMyGroups, setIsLoadingMyGroups] = useState(false);
-  const [errorMyGroups, setErrorMyGroups] = useState<string | null>(null);
+  const [, setIsLoadingMyGroups] = useState(false);
+  const [, setErrorMyGroups] = useState<string | null>(null);
 
-  const [isLoadingAllGroups, setIsLoadingAllGroups] = useState(false);
-  const [errorAllGroups, setErrorAllGroups] = useState<string | null>(null);
+  const [, setIsLoadingAllGroups] = useState(false);
+  const [, setErrorAllGroups] = useState<string | null>(null);
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [formData, setFormData] = useState<createAnnouncementRequest>({

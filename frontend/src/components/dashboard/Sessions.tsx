@@ -301,10 +301,8 @@ export default function Sessions() {
                   Cancel
                 </Button>
                 {session.skill.location === "remote" && (
-                  <Button variant="outline" size="sm" asChild>
-                    <button>
+                  <Button variant="outline" size="sm">
                       <Video className="mr-2 h-4 w-4" /> Join Online
-                    </button>
                   </Button>
                 )}
                 {session.skill.location === "local" && (
@@ -328,7 +326,7 @@ export default function Sessions() {
             )}
 
             {(session.status === "pending" ||
-              session.status === "confirmed") && (
+              session.status === "confirmed") && session.booked_by !== user?.username && (
               <Button
                 variant="outline"
                 size="sm"
@@ -469,7 +467,7 @@ export default function Sessions() {
       </Dialog>
 
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <div className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
+        <div className="bg-card text-card-foreground dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
           <DialogHeader>
             <DialogTitle>Add Review</DialogTitle>
             <DialogDescription>

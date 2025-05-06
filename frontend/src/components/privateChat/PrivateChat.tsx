@@ -7,26 +7,27 @@ import { useAuthStore } from "../../store/authStore"; // Adjust path as needed
 import { apiClient } from "../../services/api"; // Adjust path as needed
 import { User } from "../../store/types"; // Adjust path as needed
 
-interface PrivateMessage {
-  id: number | string;
-  sender: number;
-  receiver: number;
+export interface PrivateMessageSend {
+  // id: number | string;
   message: string;
-  message_type: string;
+  // created_at: string;
+  is_group_chat: boolean;
+  other_user_id: number;
+  room_name: string;
+}export interface PrivateMessageResponse {
+  id: number | string;
+  message: string;
   created_at: string;
-}
-
-interface PrivateChatProps {
-  otherUserId: number;
-  onBackToList?: () => void;
+  is_group_chat: boolean;
+  other_user_id: number;
 }
 
 export default function PrivateChat({
-  otherUserId,
+  other_user_id,
   onBackToList,
-}: PrivateChatProps) {
+}: PrivateMessageSend & {onBackToList?: () => void}) {
   const { user, accessToken } = useAuthStore();
-  const [messages, setMessages] = useState<PrivateMessage[]>([]);
+  const [messages, setMessages] = useState<PrivateMessageResponse[]>([]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -34,12 +35,12 @@ export default function PrivateChat({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isValidChat = user?.id && otherUserId !== null && !isNaN(otherUserId);
+  const isValidChat = user?.id && other_user_id !== null && !isNaN(other_user_id);
 
   useEffect(() => {
     if (!isValidChat || !accessToken) {
       if (!user?.id) setError("User not authenticated.");
-      else if (otherUserId === null || isNaN(otherUserId))
+      else if (other_user_id === null || isNaN(other_user_id))
         setError("Invalid chat partner ID.");
       setIsLoading(false);
       return;
@@ -49,16 +50,17 @@ export default function PrivateChat({
       setIsLoading(true);
       setError(null);
       try {
-        const userResponse = await apiClient.get(`/users/${otherUserId}/`);
+        const userResponse = await apiClient.get(`/users/${other_user_id}/`);
         setOtherUser(userResponse.data);
 
         const response = await apiClient.get(
-          `/chatbot/private/${otherUserId}/`
+          `/chatbot/private/${other_user_id}/`
         );
+        console.log(response.data)
 
         setMessages(
           response.data.sort(
-            (a: PrivateMessage, b: PrivateMessage) =>
+            (a: PrivateMessageResponse, b: PrivateMessageResponse) =>
               new Date(a.created_at).getTime() -
               new Date(b.created_at).getTime()
           )
@@ -72,7 +74,7 @@ export default function PrivateChat({
     };
 
     fetchChatData();
-  }, [user?.id, otherUserId, accessToken, isValidChat]);
+  }, [user?.id, other_user_id, accessToken, isValidChat]);
 
   useEffect(() => {
     if (!isLoading && messages.length > 0) {
@@ -96,16 +98,18 @@ export default function PrivateChat({
         is_group_chat: false,
         message: messageToSend,
         room_name: user!.username,
-        other_user_id: otherUserId,
+        other_user_id: other_user_id,
       };
 
-      const optimisticMessage: PrivateMessage = {
+      const optimisticMessage: PrivateMessageResponse = {
         id: tempId,
-        sender: user!.id,
-        receiver: otherUserId!,
+        // sender: user!.id,
+        // receiver: other_user_id!,
         message: messageToSend,
-        message_type: "text",
+        // message_type: "text",
         created_at: new Date().toISOString(),
+        is_group_chat: false,
+        other_user_id: other_user_id
       };
       setMessages((prev) => [...prev, optimisticMessage]);
 
@@ -152,14 +156,14 @@ export default function PrivateChat({
         return;
       }
       try {
-        const userResponse = await apiClient.get(`/users/${otherUserId}/`);
+        const userResponse = await apiClient.get(`/users/${other_user_id}/`);
         setOtherUser(userResponse.data);
         const response = await apiClient.get(
-          `/chatbot/private/${otherUserId}/`
+          `/chatbot/private/${other_user_id}/`
         );
         setMessages(
           response.data.sort(
-            (a: PrivateMessage, b: PrivateMessage) =>
+            (a: PrivateMessageResponse, b: PrivateMessageResponse) =>
               new Date(a.created_at).getTime() -
               new Date(b.created_at).getTime()
           )
@@ -271,10 +275,10 @@ export default function PrivateChat({
           </div>
         ) : (
           messages.map((message) => {
-            const isUser = message.sender === user?.id;
+            const isUser = message.other_user_id !== user?.id;
             const key = message.id
               ? message.id.toString()
-              : `temp-${message.created_at}-${message.sender}`;
+              : `temp-${message.created_at}-${message.created_at}`;
 
             return (
               <div

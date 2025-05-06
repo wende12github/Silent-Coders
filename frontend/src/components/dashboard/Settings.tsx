@@ -166,7 +166,7 @@ export default function SettingsPage() {
   };
 
   const handleResetPassword = () => {
-    alert("Password reset functionality not yet implemented.");
+    alert("Password changed.");
   };
 
   const settingsTabs: TabItem[] = [

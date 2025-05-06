@@ -23,10 +23,11 @@ export default function ChatLayout() {
     setIsListLoading(true);
     setListError(null);
     try {
-      const response = await apiClient.get("/chatbot/private-conversations/");
+      const response = await apiClient.get(`/chatbot/private/${user.id}/`);
+      console.log(`/chatbot/private/${user.id}/`);
       console.log("Conversations response:", response.data);
-      const filteredUsers = response.data.filter((u: User) => u.id !== user.id);
-      setConversations(filteredUsers);
+      // const filteredUsers = response.data.filter((u: User) => u.id !== user.id);
+      setConversations(response.data);
     } catch (err) {
       console.error("Error fetching conversations:", err);
       setListError("Failed to load conversations.");
@@ -37,7 +38,18 @@ export default function ChatLayout() {
 
   useEffect(() => {
     fetchConversations();
-  }, [user?.id, accessToken]);
+  }, [user?.id]);
+
+  // const resp = apiClient.post(`/chatbot/sendMessage/`, { //test
+  //   is_group_chat: false,
+  //   message: "Hello",
+  //   other_user_id: 2,
+  //   room_name: "test",
+  // });
+  //   resp.then((r) => r.data).then(e=>{
+  //     console.log(e)
+  // console.log("I am User", user?.id)
+// })
 
   const handleSelectConversation = (userId: number) => {
     setSelectedUserId(userId);
@@ -83,8 +95,11 @@ export default function ChatLayout() {
         >
           {selectedUserId !== null ? (
             <PrivateChat
-              otherUserId={selectedUserId}
+              room_name="hello"
+              other_user_id={selectedUserId}
               onBackToList={handleBackToList}
+              is_group_chat={false}
+              message={""}
             />
           ) : (
             <div className="flex items-center justify-center h-full text-muted-foreground dark:text-muted-foreground-dark text-lg p-4">
