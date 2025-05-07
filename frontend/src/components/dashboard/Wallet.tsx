@@ -1,4 +1,3 @@
-"use client";
 import { useState, useMemo } from "react";
 import { useWallet } from "../../hooks/useWallet";
 import {
@@ -37,7 +36,7 @@ export default function WalletPage() {
     if (!transactions || transactions.length === 0) return [];
 
     const now = new Date();
-    now.setHours(0, 0, 0, 0); // Reset time to midnight
+    now.setHours(0, 0, 0, 0);
 
     return transactions.filter((transaction) => {
       if (timeRange === "all") return true;
@@ -69,8 +68,8 @@ export default function WalletPage() {
     let spent = 0;
 
     filteredTransactions.forEach((t) => {
-      const amount = Number(t.amount); // ✅ Ensures correct numerical operations
-    
+      const amount = Number(t.amount);
+
       if (amount > 0) earned += amount;
       if (amount < 0) spent += Math.abs(amount);
     });
@@ -113,7 +112,10 @@ export default function WalletPage() {
                   filteredTransactions.map((transaction) => (
                     <TableRow key={transaction.id}>
                       <TableCell>
-                        {format(parseISO(transaction.created_at), "MMM d, yyyy")}
+                        {format(
+                          parseISO(transaction.created_at),
+                          "MMM d, yyyy"
+                        )}
                       </TableCell>
                       <TableCell>{transaction.reason}</TableCell>
                       <TableCell

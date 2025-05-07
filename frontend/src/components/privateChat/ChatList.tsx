@@ -1,5 +1,3 @@
-"use client";
-
 import ChatListItem from "./ChatListItem";
 import { User } from "../../store/types";
 import { Loader2 } from "lucide-react";

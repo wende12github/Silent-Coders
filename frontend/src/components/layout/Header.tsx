@@ -1,9 +1,7 @@
-"use client";
-
 import { useState } from "react";
 import { Clock, Menu } from "lucide-react";
 import Button from "../ui/Button";
-import { useLogout } from "../../hooks/hooks"; // Adjust path as needed
+import { useLogout } from "../../hooks/hooks";
 import { Link, useNavigate, NavLink } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -13,7 +11,7 @@ import {
   faChartSimple,
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
-import { ThemeToggle } from "../dashboard/DashboardHeader"; // Adjust path as needed
+import { ThemeToggle } from "../dashboard/DashboardHeader";
 
 const Header = () => {
   const { logout } = useLogout();
@@ -31,7 +29,9 @@ const Header = () => {
         <Link to="/">
           <div className="flex items-center gap-2">
             <Clock className="text-[28px] text-primary dark:text-primary-dark" />
-            <h1 className="text-2xl font-bold text-primary dark:text-primary-dark">TimeBank</h1>
+            <h1 className="text-2xl font-bold text-primary dark:text-primary-dark">
+              TimeBank
+            </h1>
           </div>
         </Link>
 

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import {
   Calendar,
@@ -11,33 +9,33 @@ import {
   Star,
 } from "lucide-react";
 import { format, isPast } from "date-fns";
-import Tabs, { TabItem } from "../ui/Tabs"; // Adjust path as needed
+import Tabs, { TabItem } from "../ui/Tabs"; 
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/Card"; // Adjust path as needed
-import { Badge } from "../ui/Badge"; // Adjust path as needed
-import Button from "../ui/Button"; // Adjust path as needed
-import { Select, SelectItem } from "../ui/Select"; // Adjust path as needed
-import { Booking, Skill } from "../../store/types"; // Adjust path as needed
+} from "../ui/Card"; 
+import { Badge } from "../ui/Badge"; 
+import Button from "../ui/Button"; 
+import { Select, SelectItem } from "../ui/Select"; 
+import { Booking, Skill } from "../../store/types"; 
 
-import { fetchMyBookings, updateBookingStatus } from "../../services/booking"; // Adjust path as needed
-import { useAuthStore } from "../../store/authStore"; // Adjust path as needed
+import { fetchMyBookings, updateBookingStatus } from "../../services/booking"; 
+import { useAuthStore } from "../../store/authStore"; 
 import {
   Dialog,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/Dialog"; // Adjust path as needed
-import { Input, Textarea } from "../ui/Form"; // Adjust path as needed
-import { toast } from "sonner"; // Assuming sonner is available
+} from "../ui/Dialog"; 
+import { Input, Textarea } from "../ui/Form"; 
+import { toast } from "sonner"; 
 import { useNavigate } from "react-router-dom";
 
-import { apiClient } from "../../services/api"; // Adjust path as needed
+import { apiClient } from "../../services/api"; 
 
 export default function Sessions() {
   const [sessions, setSessions] = useState<Booking<Skill>[]>([]);
@@ -88,7 +86,7 @@ export default function Sessions() {
   );
 
   const formatDate = (date: string) =>
-    format(new Date(date), "EEEE, MMMM d, yyyy"); // Corrected format string
+    format(new Date(date), "EEEE, MMMM d, yyyy"); 
   const formatTime = (date: string) => format(new Date(date), "h:mm a");
 
   const getStatusBadge = (status?: string) => {
@@ -208,7 +206,7 @@ export default function Sessions() {
       ? session.booked_by
       : session.booked_for;
 
-    const participantIdentifierForChat = participantUsername; // Assuming username is used for chat identification
+    const participantIdentifierForChat = participantUsername; 
 
     return (
       <Card key={session.id} className="flex flex-col">
@@ -250,7 +248,7 @@ export default function Sessions() {
         </CardHeader>
         <CardContent className="flex justify-between items-center flex-wrap gap-4 pt-0">
           {" "}
-          {/* Added pt-0 */}
+          
           <div className="text-sm">
             <div className="text-foreground dark:text-foreground-dark font-medium">
               {participantUsername}
@@ -337,7 +335,7 @@ export default function Sessions() {
             )}
 
             {session.status === "completed" &&
-              session.booked_by === user?.username && ( // Only allow the booker to add a review
+              session.booked_by === user?.username && ( 
                 <Button
                   variant="outline"
                   size="sm"
@@ -348,7 +346,7 @@ export default function Sessions() {
                 </Button>
               )}
 
-            {/* Removed the "View Details" button as it wasn't implemented */}
+            
           </div>
         </CardContent>
       </Card>

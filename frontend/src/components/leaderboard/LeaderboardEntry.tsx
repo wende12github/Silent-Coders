@@ -90,7 +90,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
       <div className="mt-2 sm:mt-0 sm:ml-4 sm:text-right flex-shrink-0">
         <div className="text-lg font-bold text-foreground dark:text-foreground-dark">
           {parseFloat(entry.net_contribution).toFixed(2)}{" "}
-          {/* Formatted to 2 decimal places */}
+          
           <span className="text-xs font-normal text-muted-foreground dark:text-muted-foreground-dark">
             credits
           </span>

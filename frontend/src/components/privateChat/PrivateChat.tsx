@@ -1,20 +1,17 @@
-"use client";
-
 import React, { useState, useRef, useEffect } from "react";
 import { Send, Loader2, User as UserIcon, ArrowLeft } from "lucide-react";
-import Button from "../ui/Button"; // Adjust path as needed
-import { useAuthStore } from "../../store/authStore"; // Adjust path as needed
-import { apiClient } from "../../services/api"; // Adjust path as needed
-import { User } from "../../store/types"; // Adjust path as needed
+import Button from "../ui/Button";
+import { useAuthStore } from "../../store/authStore";
+import { apiClient } from "../../services/api";
+import { User } from "../../store/types";
 
 export interface PrivateMessageSend {
-  // id: number | string;
   message: string;
-  // created_at: string;
   is_group_chat: boolean;
   other_user_id: number;
   room_name: string;
-}export interface PrivateMessageResponse {
+}
+export interface PrivateMessageResponse {
   id: number | string;
   message: string;
   created_at: string;
@@ -25,7 +22,7 @@ export interface PrivateMessageSend {
 export default function PrivateChat({
   other_user_id,
   onBackToList,
-}: PrivateMessageSend & {onBackToList?: () => void}) {
+}: PrivateMessageSend & { onBackToList?: () => void }) {
   const { user, accessToken } = useAuthStore();
   const [messages, setMessages] = useState<PrivateMessageResponse[]>([]);
   const [inputText, setInputText] = useState("");
@@ -35,7 +32,8 @@ export default function PrivateChat({
   const [isSending, setIsSending] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const isValidChat = user?.id && other_user_id !== null && !isNaN(other_user_id);
+  const isValidChat =
+    user?.id && other_user_id !== null && !isNaN(other_user_id);
 
   useEffect(() => {
     if (!isValidChat || !accessToken) {
@@ -56,7 +54,7 @@ export default function PrivateChat({
         const response = await apiClient.get(
           `/chatbot/private/${other_user_id}/`
         );
-        console.log(response.data)
+        console.log(response.data);
 
         setMessages(
           response.data.sort(
@@ -103,13 +101,12 @@ export default function PrivateChat({
 
       const optimisticMessage: PrivateMessageResponse = {
         id: tempId,
-        // sender: user!.id,
-        // receiver: other_user_id!,
+
         message: messageToSend,
-        // message_type: "text",
+
         created_at: new Date().toISOString(),
         is_group_chat: false,
-        other_user_id: other_user_id
+        other_user_id: other_user_id,
       };
       setMessages((prev) => [...prev, optimisticMessage]);
 
@@ -190,7 +187,13 @@ export default function PrivateChat({
   };
 
   const getUserAvatar = (userData: User | null) => {
-    if (!userData) return <UserIcon size={20} className="text-muted-foreground dark:text-muted-foreground-dark" />;
+    if (!userData)
+      return (
+        <UserIcon
+          size={20}
+          className="text-muted-foreground dark:text-muted-foreground-dark"
+        />
+      );
 
     return userData.profile_picture ? (
       <img
@@ -250,7 +253,9 @@ export default function PrivateChat({
                 : otherUser?.first_name || otherUser?.username || "User"}
             </h2>
 
-            <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">Online</p>
+            <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
+              Online
+            </p>
           </div>
         </div>
       </div>
@@ -324,7 +329,9 @@ export default function PrivateChat({
       <div className="border-t border-border dark:border-border-dark p-3 bg-card dark:bg-card-dark flex-shrink-0">
         {" "}
         {error && messages.length > 0 && (
-          <div className="text-destructive dark:text-destructive-dark text-sm mb-2 text-center">{error}</div>
+          <div className="text-destructive dark:text-destructive-dark text-sm mb-2 text-center">
+            {error}
+          </div>
         )}
         <div className="flex items-center gap-2">
           <input
@@ -355,7 +362,10 @@ export default function PrivateChat({
             {isSending ? (
               <Loader2 className="h-5 w-5 animate-spin text-primary dark:text-primary-dark" />
             ) : (
-              <Send size={20} className="text-primary-foreground dark:text-primary-foreground-dark" />
+              <Send
+                size={20}
+                className="text-primary-foreground dark:text-primary-foreground-dark"
+              />
             )}
           </Button>
         </div>

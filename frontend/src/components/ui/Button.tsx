@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { clsx } from "clsx";
 
@@ -12,7 +10,8 @@ const variantClasses = {
     "border border-input bg-background hover:bg-accent hover:text-accent-foreground shadow-sm hover:shadow-md dark:border-input-dark dark:bg-background-dark dark:hover:bg-accent-dark dark:hover:text-accent-foreground-dark",
   secondary:
     "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80 hover:shadow-md dark:bg-secondary-dark dark:text-secondary-foreground-dark dark:hover:bg-secondary-dark/80",
-  ghost: "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent-dark dark:hover:text-accent-foreground-dark",
+  ghost:
+    "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent-dark dark:hover:text-accent-foreground-dark",
   link: "text-primary underline-offset-4 hover:underline dark:text-primary-dark",
   gradient:
     "bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-md hover:shadow-lg hover:opacity-90 dark:from-primary-dark dark:to-primary-dark/80 dark:text-primary-foreground-dark",

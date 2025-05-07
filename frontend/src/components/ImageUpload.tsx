@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Image as ImageIcon, X } from "lucide-react";
-import { toast } from "sonner"; // Assuming sonner is available
+import { toast } from "sonner"; 
 
 interface ImageUploadProps {
   value: string | null;
@@ -30,7 +30,7 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
-      // Validate file type
+      
       if (!file.type.startsWith("image/")) {
         toast.error("Invalid file type", {
           description: "Please upload an image file",
@@ -38,7 +38,7 @@ export const ImageUpload = ({ value, onChange }: ImageUploadProps) => {
         return;
       }
 
-      // Validate file size (max 5MB)
+      
       if (file.size > 5 * 1024 * 1024) {
         toast.error("File too large", {
           description: "Image size should be less than 5MB",

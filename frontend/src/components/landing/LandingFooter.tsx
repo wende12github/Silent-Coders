@@ -175,7 +175,7 @@ export const LandingFooter = () => {
           </div>
         </div>
 
-        {/* Copyright */}
+        
         <div className="border-t border-border dark:border-border-dark pt-8 text-center text-muted-foreground dark:text-muted-foreground-dark text-sm">
           <p>
             &copy; {new Date().getFullYear()} TimeBank. All rights reserved.

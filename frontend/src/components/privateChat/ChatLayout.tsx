@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import ChatList from "./ChatList";
 import PrivateChat from "./PrivateChat";

@@ -1,5 +1,3 @@
-"use client";
-
 import * as React from "react";
 import { Check } from "lucide-react";
 
@@ -8,7 +6,9 @@ type CheckboxProps = React.InputHTMLAttributes<HTMLInputElement>;
 const Checkbox = React.forwardRef<HTMLInputElement, CheckboxProps>(
   ({ className = "", checked, onChange, id, ...props }, ref) => {
     return (
-      <div className={`inline-flex items-center space-x-2 cursor-pointer ${className}`}>
+      <div
+        className={`inline-flex items-center space-x-2 cursor-pointer ${className}`}
+      >
         <input
           type="checkbox"
           id={id}

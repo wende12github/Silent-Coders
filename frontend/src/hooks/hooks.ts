@@ -82,7 +82,7 @@ export interface RegisterUserData {
   last_name: string;
 }
 export const useSignup = () => {
-  const { login } = useLogin(); // Import login function
+  const { login } = useLogin();
 
   const signupUser = async (userData: RegisterUserData) => {
     try {

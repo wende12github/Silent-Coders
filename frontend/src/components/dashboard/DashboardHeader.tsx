@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState } from "react";
 import { Bell, Menu, Moon, Sun } from "lucide-react";
 import Button from "../ui/Button"; 

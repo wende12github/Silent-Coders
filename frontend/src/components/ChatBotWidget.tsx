@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useRef, useEffect } from "react";
 import { useChatStore } from "../store/chatStore";
 import { SendHorizonal, MessageCircle, X } from "lucide-react";
