@@ -6,7 +6,7 @@ import {
   fetchMyGroups,
   fetchAllGroups,
   AllGroups,
-  joinGroup
+  joinGroup,
 } from "../services/groups";
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
@@ -32,8 +32,6 @@ const GroupsPage = () => {
 
   const [currentPage] = useState(1);
   const [joinStates, setJoinStates] = useState<Record<number, string>>({});
-
-  // Fetch My Groups
   useEffect(() => {
     const loadMyGroups = async () => {
       setIsLoadingMyGroups(true);
@@ -52,7 +50,6 @@ const GroupsPage = () => {
     loadMyGroups();
   }, [currentPage, successMessage]);
 
-  // Fetch All Groups
   useEffect(() => {
     const loadAllGroups = async () => {
       setIsLoadingAllGroups(true);
@@ -112,14 +109,14 @@ const GroupsPage = () => {
   };
 
   const handleGroupJoin = async (groupId: number) => {
-    setJoinStates(prev => ({ ...prev, [groupId]: 'loading' }));
+    setJoinStates((prev) => ({ ...prev, [groupId]: "loading" }));
     try {
       await joinGroup(groupId);
-      setJoinStates(prev => ({ ...prev, [groupId]: 'success' }));
-      navigate(`/groups/${groupId}`)
+      setJoinStates((prev) => ({ ...prev, [groupId]: "success" }));
+      navigate(`/groups/${groupId}`);
     } catch (error) {
-      console.error('Join failed:', error);
-      setJoinStates(prev => ({ ...prev, [groupId]: 'error' }));
+      console.error("Join failed:", error);
+      setJoinStates((prev) => ({ ...prev, [groupId]: "error" }));
     }
   };
 
@@ -131,22 +128,36 @@ const GroupsPage = () => {
     emptyMessage: string
   ) => {
     if (isLoading) {
-      return <div className="text-center py-4 text-gray-500 text-sm">Loading...</div>;
+      return (
+        <div className="text-center py-4 text-muted-foreground dark:text-muted-foreground-dark text-sm">
+          Loading...
+        </div>
+      );
     }
     if (error) {
-      return <div className="text-center py-4 text-red-500 text-sm">Error: {error}</div>;
+      return (
+        <div className="text-center py-4 text-destructive dark:text-destructive-dark text-sm">
+          Error: {error}
+        </div>
+      );
     }
     if (!data || data.length === 0) {
-      return <div className="text-center py-4 text-gray-500 text-sm">{emptyMessage}</div>;
+      return (
+        <div className="text-center py-4 text-muted-foreground dark:text-muted-foreground-dark text-sm">
+          {emptyMessage}
+        </div>
+      );
     }
     return renderItems(data);
   };
 
   return (
-    <div className="flex-grow py-8 px-4 sm:px-6 lg:px-8">
+    <div className="flex-grow py-8 px-4 sm:px-6 lg:px-8 bg-background dark:bg-background-dark text-foreground dark:text-foreground-dark">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-800">Browse Groups</h1>
+          <h1 className="text-3xl font-bold text-foreground dark:text-foreground-dark">
+            Browse Groups
+          </h1>
           <div className="relative">
             <Button onClick={() => setIsFormVisible(!isFormVisible)}>
               {isFormVisible ? "Cancel" : "Create New Group"}
@@ -154,9 +165,13 @@ const GroupsPage = () => {
             {isFormVisible && (
               <form
                 onSubmit={handleSubmit}
-                className="absolute z-10 top-full right-0 mt-2 shadow-lg rounded-md bg-white p-6 w-80"
+                className="absolute z-10 top-full right-0 mt-2 shadow-lg rounded-md p-6 w-80
+                           bg-card text-card-foreground border border-border
+                           dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
               >
-                <h3 className="text-xl font-semibold text-gray-900 mb-4">Create Group</h3>
+                <h3 className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-4">
+                  Create Group
+                </h3>
                 <div className="mb-4">
                   <Label htmlFor="name">Group Name:</Label>
                   <Input
@@ -166,10 +181,16 @@ const GroupsPage = () => {
                     value={formData.name}
                     onChange={handleInputChange}
                     required
-                    className={formError && formData.name.trim() === "" ? "border-red-500" : ""}
+                    className={
+                      formError && formData.name.trim() === ""
+                        ? "border-destructive dark:border-destructive-dark"
+                        : ""
+                    }
                   />
                   {formError && formData.name.trim() === "" && (
-                    <p className="text-red-500 text-xs mt-1">{formError}</p>
+                    <p className="text-destructive dark:text-destructive-dark text-xs mt-1">
+                      {formError}
+                    </p>
                   )}
                 </div>
                 <div className="mb-4">
@@ -180,17 +201,27 @@ const GroupsPage = () => {
                     value={formData.description}
                     onChange={handleInputChange}
                     required
-                    className={formError && formData.description.trim() === "" ? "border-red-500" : ""}
+                    className={
+                      formError && formData.description.trim() === ""
+                        ? "border-destructive dark:border-destructive-dark"
+                        : ""
+                    }
                   />
                   {formError && formData.description.trim() === "" && (
-                    <p className="text-red-500 text-xs mt-1">{formError}</p>
+                    <p className="text-destructive dark:text-destructive-dark text-xs mt-1">
+                      {formError}
+                    </p>
                   )}
                 </div>
                 {formError && !isCreatingGroup && (
-                  <p className="text-red-500 text-sm mb-4">{formError}</p>
+                  <p className="text-destructive dark:text-destructive-dark text-sm mb-4">
+                    {formError}
+                  </p>
                 )}
                 {successMessage && (
-                  <p className="text-green-600 text-sm mb-4">{successMessage}</p>
+                  <p className="text-green-600 dark:text-green-400 text-sm mb-4">
+                    {successMessage}
+                  </p>
                 )}
                 <Button type="submit" disabled={isCreatingGroup}>
                   {isCreatingGroup ? "Creating..." : "Create Group"}
@@ -200,9 +231,10 @@ const GroupsPage = () => {
           </div>
         </div>
 
-        {/* My Groups Section */}
         <div className="mt-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">My Groups</h2>
+          <h2 className="text-2xl font-bold text-foreground dark:text-foreground-dark mb-6">
+            My Groups
+          </h2>
           {renderListContent(
             isLoadingMyGroups,
             errorMyGroups,
@@ -212,17 +244,19 @@ const GroupsPage = () => {
                 {groups.map((group) => (
                   <div
                     key={group.id}
-                    className="bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col justify-between"
+                    className="p-6 rounded-lg shadow-md flex flex-col justify-between
+                               bg-card text-card-foreground border border-border
+                               dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dar"
                   >
                     <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                      <h3 className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-2">
                         {group.name}
                       </h3>
-                      <p className="text-gray-700 text-sm mb-4">
+                      <p className="text-muted-foreground dark:text-muted-foreground-dark text-sm mb-4">
                         {group.description}
                       </p>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-gray-500 mt-auto">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground dark:text-muted-foreground-dark mt-auto">
                       <Link to={`/groups/${group.id}`}>
                         <Button variant="secondary" size="sm">
                           View Group
@@ -237,46 +271,69 @@ const GroupsPage = () => {
           )}
         </div>
 
-        {/* All Groups Section */}
         <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">All Groups</h2>
+          <h2 className="text-2xl font-bold text-foreground dark:text-foreground-dark mb-6">
+            All Groups
+          </h2>
           {renderListContent(
             isLoadingAllGroups,
             errorAllGroups,
             allGroupData,
-            (groups) => (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {groups.map((group) => (
-                  <div
-                    key={group.id}
-                    className="bg-white p-6 rounded-lg shadow-md border border-gray-200 flex flex-col justify-between"
-                  >
-                    <div>
-                      <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                        {group.name}
-                      </h3>
-                      <p className="text-gray-700 text-sm mt-1">
-                        {group.description}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-2">
-                        Members: {group.member_count}
-                      </p>
-                    </div>
-                    <div className="mt-auto">
-                      <Button
-                        size="sm"
-                        onClick={() => handleGroupJoin(group.id)}
-                        disabled={joinStates[group.id] === 'loading'}
-                      >
-                        {joinStates[group.id] === 'loading' ? 'Joining...' : 
-                         joinStates[group.id] === 'success' ? 'View Group' : 'Join Group'}
-                      </Button>
-                    </div>
+            (groups) => {
+              const filteredGroups = groups.filter((group) => {
+                const isMyGroup = myGroupData?.some(
+                  (myGroup) => myGroup.id === group.id
+                );
+
+                return !isMyGroup;
+              });
+
+              if (filteredGroups.length === 0) {
+                return (
+                  <div className="text-center py-4 text-muted-foreground dark:text-muted-foreground-dark text-sm">
+                    No groups available for you to join.
                   </div>
-                ))}
-              </div>
-            ),
-            "No groups available."
+                );
+              }
+              return (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredGroups.map((group) => (
+                    <div
+                      key={group.id}
+                      className="p-6 rounded-lg shadow-md flex flex-col justify-between
+                                 bg-card text-card-foreground border border-border
+                                 dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+                    >
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-2">
+                          {group.name}
+                        </h3>
+                        <p className="text-muted-foreground dark:text-muted-foreground-dark mt-1">
+                          {group.description}
+                        </p>
+                        <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark mt-2">
+                          Members: {group.member_count}
+                        </p>
+                      </div>
+                      <div className="mt-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handleGroupJoin(group.id)}
+                          disabled={joinStates[group.id] === "loading"}
+                        >
+                          {joinStates[group.id] === "loading"
+                            ? "Joining..."
+                            : "Join Group"}
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            },
+
+            // Fallback content if no groups are available
+            "No groups available for you to join."
           )}
         </div>
       </div>

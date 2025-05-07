@@ -2,24 +2,32 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.core.mail import send_mail
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from .models import Wallet, Transaction
 
-User = settings.AUTH_USER_MODEL
+User = get_user_model()
 
+# 🔹 Auto-create Wallet when a new user is created
 @receiver(post_save, sender=User)
 def create_user_wallet(sender, instance, created, **kwargs):
-    if created:
+    if created and not hasattr(instance, 'wallet'):
         Wallet.objects.create(user=instance)
 
-# This should be in your signals.py, not inside the view.
+# 🔹 Send email notification when a new transaction is created
 @receiver(post_save, sender=Transaction)
 def send_transfer_notification(sender, instance, created, **kwargs):
-    if created:
-        sender_user = instance.sender
-        receiver_user = instance.booked_for
-        amount = instance.amount
-        reason = instance.reason
-        subject = f"Time Transfer Notification: {amount} hours"
-        message = f"Dear {receiver_user.username},\n\nYou have received {amount} hours from {sender_user.username} for the reason: {reason}."
-        recipient_list = [receiver_user.email]
-        send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, recipient_list)
+    if created and instance.receiver and instance.sender:
+        subject = f"Time Transfer Notification: {instance.amount} hours"
+        message = (
+            f"Dear {instance.receiver.username},\n\n"
+            f"You have received {instance.amount} hours from {instance.sender.username} "
+            f"for the reason: {instance.reason or 'No reason provided'}.\n\n"
+            f"Regards,\nYour App Team"
+        )
+        send_mail(
+            subject,
+            message,
+            settings.DEFAULT_FROM_EMAIL,
+            [instance.receiver.email],
+            fail_silently=True  # Prevent crashes if email fails
+        )

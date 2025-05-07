@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState } from "react";
 
-type ProfileTab = 'profile' | 'skills' | 'wallet' | 'settings';
+type ProfileTab = "profile" | "skills" | "wallet" | "settings";
 
 type Transaction = {
   id: string;
@@ -11,85 +11,85 @@ type Transaction = {
 };
 
 const UserProfile = () => {
-  // User data state
   const [user, setUser] = useState({
-    username: 'JohnDoe',
-    email: 'john.doe@example.com',
-    profile_picture: '',
-    bio: 'Software developer passionate about teaching and learning new skills.',
+    username: "JohnDoe",
+    email: "john.doe@example.com",
+    profile_picture: "",
+    bio: "Software developer passionate about teaching and learning new skills.",
     time_wallet: 85,
-    skills_offered: ['JavaScript', 'React', 'TypeScript'],
+    skills_offered: ["JavaScript", "React", "TypeScript"],
   });
 
-  // UI state
-  const [activeTab, setActiveTab] = useState<ProfileTab>('profile');
+  const [activeTab, setActiveTab] = useState<ProfileTab>("profile");
   const [isEditing, setIsEditing] = useState(false);
-  
-  // Profile data state
+
   const [profileData, setProfileData] = useState({
     name: user.username,
     bio: user.bio,
-    location: 'USA',
-    mobileNumber: '+1 (555) 123-4567',
+    location: "USA",
+    mobileNumber: "+1 (555) 123-4567",
   });
 
-  // Skills state
-  const [skillsOffered, setSkillsOffered] = useState<string[]>(user.skills_offered);
-  const [skillsWanted, setSkillsWanted] = useState<string[]>(['Guitar', 'Photography']);
-  const [newSkill, setNewSkill] = useState('');
-  const [skillType, setSkillType] = useState<'offered' | 'wanted'>('offered');
+  const [skillsOffered, setSkillsOffered] = useState<string[]>(
+    user.skills_offered
+  );
+  const [skillsWanted, setSkillsWanted] = useState<string[]>([
+    "Guitar",
+    "Photography",
+  ]);
+  const [newSkill, setNewSkill] = useState("");
+  const [skillType, setSkillType] = useState<"offered" | "wanted">("offered");
 
-  // Transactions state
   const [transactions, setTransactions] = useState<Transaction[]>([
     {
-      id: '1',
-      date: '2025-04-27',
-      description: 'Taught Python',
+      id: "1",
+      date: "2025-04-27",
+      description: "Taught Python",
       credits: 5.0,
       balance: 85.0,
     },
     {
-      id: '2',
-      date: '2025-04-26',
-      description: 'Learned Guitar',
+      id: "2",
+      date: "2025-04-26",
+      description: "Learned Guitar",
       credits: -3.0,
       balance: 80.0,
     },
     {
-      id: '3',
-      date: '2025-04-25',
-      description: 'Taught React',
+      id: "3",
+      date: "2025-04-25",
+      description: "Taught React",
       credits: 8.0,
       balance: 83.0,
     },
   ]);
-  const [transactionFilter, setTransactionFilter] = useState<'all' | 'earned' | 'spent'>('all');
+  
+  const [transactionFilter, setTransactionFilter] = useState<
+    "all" | "earned" | "spent"
+  >("all");
 
-  // Password change state
   const [passwordData, setPasswordData] = useState({
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
-  // Profile picture upload state
   const [profilePicture, setProfilePicture] = useState<string | null>(null);
 
-  // Handle input changes for profile form
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setProfileData(prev => ({ ...prev, [name]: value }));
+    setProfileData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle password input changes
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Save profile changes
   const handleSaveProfile = () => {
-    setUser(prev => ({
+    setUser((prev) => ({
       ...prev,
       username: profileData.name,
       bio: profileData.bio,
@@ -97,29 +97,28 @@ const UserProfile = () => {
     setIsEditing(false);
   };
 
-  // Add a new skill
   const addSkill = () => {
-    if (newSkill.trim() === '') return;
-    
-    if (skillType === 'offered') {
-      setSkillsOffered(prev => [...prev, newSkill.trim()]);
+    if (newSkill.trim() === "") return;
+
+    if (skillType === "offered") {
+      setSkillsOffered((prev) => [...prev, newSkill.trim()]);
     } else {
-      setSkillsWanted(prev => [...prev, newSkill.trim()]);
+      setSkillsWanted((prev) => [...prev, newSkill.trim()]);
     }
-    setNewSkill('');
+    setNewSkill("");
   };
 
-  // Remove a skill
-  const removeSkill = (skill: string, type: 'offered' | 'wanted') => {
-    if (type === 'offered') {
-      setSkillsOffered(prev => prev.filter(s => s !== skill));
+  const removeSkill = (skill: string, type: "offered" | "wanted") => {
+    if (type === "offered") {
+      setSkillsOffered((prev) => prev.filter((s) => s !== skill));
     } else {
-      setSkillsWanted(prev => prev.filter(s => s !== skill));
+      setSkillsWanted((prev) => prev.filter((s) => s !== skill));
     }
   };
 
-  // Handle profile picture upload
-  const handleProfilePictureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleProfilePictureChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
     if (e.target.files && e.target.files[0]) {
       const reader = new FileReader();
       reader.onload = (event) => {
@@ -131,33 +130,30 @@ const UserProfile = () => {
     }
   };
 
-  // Filter transactions based on selected filter
-  const filteredTransactions = transactions.filter(transaction => {
-    if (transactionFilter === 'all') return true;
-    if (transactionFilter === 'earned') return transaction.credits > 0;
+  const filteredTransactions = transactions.filter((transaction) => {
+    if (transactionFilter === "all") return true;
+    if (transactionFilter === "earned") return transaction.credits > 0;
     return transaction.credits < 0;
   });
 
-  // Handle password change submission
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (passwordData.newPassword !== passwordData.confirmPassword) {
       alert("New passwords don't match!");
       return;
     }
-    // Here you would typically call an API to change the password
-    alert('Password changed successfully!');
+
+    alert("Password changed successfully!");
     setPasswordData({
-      currentPassword: '',
-      newPassword: '',
-      confirmPassword: '',
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
     });
   };
 
   return (
     <div className="min-h-screen bg-gray-100">
       <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* Profile Header */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden mb-6">
           <div className="p-6 flex flex-col md:flex-row items-start md:items-center">
             <div className="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
@@ -178,12 +174,17 @@ const UserProfile = () => {
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-gray-900">{user.username}</h1>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    {user.username}
+                  </h1>
                   <p className="text-gray-600">{user.email}</p>
                 </div>
                 <div className="text-right">
                   <div className="text-3xl font-bold text-blue-600">
-                    {user.time_wallet} <span className="text-sm font-normal text-gray-500">credits</span>
+                    {user.time_wallet}{" "}
+                    <span className="text-sm font-normal text-gray-500">
+                      credits
+                    </span>
                   </div>
                 </div>
               </div>
@@ -193,30 +194,45 @@ const UserProfile = () => {
             </div>
           </div>
 
-          {/* Navigation Tabs */}
           <div className="border-t border-gray-200">
             <nav className="flex overflow-x-auto">
               <button
-                onClick={() => setActiveTab('profile')}
-                className={`px-6 py-3 text-sm font-medium ${activeTab === 'profile' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setActiveTab("profile")}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === "profile"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 Profile
               </button>
               <button
-                onClick={() => setActiveTab('skills')}
-                className={`px-6 py-3 text-sm font-medium ${activeTab === 'skills' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setActiveTab("skills")}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === "skills"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 My Skills
               </button>
               <button
-                onClick={() => setActiveTab('wallet')}
-                className={`px-6 py-3 text-sm font-medium ${activeTab === 'wallet' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setActiveTab("wallet")}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === "wallet"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 Time Wallet
               </button>
               <button
-                onClick={() => setActiveTab('settings')}
-                className={`px-6 py-3 text-sm font-medium ${activeTab === 'settings' ? 'text-blue-600 border-b-2 border-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                onClick={() => setActiveTab("settings")}
+                className={`px-6 py-3 text-sm font-medium ${
+                  activeTab === "settings"
+                    ? "text-blue-600 border-b-2 border-blue-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
               >
                 Settings
               </button>
@@ -224,13 +240,13 @@ const UserProfile = () => {
           </div>
         </div>
 
-        {/* Tab Content */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden p-6">
-          {/* Profile Tab */}
-          {activeTab === 'profile' && (
+          {activeTab === "profile" && (
             <div>
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Profile Information</h2>
+                <h2 className="text-xl font-bold text-gray-900">
+                  Profile Information
+                </h2>
                 {!isEditing ? (
                   <button
                     onClick={() => setIsEditing(true)}
@@ -259,7 +275,9 @@ const UserProfile = () => {
               {isEditing ? (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Name
+                    </label>
                     <input
                       type="text"
                       name="name"
@@ -269,7 +287,9 @@ const UserProfile = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Bio
+                    </label>
                     <textarea
                       name="bio"
                       value={profileData.bio}
@@ -279,7 +299,9 @@ const UserProfile = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Mobile Number
+                    </label>
                     <input
                       type="tel"
                       name="mobileNumber"
@@ -290,11 +312,18 @@ const UserProfile = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location
+                    </label>
                     <select
                       name="location"
                       value={profileData.location}
-                      onChange={(e) => setProfileData({...profileData, location: e.target.value})}
+                      onChange={(e) =>
+                        setProfileData({
+                          ...profileData,
+                          location: e.target.value,
+                        })
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md"
                     >
                       <option value="USA">United States</option>
@@ -308,47 +337,71 @@ const UserProfile = () => {
               ) : (
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-500">Name</label>
-                    <p className="mt-1 text-sm text-gray-900">{profileData.name}</p>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Name
+                    </label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {profileData.name}
+                    </p>
                   </div>
                   {profileData.bio && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-500">Bio</label>
-                      <p className="mt-1 text-sm text-gray-900">{profileData.bio}</p>
+                      <label className="block text-sm font-medium text-gray-500">
+                        Bio
+                      </label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {profileData.bio}
+                      </p>
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-500">Email</label>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Email
+                    </label>
                     <p className="mt-1 text-sm text-gray-900">{user.email}</p>
                   </div>
                   {profileData.mobileNumber && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-500">Mobile Number</label>
-                      <p className="mt-1 text-sm text-gray-900">{profileData.mobileNumber}</p>
+                      <label className="block text-sm font-medium text-gray-500">
+                        Mobile Number
+                      </label>
+                      <p className="mt-1 text-sm text-gray-900">
+                        {profileData.mobileNumber}
+                      </p>
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-500">Location</label>
-                    <p className="mt-1 text-sm text-gray-900">{profileData.location}</p>
+                    <label className="block text-sm font-medium text-gray-500">
+                      Location
+                    </label>
+                    <p className="mt-1 text-sm text-gray-900">
+                      {profileData.location}
+                    </p>
                   </div>
                 </div>
               )}
             </div>
           )}
 
-          {/* Skills Tab */}
-          {activeTab === 'skills' && (
+          {activeTab === "skills" && (
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6">My Skills</h2>
-              
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                My Skills
+              </h2>
+
               <div className="mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Skills I Offer</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Skills I Offer
+                </h3>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {skillsOffered.map(skill => (
-                    <div key={`offered-${skill}`} className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm">
+                  {skillsOffered.map((skill) => (
+                    <div
+                      key={`offered-${skill}`}
+                      className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm"
+                    >
                       {skill}
-                      <button 
-                        onClick={() => removeSkill(skill, 'offered')}
+                      <button
+                        onClick={() => removeSkill(skill, "offered")}
                         className="ml-2 text-green-600 hover:text-green-800"
                       >
                         ×
@@ -362,13 +415,18 @@ const UserProfile = () => {
               </div>
 
               <div className="mb-8">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Skills I Want to Learn</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Skills I Want to Learn
+                </h3>
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {skillsWanted.map(skill => (
-                    <div key={`wanted-${skill}`} className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+                  {skillsWanted.map((skill) => (
+                    <div
+                      key={`wanted-${skill}`}
+                      className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
+                    >
                       {skill}
-                      <button 
-                        onClick={() => removeSkill(skill, 'wanted')}
+                      <button
+                        onClick={() => removeSkill(skill, "wanted")}
                         className="ml-2 text-blue-600 hover:text-blue-800"
                       >
                         ×
@@ -382,7 +440,9 @@ const UserProfile = () => {
               </div>
 
               <div className="border-t border-gray-200 pt-6">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">Add New Skill</h3>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">
+                  Add New Skill
+                </h3>
                 <div className="flex flex-col sm:flex-row gap-4">
                   <div className="flex-1">
                     <input
@@ -396,7 +456,9 @@ const UserProfile = () => {
                   <div className="flex items-center gap-2">
                     <select
                       value={skillType}
-                      onChange={(e) => setSkillType(e.target.value as 'offered' | 'wanted')}
+                      onChange={(e) =>
+                        setSkillType(e.target.value as "offered" | "wanted")
+                      }
                       className="px-3 py-2 border border-gray-300 rounded-md"
                     >
                       <option value="offered">I Offer</option>
@@ -414,15 +476,19 @@ const UserProfile = () => {
             </div>
           )}
 
-          {/* Wallet Tab */}
-          {activeTab === 'wallet' && (
+          {activeTab === "wallet" && (
             <div>
-              <h2 className="text-xl font-bold text-gray-900 mb-6">Time Wallet</h2>
-              
+              <h2 className="text-xl font-bold text-gray-900 mb-6">
+                Time Wallet
+              </h2>
+
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
                 <div className="text-center">
                   <div className="text-4xl font-bold text-blue-600 mb-2">
-                    {user.time_wallet} <span className="text-lg font-normal text-gray-500">credits</span>
+                    {user.time_wallet}{" "}
+                    <span className="text-lg font-normal text-gray-500">
+                      credits
+                    </span>
                   </div>
                   <p className="text-gray-600">
                     Total earned: 100 | Total spent: 15
@@ -432,23 +498,37 @@ const UserProfile = () => {
 
               <div>
                 <div className="flex justify-between items-center mb-4">
-                  <h3 className="text-lg font-medium text-gray-900">Transaction History</h3>
+                  <h3 className="text-lg font-medium text-gray-900">
+                    Transaction History
+                  </h3>
                   <div className="flex space-x-2">
-                    <button 
-                      onClick={() => setTransactionFilter('all')}
-                      className={`px-3 py-1 rounded-md text-sm ${transactionFilter === 'all' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    <button
+                      onClick={() => setTransactionFilter("all")}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        transactionFilter === "all"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
                     >
                       All
                     </button>
-                    <button 
-                      onClick={() => setTransactionFilter('earned')}
-                      className={`px-3 py-1 rounded-md text-sm ${transactionFilter === 'earned' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    <button
+                      onClick={() => setTransactionFilter("earned")}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        transactionFilter === "earned"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
                     >
                       Earned
                     </button>
-                    <button 
-                      onClick={() => setTransactionFilter('spent')}
-                      className={`px-3 py-1 rounded-md text-sm ${transactionFilter === 'spent' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                    <button
+                      onClick={() => setTransactionFilter("spent")}
+                      className={`px-3 py-1 rounded-md text-sm ${
+                        transactionFilter === "spent"
+                          ? "bg-blue-600 text-white"
+                          : "bg-gray-200 text-gray-700"
+                      }`}
                     >
                       Spent
                     </button>
@@ -459,26 +539,50 @@ const UserProfile = () => {
                   <table className="min-w-full divide-y divide-gray-200">
                     <thead className="bg-gray-50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Credits</th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Date
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Description
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Credits
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Balance
+                        </th>
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {filteredTransactions.map((transaction) => (
                         <tr key={transaction.id}>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.date}</td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{transaction.description}</td>
-                          <td className={`px-6 py-4 whitespace-nowrap text-sm ${transaction.credits > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {transaction.credits > 0 ? '+' : ''}{transaction.credits.toFixed(2)}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {transaction.date}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{transaction.balance.toFixed(2)}</td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {transaction.description}
+                          </td>
+                          <td
+                            className={`px-6 py-4 whitespace-nowrap text-sm ${
+                              transaction.credits > 0
+                                ? "text-green-600"
+                                : "text-red-600"
+                            }`}
+                          >
+                            {transaction.credits > 0 ? "+" : ""}
+                            {transaction.credits.toFixed(2)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {transaction.balance.toFixed(2)}
+                          </td>
                         </tr>
                       ))}
                       {filteredTransactions.length === 0 && (
                         <tr>
-                          <td colSpan={4} className="px-6 py-4 text-center text-sm text-gray-500">
+                          <td
+                            colSpan={4}
+                            className="px-6 py-4 text-center text-sm text-gray-500"
+                          >
                             No transactions found
                           </td>
                         </tr>
@@ -490,18 +594,21 @@ const UserProfile = () => {
             </div>
           )}
 
-          {/* Settings Tab */}
-          {activeTab === 'settings' && (
+          {activeTab === "settings" && (
             <div>
               <h2 className="text-xl font-bold text-gray-900 mb-6">Settings</h2>
-              
+
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Profile Information</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Profile Information
+                  </h3>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Profile Picture</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Profile Picture
+                        </label>
                         <div className="flex items-center">
                           {profilePicture || user.profile_picture ? (
                             <img
@@ -534,19 +641,33 @@ const UserProfile = () => {
                         </div>
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Name
+                        </label>
                         <input
                           type="text"
                           value={profileData.name}
-                          onChange={(e) => setProfileData({...profileData, name: e.target.value})}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              name: e.target.value,
+                            })
+                          }
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Bio
+                        </label>
                         <textarea
                           value={profileData.bio}
-                          onChange={(e) => setProfileData({...profileData, bio: e.target.value})}
+                          onChange={(e) =>
+                            setProfileData({
+                              ...profileData,
+                              bio: e.target.value,
+                            })
+                          }
                           rows={3}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md"
                         />
@@ -556,29 +677,39 @@ const UserProfile = () => {
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Account Settings</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Account Settings
+                  </h3>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <div className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Email
+                        </label>
                         <input
                           type="email"
                           value={user.email}
                           readOnly
                           className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100"
                         />
-                        <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
+                        <p className="mt-1 text-xs text-gray-500">
+                          Email cannot be changed
+                        </p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 mb-4">Change Password</h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-4">
+                    Change Password
+                  </h3>
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <form onSubmit={handlePasswordSubmit} className="space-y-4">
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Current Password</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Current Password
+                        </label>
                         <input
                           type="password"
                           name="currentPassword"
@@ -589,7 +720,9 @@ const UserProfile = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">New Password</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          New Password
+                        </label>
                         <input
                           type="password"
                           name="newPassword"
@@ -600,7 +733,9 @@ const UserProfile = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Confirm New Password</label>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                          Confirm New Password
+                        </label>
                         <input
                           type="password"
                           name="confirmPassword"
@@ -610,7 +745,7 @@ const UserProfile = () => {
                           required
                         />
                       </div>
-                      <button 
+                      <button
                         type="submit"
                         className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                       >

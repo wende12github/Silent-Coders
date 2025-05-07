@@ -1,4 +1,6 @@
 import { useState, forwardRef } from "react";
+import React from "react";
+
 interface SwitchProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   checked?: boolean;
   onCheckedChange?: (checked: boolean) => void;
@@ -52,8 +54,13 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
             rounded-full border-2 border-transparent transition-colors
             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring
             focus-visible:ring-offset-2 focus-visible:ring-offset-background
-            ${disabled ? "cursor-not-allowed opacity-50" : ""}
-            ${isChecked ? "bg-primary" : "bg-input"}
+            disabled:cursor-not-allowed disabled:opacity-50
+            ${
+              isChecked
+                ? "bg-primary dark:bg-primary-dark"
+                : "bg-input dark:bg-input-dark"
+            }
+            dark:focus-visible:ring-ring-dark dark:focus-visible:ring-offset-background-dark
             ${className || ""}
           `}
         disabled={disabled}
@@ -61,8 +68,9 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
       >
         <span
           className={`
-              pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0
+              pointer-events-none block h-5 w-5 rounded-full shadow-lg ring-0
               transition-transform
+              bg-background dark:bg-background-dark
               ${isChecked ? "translate-x-5" : "translate-x-0"}
             `}
         />
@@ -70,4 +78,5 @@ const Switch = forwardRef<HTMLButtonElement, SwitchProps>(
     );
   }
 );
+
 export default Switch;

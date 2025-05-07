@@ -1,6 +1,6 @@
 import React from "react";
-import { Link } from "react-router"; // Assuming Next.js Link
-import Avatar from "../ui/Avatar"; // Adjust path
+import { Link } from "react-router-dom";
+import Avatar from "../ui/Avatar";
 import { Badge } from "../ui/Badge";
 import { LeaderboardEntry } from "../../store/types";
 import { useAuthStore } from "../../store/authStore";
@@ -15,21 +15,22 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
   const expertScore = 50;
   const rankColorClass =
     rank === 1
-      ? "bg-green-100 text-green-800"
+      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
       : rank === 2
-      ? "bg-gray-100 text-gray-800"
+      ? "bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark"
       : rank === 3
-      ? "bg-amber-100 text-amber-800"
-      : "bg-gray-50 text-gray-500";
+      ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-300"
+      : "bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark";
   console.log(entry.net_contribution);
 
   return (
     <div
-      className={`flex flex-col sm:flex-row items-start sm:items-center p-3 rounded-lg border ${
-        entry.user.id === user?.id
-          ? "border-blue-300 bg-blue-50 shadow-sm"
-          : "border-gray-200 hover:bg-gray-50"
-      } transition-colors`}
+      className={`flex flex-col sm:flex-row items-start sm:items-center p-3 rounded-lg border transition-colors
+                  ${
+                    entry.user.id === user?.id
+                      ? "border-primary bg-primary/10 shadow-sm dark:border-primary-dark dark:bg-primary-dark/10"
+                      : "border-border hover:bg-muted/50 dark:border-border-dark dark:hover:bg-muted-dark/50"
+                  }`}
     >
       {/* Rank Indicator */}
       <div className="flex-shrink-0 mb-2 sm:mb-0 sm:mr-4">
@@ -60,21 +61,23 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
             </div>
             <div className="min-w-0">
               <div className="flex items-center space-x-1">
-                <p className="text-sm font-medium text-gray-900 truncate group-hover:underline underline-offset-2">
+                <p
+                  className="text-sm font-medium truncate group-hover:underline underline-offset-2
+                            text-foreground dark:text-foreground-dark"
+                >
                   {entry.user.username}
                 </p>
                 {entry.user.id === user?.id && (
-                  <Badge
-                    size="lg"
-                    variant="ghost"
-                    className="bg-blue-100 text-blue-800"
-                  >
+                  <Badge size="lg" variant="secondary">
                     You
                   </Badge>
                 )}
               </div>
               {entry.user.bio && (
-                <p className="text-xxs text-gray-500 truncate">
+                <p
+                  className="text-xxs truncate
+                            text-muted-foreground dark:text-muted-foreground-dark"
+                >
                   {entry.user.bio}
                 </p>
               )}
@@ -85,18 +88,19 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
 
       {/* Credits and Badges */}
       <div className="mt-2 sm:mt-0 sm:ml-4 sm:text-right flex-shrink-0">
-        {" "}
-        {/* Added flex-shrink-0 */}
-        <div className="text-lg font-bold text-gray-900">
-          {parseFloat(entry.net_contribution)}{" "}
-          <span className="text-xs font-normal text-gray-500">credits</span>
+        <div className="text-lg font-bold text-foreground dark:text-foreground-dark">
+          {parseFloat(entry.net_contribution).toFixed(2)}{" "}
+          
+          <span className="text-xs font-normal text-muted-foreground dark:text-muted-foreground-dark">
+            credits
+          </span>
         </div>
         <div className="flex flex-wrap gap-1 mt-1 sm:justify-end">
           {rank === 1 && (
             <Badge
               size="lg"
-              className="bg-yellow-100 text-yellow-800"
               variant="ghost"
+              className="bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
             >
               Top
             </Badge>
@@ -105,7 +109,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
             <Badge
               size="lg"
               variant="ghost"
-              className="bg-green-100 text-green-800"
+              className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
             >
               Exp
             </Badge>
@@ -114,7 +118,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
             <Badge
               size="lg"
               variant="ghost"
-              className="bg-blue-100 text-blue-800"
+              className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
             >
               Active
             </Badge>
@@ -123,7 +127,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
             <Badge
               size="lg"
               variant="ghost"
-              className="bg-purple-100 text-purple-800"
+              className="bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300"
             >
               Sessions Champ
             </Badge>

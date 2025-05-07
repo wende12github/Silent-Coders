@@ -26,28 +26,33 @@ export default function ChatBotWidget() {
   return (
     <div className="fixed bottom-4 right-4 z-50">
       {open ? (
-        <div className="w-80 bg-white rounded-2xl shadow-2xl border min-h-80 max-h-120 border-gray-200 flex flex-col overflow-hidden">
-          {/* Header */}
-          <div className="flex justify-between items-center p-4 bg-blue-600 text-white rounded-t-2xl">
+        <div
+          className="w-80 rounded-2xl shadow-2xl border min-h-80 max-h-120 flex flex-col overflow-hidden
+                       bg-background border-border dark:bg-background-dark dark:border-border-dark"
+        >
+          <div
+            className="flex justify-between items-center p-4 rounded-t-2xl
+                          bg-primary text-primary-foreground dark:bg-primary-dark dark:text-primary-foreground-dark"
+          >
             <h2 className="text-sm font-semibold flex items-center gap-2">
               <MessageCircle className="w-4 h-4" /> TimeBank Assistant
             </h2>
             <button
               onClick={() => setOpen(false)}
-              className="hover:text-gray-200 focus:outline-none"
+              className="hover:opacity-80 focus:outline-none transition-opacity"
               aria-label="Close chat"
             >
               <X className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Messages */}
           <div
             ref={scrollRef}
-            className="flex-1 p-3 space-y-2 overflow-y-auto text-sm bg-gray-50"
+            className="flex-1 p-3 space-y-2 overflow-y-auto text-sm
+                       bg-muted/30 text-foreground dark:bg-muted-dark/30 dark:text-foreground-dark"
           >
             {messages.length === 0 && !isLoading && (
-              <div className="text-center text-gray-400 mt-10">
+              <div className="text-center text-muted-foreground dark:text-muted-foreground-dark mt-10">
                 Ask me anything!
               </div>
             )}
@@ -57,8 +62,8 @@ export default function ChatBotWidget() {
                 key={idx}
                 className={`max-w-xs px-3 py-2 rounded-xl whitespace-pre-wrap ${
                   m.role === "user"
-                    ? "bg-blue-100 text-blue-800 self-end ml-auto"
-                    : "bg-gray-200 text-gray-800 self-start mr-auto"
+                    ? "bg-primary/10 text-primary dark:bg-primary-dark/10 dark:text-primary-dark self-end ml-auto"
+                    : "bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark self-start mr-auto"
                 }`}
               >
                 {m.content}
@@ -66,14 +71,19 @@ export default function ChatBotWidget() {
             ))}
 
             {isLoading && (
-              <div className="max-w-xs px-3 py-2 rounded-xl bg-gray-200 text-gray-500 animate-pulse self-start mr-auto">
+              <div
+                className="max-w-xs px-3 py-2 rounded-xl animate-pulse self-start mr-auto
+                          bg-secondary text-muted-foreground dark:bg-secondary-dark dark:text-muted-foreground-dark"
+              >
                 Typing...
               </div>
             )}
           </div>
 
-          {/* Input area */}
-          <div className="flex items-center gap-2 p-3 border-t border-gray-200 bg-white">
+          <div
+            className="flex items-center gap-2 p-3 border-t
+                          border-border bg-background dark:border-border-dark dark:bg-background-dark"
+          >
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
@@ -81,10 +91,7 @@ export default function ChatBotWidget() {
               placeholder="Type your message..."
               className="flex-1"
             />
-            <Button
-              onClick={handleSend}
-              size="icon"
-            >
+            <Button onClick={handleSend} size="icon" disabled={isLoading}>
               <SendHorizonal className="w-4 h-4" />
             </Button>
           </div>
@@ -92,7 +99,8 @@ export default function ChatBotWidget() {
       ) : (
         <Button
           onClick={() => setOpen(true)}
-          className="gap-2"
+          className="gap-2 shadow-lg"
+          variant="default"
         >
           <MessageCircle className="w-4 h-4" />
           Ask Assistant

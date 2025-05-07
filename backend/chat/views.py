@@ -174,7 +174,7 @@ class UserPrivateConversationsView(APIView):
     def get(self, request):
         # Fetch distinct conversations where the user is the sender
         conversations = PrivateChatMessage.objects.filter(sender=request.user).values(
-            'receiver__id', 'receiver__username'
+            'sender__id', 'sender__username'
         ).distinct()
 
         # Use the serializer to format the response

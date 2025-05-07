@@ -19,11 +19,9 @@ export default function DashboardPage() {
     error: errorWallet,
   } = useWallet();
 
-  const [bookings, setBookings] = useState<Booking[] | null>(null);
+  const [bookings, setBookings] = useState<Booking<Skill>[] | null>(null);
   const [mySkills, setMySkills] = useState<Skill[] | null>(null);
-  const [leaderboardData, setLeaderboardData] = useState<
-    LeaderboardEntry[]
-  >();
+  const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>();
 
   const [isLoadingBookings, setIsLoadingBookings] = useState(false);
   const [errorBookings, setErrorBookings] = useState<string | null>(null);
@@ -77,7 +75,7 @@ export default function DashboardPage() {
       setIsLoadingLeaderboard(true);
       try {
         const data = await fetchLeaderboard();
-        setLeaderboardData(data);
+        setLeaderboardData(data.results);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
         setErrorLeaderboard("Failed to fetch leaderboard.");
@@ -114,12 +112,11 @@ export default function DashboardPage() {
         new Date(b.scheduled_time).getTime()
     )
     .slice(0, 3);
-    console.log("Transactions Type:", typeof transactions);
-    console.log("Transactions:", transactions);
+
   const recentTransactions = (transactions || [])
     .sort(
       (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     )
     .slice(0, 5);
 
@@ -132,18 +129,20 @@ export default function DashboardPage() {
   const renderContent = (
     isLoading: boolean,
     error: string | null,
-    data: any[] | number | null,
+    data: any[] | number | null | undefined,
     renderData: (data: any[] | number) => React.ReactNode,
     emptyMessage: string
   ) => {
     if (isLoading) {
       return (
-        <div className="text-center py-4 text-gray-500 text-sm">Loading...</div>
+        <div className="text-center py-4 text-muted-foreground dark:text-muted-foreground-dark text-sm">
+          Loading...
+        </div>
       );
     }
     if (error) {
       return (
-        <div className="text-center py-4 text-red-500 text-sm">
+        <div className="text-center py-4 text-destructive dark:text-destructive-dark text-sm">
           Error: {error}
         </div>
       );
@@ -155,7 +154,7 @@ export default function DashboardPage() {
 
     if (!data || data.length === 0) {
       return (
-        <div className="text-center py-4 text-gray-500 text-sm">
+        <div className="text-center py-4 text-muted-foreground dark:text-muted-foreground-dark text-sm">
           {emptyMessage}
         </div>
       );
@@ -164,11 +163,21 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="p-6 space-y-6 h-full w-full selection:bg-border">
+    <div
+      className="p-6 space-y-6 h-full w-full
+                   bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark"
+    >
       <div className="flex flex-col gap-4 md:flex-row">
-        <div className="flex-1 bg-white rounded-lg shadow-full p-6">
+        <div
+          className="flex-1 rounded-lg shadow-full p-6
+                       bg-card text-card-foreground border border-border
+                       dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+        >
           <div className="flex flex-row items-center gap-4 mb-4">
-            <div className="relative flex shrink-0 overflow-hidden rounded-full h-16 w-16 border border-gray-300">
+            <div
+              className="relative flex shrink-0 overflow-hidden rounded-full h-16 w-16 border
+                           border-border dark:border-border-dark"
+            >
               {user.profile_picture ? (
                 <img
                   src={user.profile_picture}
@@ -176,7 +185,10 @@ export default function DashboardPage() {
                   className="object-cover w-full h-full"
                 />
               ) : (
-                <div className="flex items-center justify-center h-full w-full bg-gray-200 text-lg font-semibold text-gray-700">
+                <div
+                  className="flex items-center justify-center h-full w-full
+                               bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark text-lg font-semibold"
+                >
                   {user.first_name?.charAt(0) ||
                     user.username?.charAt(0) ||
                     "U"}
@@ -184,10 +196,12 @@ export default function DashboardPage() {
               )}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className="text-xl font-bold text-foreground dark:text-foreground-dark">
                 {user.first_name}
               </h2>
-              <p className="text-gray-600">@{user.username}</p>
+              <p className="text-muted-foreground dark:text-muted-foreground-dark">
+                @{user.username}
+              </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {renderContent(
                   isLoadingSkills,
@@ -200,18 +214,17 @@ export default function DashboardPage() {
                           .filter((skill) => skill.is_offered)
                           .slice(0, 2)
                           .map((skill) => (
-                            <Badge
-                              variant="info"
-                              key={skill.id}
-                              className="bg-blue-100! text-blue-600!"
-                            >
+                            <Badge variant="secondary" key={skill.id}>
                               {skill.name}
                             </Badge>
                           ))}
                       {Array.isArray(skills) &&
                         skills.filter((skill) => skill.is_offered).length >
                           2 && (
-                          <Badge variant="ghost" className="bg-blue-100">
+                          <Badge
+                            variant="ghost"
+                            className="bg-muted dark:bg-muted-dark"
+                          >
                             +
                             {skills.filter((skill) => skill.is_offered).length -
                               2}{" "}
@@ -225,13 +238,15 @@ export default function DashboardPage() {
               </div>
             </div>
           </div>
-          <div className="pt-4 border-t border-gray-200">
+          <div className="pt-4 border-t border-border dark:border-border-dark">
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               <div className="flex flex-col">
-                <span className="text-sm text-gray-600">Time Balance</span>
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                  Time Balance
+                </span>
                 <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4 text-blue-600" />
-                  <span className="text-2xl font-bold text-gray-900">
+                  <Clock className="h-4 w-4 text-primary dark:text-primary-dark" />
+                  <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                     {renderContent(
                       isLoadingWallet,
                       errorWallet,
@@ -244,10 +259,12 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-gray-600">Skills</span>
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                  Skills
+                </span>
                 <div className="flex items-center gap-1">
-                  <BookOpen className="h-4 w-4 text-blue-600" />
-                  <span className="text-2xl font-bold text-gray-900">
+                  <BookOpen className="h-4 w-4 text-primary dark:text-primary-dark" />
+                  <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                     {renderContent(
                       isLoadingSkills,
                       errorSkills,
@@ -263,10 +280,12 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-gray-600">Sessions</span>
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                  Sessions
+                </span>
                 <div className="flex items-center gap-1">
-                  <Calendar className="h-4 w-4 text-blue-600" />
-                  <span className="text-2xl font-bold text-gray-900">
+                  <Calendar className="h-4 w-4 text-primary dark:text-primary-dark" />
+                  <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                     {renderContent(
                       isLoadingBookings,
                       errorBookings,
@@ -284,9 +303,11 @@ export default function DashboardPage() {
               </div>
 
               <div className="flex flex-col">
-                <span className="text-sm text-gray-600">Rank</span>
+                <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                  Rank
+                </span>
                 <div className="flex items-center gap-1">
-                  <TrendingUp className="h-4 w-4 text-blue-600" />
+                  <TrendingUp className="h-4 w-4 text-primary dark:text-primary-dark" />
                   {renderContent(
                     isLoadingLeaderboard,
                     errorLeaderboard,
@@ -297,7 +318,7 @@ export default function DashboardPage() {
                           (entry) => entry.user.id === user.id
                         );
                         return (
-                          <span className="text-2xl font-bold text-gray-900">
+                          <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                             {userRankEntry
                               ? leaderboard.indexOf(userRankEntry) + 1
                               : "-"}{" "}
@@ -316,13 +337,16 @@ export default function DashboardPage() {
       </div>
 
       <div className="flex flex-col gap-6 md:grid md:grid-cols-2">
-        {" "}
-        <div className="md:col-span-1 bg-white rounded-lg shadow-full p-6">
+        <div
+          className="md:col-span-1 rounded-lg shadow-full p-6
+                       bg-card text-card-foreground border border-border
+                       dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+        >
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-foreground dark:text-foreground-dark">
               Upcoming Sessions
             </h3>
-            <p className="text-gray-600 mt-1">
+            <p className="text-muted-foreground dark:text-muted-foreground-dark mt-1">
               Your scheduled skill exchange sessions
             </p>
           </div>
@@ -334,12 +358,16 @@ export default function DashboardPage() {
               (sessions) => (
                 <div className="space-y-4">
                   {Array.isArray(sessions) &&
-                    sessions.map((session) => (
+                    sessions.filter(se => se.status !== "completed").map((session) => (
                       <div
                         key={session.id}
-                        className="flex items-start gap-4 rounded-lg border border-gray-200 p-4"
+                        className="flex items-start gap-4 rounded-lg border p-4
+                                   border-border dark:border-border-dark"
                       >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                        <div
+                          className="flex h-10 w-10 items-center justify-center rounded-full
+                                       bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark"
+                        >
                           {session.booked_by === user.username ? (
                             <BookOpen className="h-5 w-5" />
                           ) : (
@@ -349,10 +377,10 @@ export default function DashboardPage() {
                         <div className="flex-1">
                           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                             <div>
-                              <h4 className="font-medium text-gray-900">
+                              <h4 className="font-medium text-foreground dark:text-foreground-dark">
                                 {session.skill?.name || "Skill Name"}
                               </h4>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                                 {session.booked_by === user.username
                                   ? `Learning from ${
                                       session.booked_for_user?.first_name ||
@@ -361,14 +389,14 @@ export default function DashboardPage() {
                                   : `Teaching ${
                                       session.booked_by_user?.first_name ||
                                       session.booked_by
-                                    }`}{" "}
+                                    }`}
                               </p>
                             </div>
                             <div className="mt-2 sm:mt-0 sm:text-right">
-                              <p className="text-sm font-medium text-gray-900">
+                              <p className="text-sm font-medium text-foreground dark:text-foreground-dark">
                                 {formatDate(session.scheduled_time)}
                               </p>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                                 {formatTime(session.scheduled_time)} •{" "}
                                 {session.duration} min
                               </p>
@@ -383,12 +411,18 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-        <div className="md:col-span-1 bg-white rounded-lg shadow-full p-6">
+        <div
+          className="md:col-span-1 rounded-lg shadow-full p-6
+                       bg-card text-card-foreground border border-border
+                       dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+        >
           <div className="mb-4">
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-foreground dark:text-foreground-dark">
               Recent Transactions
             </h3>
-            <p className="text-gray-600 mt-1">Your time credit activity</p>
+            <p className="text-muted-foreground dark:text-muted-foreground-dark mt-1">
+              Your time credit activity
+            </p>
           </div>
           <div>
             {renderContent(
@@ -406,35 +440,36 @@ export default function DashboardPage() {
                         <div
                           className={`flex h-8 w-8 items-center justify-center rounded-full ${
                             transaction.amount > 0
-                              ? "bg-green-100 text-green-600"
-                              : "bg-red-100 text-red-600"
+                              ? "bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
                           }`}
                         >
                           <Clock className="h-4 w-4" />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center justify-between">
-                            <p className="text-sm font-medium text-gray-900">
+                            <p className="text-sm font-medium text-foreground dark:text-foreground-dark">
                               {transaction.reason}
                             </p>
                             <p
                               className={`text-sm font-medium ${
                                 transaction.amount > 0
-                                  ? "text-green-600"
-                                  : "text-red-600"
+                                  ? "text-green-600 dark:text-green-400"
+                                  : "text-red-600 dark:text-red-400"
                               }`}
                             >
                               {transaction.amount > 0 ? "+" : ""}
                               {transaction.amount}
                             </p>
                           </div>
-                          <p className="text-xs text-gray-600">
-                            {formatDistanceToNow(
-                              new Date(transaction.timestamp),
-                              {
-                                addSuffix: true,
-                              }
-                            )}
+                          <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
+                            {transaction.timestamp &&
+                              formatDistanceToNow(
+                                new Date(transaction.timestamp),
+                                {
+                                  addSuffix: true,
+                                }
+                              )}
                           </p>
                         </div>
                       </div>
@@ -447,12 +482,18 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="bg-white rounded-lg shadow-full p-6">
+      <div
+        className="rounded-lg shadow-full p-6
+                     bg-card text-card-foreground border border-border
+                     dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark"
+      >
         <div className="mb-4">
-          <h3 className="text-xl font-bold text-gray-900">
+          <h3 className="text-xl font-bold text-foreground dark:text-foreground-dark">
             Weekly Leaderboard
           </h3>
-          <p className="text-gray-600 mt-1">Top 5 contributors this week</p>
+          <p className="text-muted-foreground dark:text-muted-foreground-dark mt-1">
+            Top 5 contributors this week
+          </p>
         </div>
         <div>
           {renderContent(
@@ -468,12 +509,15 @@ export default function DashboardPage() {
                         key={entry.user.id || `entry-${index}`}
                         className="flex items-center gap-4"
                       >
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600 flex-shrink-0">
+                        <div
+                          className="flex h-8 w-8 items-center justify-center rounded-full flex-shrink-0
+                                       bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark"
+                        >
                           {index + 1}
                         </div>
 
                         <div className="flex flex-1 items-center gap-2 min-w-0">
-                          <div className="relative flex shrink-0 overflow-hidden rounded-full h-8 w-8 border border-gray-300">
+                          <div className="relative flex shrink-0 overflow-hidden rounded-full h-8 w-8 border border-border dark:border-border-dark">
                             {entry.user.profile_picture ? (
                               <img
                                 src={entry.user.profile_picture}
@@ -481,7 +525,10 @@ export default function DashboardPage() {
                                 className="object-cover w-full h-full"
                               />
                             ) : (
-                              <div className="flex items-center justify-center h-full w-full bg-gray-200 text-sm font-semibold text-gray-700">
+                              <div
+                                className="flex items-center justify-center h-full w-full
+                                             bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark text-sm font-semibold"
+                              >
                                 {entry.user.first_name?.charAt(0) ||
                                   entry.user.username?.charAt(0) ||
                                   "U"}
@@ -489,16 +536,16 @@ export default function DashboardPage() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">
+                            <p className="text-sm font-medium truncate text-foreground dark:text-foreground-dark">
                               {entry.user.first_name || entry.user.username}
                             </p>
-                            <p className="text-xs text-gray-600 truncate">
+                            <p className="text-xs truncate text-muted-foreground dark:text-muted-foreground-dark">
                               @{entry.user.username}
                             </p>
                           </div>
                           <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
-                            <Clock className="h-4 w-4 text-blue-600" />
-                            <span className="font-medium text-gray-900">
+                            <Clock className="h-4 w-4 text-primary dark:text-primary-dark" />
+                            <span className="font-medium text-foreground dark:text-foreground-dark">
                               {entry.net_contribution}
                             </span>
                           </div>
@@ -507,7 +554,7 @@ export default function DashboardPage() {
                     ) : (
                       <div
                         key={`empty-${index}`}
-                        className="text-sm text-gray-500"
+                        className="text-sm text-muted-foreground dark:text-muted-foreground-dark"
                       >
                         Invalid entry data
                       </div>

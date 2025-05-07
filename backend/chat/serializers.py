@@ -14,3 +14,9 @@ class PrivateChatMessageSerializer(serializers.ModelSerializer):
 class PrivateConversationSerializer(serializers.Serializer):
     receiver_id = serializers.IntegerField()
     receiver_username = serializers.CharField()
+
+    def to_representation(self, instance):
+        return {
+            "receiver_id": instance.receiver.id,
+            "receiver_username": instance.receiver.username,
+        }

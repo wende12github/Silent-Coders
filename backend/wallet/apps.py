@@ -5,7 +5,4 @@ class WalletConfig(AppConfig):
     name = 'wallet'
 
     def ready(self):
-        try:
-            import wallet.signals  # Make sure the signals module exists in your app.
-        except ImportError:
-            pass  # Optionally, log this if you need to debug when signals module is not found.
+        import wallet.signals

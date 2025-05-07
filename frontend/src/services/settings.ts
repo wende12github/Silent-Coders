@@ -1,7 +1,10 @@
 import { apiClient } from "./api";
 import { AxiosResponse } from "axios";
 
-// Reset user password
+interface UserSettings{
+  
+}
+
 export const resetPassword = async (passwordData: {
   old_password: string;
   new_password: string;
@@ -15,7 +18,6 @@ export const resetPassword = async (passwordData: {
   }
 };
 
-// Update user data (bio, username, availability)
 export const updateUserData = async (userData: {
   bio?: string;
   username?: string;
@@ -30,14 +32,16 @@ export const updateUserData = async (userData: {
   }
 };
 
-// Update user preferences
 export const updatePreferences = async (preferencesData: {
   newsletter: boolean;
   updates: boolean;
   skill_match_alerts: boolean;
 }): Promise<void> => {
   try {
-    const response = await apiClient.patch("/auth/me/preferences/", preferencesData);
+    const response = await apiClient.patch(
+      "/auth/me/preferences/",
+      preferencesData
+    );
     console.log("Update preferences response:", response.data);
   } catch (error) {
     console.error("Error updating preferences:", error);
@@ -45,10 +49,11 @@ export const updatePreferences = async (preferencesData: {
   }
 };
 
-// Fetch user settings
 export const fetchUserSettings = async (): Promise<UserSettings> => {
   try {
-    const response: AxiosResponse<UserSettings> = await apiClient.get("/settings/");
+    const response: AxiosResponse<UserSettings> = await apiClient.get(
+      "/settings/"
+    );
     console.log("Fetch user settings response:", response.data);
     return response.data;
   } catch (error) {
@@ -57,7 +62,6 @@ export const fetchUserSettings = async (): Promise<UserSettings> => {
   }
 };
 
-// Update user settings
 export const updateUserSettings = async (
   settingsData: Partial<UserSettings>
 ): Promise<UserSettings> => {

@@ -19,7 +19,14 @@ const TableHeader = React.forwardRef<
   HTMLTableSectionElement,
   React.HTMLAttributes<HTMLTableSectionElement>
 >(({ className, ...props }, ref) => (
-  <thead ref={ref} className={clsx("[&_tr]:border-b", className)} {...props} />
+  <thead
+    ref={ref}
+    className={clsx(
+      "[&_tr]:border-b [&_tr]:border-border dark:[&_tr]:border-border-dark",
+      className
+    )}
+    {...props}
+  />
 ));
 
 const TableBody = React.forwardRef<
@@ -40,7 +47,7 @@ const TableFooter = React.forwardRef<
   <tfoot
     ref={ref}
     className={clsx(
-      "bg-primary font-medium text-primary-foreground",
+      "bg-primary text-primary-foreground dark:bg-primary-dark dark:text-primary-foreground-dark font-medium",
       className
     )}
     {...props}
@@ -54,7 +61,7 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={clsx(
-      "border-b border-border transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      "border-b border-border transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted dark:border-border-dark dark:hover:bg-muted-dark/50 dark:data-[state=selected]:bg-muted-dark",
       className
     )}
     {...props}
@@ -68,7 +75,7 @@ const TableHead = React.forwardRef<
   <th
     ref={ref}
     className={clsx(
-      "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
+      "h-12 px-4 text-left align-middle font-medium text-muted-foreground dark:text-muted-foreground-dark [&:has([role=checkbox])]:pr-0",
       className
     )}
     {...props}
@@ -82,7 +89,7 @@ const TableCell = React.forwardRef<
   <td
     ref={ref}
     className={clsx(
-      "p-4 align-middle [&:has([role=checkbox])]:pr-0",
+      "p-4 align-middle [&:has([role=checkbox])]:pr-0 text-foreground dark:text-foreground-dark",
       className
     )}
     {...props}
@@ -95,7 +102,10 @@ const TableCaption = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <caption
     ref={ref}
-    className={clsx("mt-4 text-sm text-muted-foreground", className)}
+    className={clsx(
+      "mt-4 text-sm text-muted-foreground dark:text-muted-foreground-dark",
+      className
+    )}
     {...props}
   />
 ));

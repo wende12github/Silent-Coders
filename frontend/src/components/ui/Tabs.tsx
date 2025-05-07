@@ -1,4 +1,5 @@
 import { useState } from "react";
+import React from "react";
 
 export interface TabItem {
   value: string;
@@ -12,6 +13,7 @@ interface TabsProps {
   className?: string;
   tabsListClassName?: string;
   tabsContentClassName?: string;
+  onTabChange?: (value: string) => void;
 }
 
 const Tabs: React.FC<TabsProps> = ({
@@ -20,26 +22,33 @@ const Tabs: React.FC<TabsProps> = ({
   className,
   tabsListClassName,
   tabsContentClassName,
+  onTabChange,
 }) => {
   const [activeTab, setActiveTab] = useState(defaultValue);
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    onTabChange?.(value);
+  };
 
   return (
     <div className={`w-full ${className || ""}`}>
       <div
-        className={`flex rounded-lg bg-gray-100 p-1 ${tabsListClassName || ""}`}
+        className={`flex rounded-md bg-muted p-1 dark:bg-muted-dark ${tabsListClassName || ""}`}
       >
         {items.map((item) => (
           <button
             key={item.value}
             className={`
-                  flex-1 py-2 px-4 text-center text-sm font-medium rounded-md transition-all cursor-pointer
-                  ${
-                    activeTab === item.value
-                      ? "bg-white text-blue-600 shadow" // Active tab styles
-                      : "text-gray-500 hover:text-gray-700 hover:bg-gray-200" // Inactive tab styles
-                  }
-                `}
-            onClick={() => setActiveTab(item.value)}
+                    flex-1 py-2 px-4 text-center text-sm font-medium rounded-sm transition-all cursor-pointer
+                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 dark:focus-visible:ring-ring-dark dark:focus-visible:ring-offset-background-dark
+                    ${
+                      activeTab === item.value
+                        ? "bg-background text-foreground shadow dark:bg-background-dark dark:text-foreground-dark"
+                        : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground dark:text-muted-foreground-dark dark:hover:bg-secondary-dark dark:hover:text-secondary-foreground-dark"
+                    }
+                  `}
+            onClick={() => handleTabChange(item.value)}
           >
             {item.label}
           </button>
@@ -56,4 +65,5 @@ const Tabs: React.FC<TabsProps> = ({
     </div>
   );
 };
+
 export default Tabs;

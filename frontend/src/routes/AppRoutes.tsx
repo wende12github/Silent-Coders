@@ -11,16 +11,14 @@ import MySkills from "../components/dashboard/MySkills";
 import Sessions from "../components/dashboard/Sessions";
 import Walet from "../components/dashboard/Wallet";
 import { useAuthStore } from "../store/authStore";
-
 import HomePage from "../pages/HomePage";
 import SignUp from "../pages/SignUp";
 import GroupPage from "../pages/GroupPage";
 import GroupsPage from "../pages/GroupsPage";
 import Notifications from "../pages/Notifications";
-// import {AiChatPage} from "../pages/AiChatPage";
 import ChatBotWidget from "../components/ChatBotWidget";
-import { AiChatPage } from "../Pages/AiChatPage";
 import ChatLayout from "../components/privateChat/ChatLayout";
+
 function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const location = useLocation();
@@ -49,6 +47,7 @@ function AppRoutes() {
               path="/dashboard/notifications"
               element={<Notifications />}
             />
+            <Route path="/dashboard/chat" element={<ChatLayout />} />
             <Route path="/dashboard/chat" element={<ChatLayout />} />
           </Route>
         </Route>

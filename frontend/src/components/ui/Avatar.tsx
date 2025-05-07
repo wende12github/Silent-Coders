@@ -36,9 +36,10 @@ const Avatar: React.FC<AvatarProps> = ({
 
   return (
     <div
-      className={`relative flex shrink-0 overflow-hidden rounded-full h-10 w-10 ${
-        className || ""
-      }`}
+      className={`relative flex shrink-0 overflow-hidden rounded-full h-10 w-10
+                  bg-secondary text-secondary-foreground
+                  dark:bg-secondary-dark dark:text-secondary-foreground-dark
+                  ${className || ""}`}
     >
       {src ? (
         <img
@@ -48,9 +49,10 @@ const Avatar: React.FC<AvatarProps> = ({
         />
       ) : (
         <div
-          className={`flex items-center justify-center h-full w-full bg-gray-200 text-sm font-semibold text-gray-700 ${
-            fallbackClassName || ""
-          }`}
+          className={`flex items-center justify-center h-full w-full text-sm font-semibold
+                      bg-secondary text-secondary-foreground
+                      dark:bg-secondary-dark dark:text-secondary-foreground-dark
+                      ${fallbackClassName || ""}`}
         >
           {resolvedFallback.charAt(0)}
         </div>

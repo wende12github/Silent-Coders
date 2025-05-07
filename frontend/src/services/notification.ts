@@ -11,16 +11,22 @@ interface PaginatedResponse<T> {
 
 /**
  * Fetches notifications for the current user.
- * @param url - Optional URL to fetch notifications from (for pagination)
- * @returns {Promise<PaginatedResponse<Notification>>} - A paginated list of notifications.
+ * @returns {Promise<Notification[]>} - A list of notifications.
  */
+
 export const fetchNotifications = async (
-  url?: string
+  page = 1
 ): Promise<PaginatedResponse<Notification>> => {
   try {
-    const response = url 
-      ? await apiClient.get<PaginatedResponse<Notification>>(url)
-      : await apiClient.get<PaginatedResponse<Notification>>("/notifications/");
+    const response = await apiClient.get<PaginatedResponse<Notification>>(
+      "/notifications/",
+      {
+        params: {
+          page,
+        },
+      }
+    );
+    console.log("Fetched notifications:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching notifications:", error);
@@ -31,7 +37,9 @@ export const fetchNotifications = async (
           "Failed to fetch notifications."
       );
     }
-    throw new Error("An unexpected error occurred while fetching notifications.");
+    throw new Error(
+      "An unexpected error occurred while fetching notifications."
+    );
   }
 };
 
@@ -41,36 +49,38 @@ export const fetchNotifications = async (
  * @returns {Promise<Notification>} - The updated notification
  */
 export const markNotificationAsRead = async (
-  notificationId: number
+  notification: Notification
 ): Promise<Notification> => {
   try {
-    const response = await apiClient.post<Notification>(
-      `/notifications/${notificationId}/mark-read/`
+    const response = await apiClient.patch<Notification>(
+      `/notifications/${notification.id}/mark-read/`,
+      {
+        type: notification.type,
+        content: notification.content,
+        is_read: true,
+      }
     );
+    console.log(`Notification ${notification} marked as read:`, response.data);
     return response.data;
   } catch (error) {
-    console.error(
-      `Error marking notification ${notificationId} as read:`,
-      error
-    );
+    console.error(`Error marking notification ${notification} as read:`, error);
     if (axios.isAxiosError(error)) {
       throw new Error(
         error.response?.data?.detail ||
           error.message ||
-          `Failed to mark notification ${notificationId} as read.`
+          `Failed to mark notification ${notification} as read.`
       );
     }
     throw new Error(
-      `An unexpected error occurred while marking notification ${notificationId} as read.`
+      `An unexpected error occurred while marking notification ${notification} as read.`
     );
   }
 };
 
-/**
- * Deletes a notification
- * @param notificationId - ID of the notification to delete
- */
-export const deleteNotification = async (notificationId: number): Promise<void> => {
+// Delete a notification
+export const deleteNotification = async (
+  notificationId: number
+): Promise<void> => {
   try {
     await apiClient.delete(`/notifications/${notificationId}/`);
   } catch (error) {

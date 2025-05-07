@@ -178,7 +178,7 @@ class SubmitReviewView(generics.CreateAPIView):
         except Booking.DoesNotExist:
             raise ValidationError("Booking not found.")
 
-        if booking.user != self.request.user:
+        if booking.booked_for != self.request.user:
             raise ValidationError("You can only review your own bookings.")
 
         if booking.status != 'completed':
@@ -204,8 +204,8 @@ class AvailabilitySlotDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         obj = super().get_object()
-        if obj.booked_for != self.request.user:
-            raise PermissionDenied("You do not have permission to modify this slot.")
+        # if obj.booked_for != self.request.user:
+        #     raise PermissionDenied("You do not have permission to modify this slot.")
         return obj
     
 class UserAvailabilityView(generics.ListAPIView):

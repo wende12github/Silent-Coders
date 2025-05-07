@@ -10,6 +10,7 @@ import Header from "./components/layout/Header";
 import { useAuthStore } from "./store/authStore";
 import { LandingHeader } from "./components/landing/LandingHeader";
 import { LandingFooter } from "./components/landing/LandingFooter";
+import { Toaster } from "sonner";
 
 function Layout() {
   const location = useLocation();
@@ -21,6 +22,7 @@ function Layout() {
       {!hideLayout && (isAuthenticated ? <Header /> : <LandingHeader />)}
       <AppRoutes />
       {!hideLayout && isAuthenticated && <LandingFooter />}
+      <Toaster />
     </div>
   );
 }
@@ -28,7 +30,6 @@ function Layout() {
 function App() {
   return (
     <BrowserRouter>
- 
       <Layout />
     </BrowserRouter>
   );

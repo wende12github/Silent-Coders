@@ -25,11 +25,11 @@ export interface Skill {
   updated_at?: string;
 }
 // { booked_for: number; skill: number; scheduled_time: any; duration: number; booked_by: number; }
-export interface Booking {
+export interface Booking <T> {
   id: number;
   booked_by: string;
   booked_for: string | number;
-  skill: Skill | number;
+  skill: T;
   status?: "pending" | "confirmed" | "completed" | "cancelled";
   scheduled_time: string;
   duration?: number;
@@ -44,6 +44,15 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   user: number;
+}
+
+
+export interface Availability {
+  id: number;
+  booked_for: number;
+  weekday: number;
+  start_time: string;
+  end_time: string;
 }
 
 
@@ -72,12 +81,17 @@ export interface Notification {
 //   provider: User;
 // };
 
-export type WalletTransaction = {
+export type WalletTransaction =  {
   id: number;
-  amount: number;
+  sender: number;
+  sender_username: string;
+  receiver: number;
+  receiver_username: string;
+  amount: number; // Consider changing to number if it's always a numerical value
   reason: string;
-  timestamp: string;
-};
+  created_at: string; // ISO 8601 timestamp
+}
+
 
 export type LeaderboardEntry = {
   total_hours_given: number;
@@ -310,7 +324,7 @@ export const mockSkills: Skill[] = [
   },
 ];
 
-export const mockSessions: Booking[] = [
+export const mockSessions: Booking<Skill>[] = [
   {
     id: 1,
     scheduled_time: "2024-11-25T15:00:00Z",
@@ -346,54 +360,54 @@ export const mockSessions: Booking[] = [
   },
 ];
 
-export const mockTransactions: WalletTransaction[] = [
-  {
-    id: 1,
-    amount: 2.5, // Positive amount means earned
-    reason: "Session Completed: JavaScript Programming",
-    timestamp: "2025-11-15T16:30:00Z",
-  },
-  {
-    id: 2,
-    amount: -1.5, // Negative amount means spent
-    reason: "Session Completed: UI/UX Design Basics",
-    timestamp: "2025-01-10T14:45:00Z",
-  },
-  {
-    id: 3,
-    amount: 1.0,
-    reason: "Reward: First Session Completed",
-    timestamp: "2025-02-25T11:20:00Z",
-  },
-  {
-    // New Transaction 1 (from new booking 3)
-    id: 4,
-    amount: -0.75, // Spent 45 mins / 60 mins/hour = 0.75 hours
-    reason: "Session Completed: Illustration Basics",
-    timestamp: "2025-03-10T12:00:00Z", // After the session time
-  },
-  {
-    // New Transaction 2 (from new booking 3)
-    id: 5,
-    amount: 0.75, // Earned 45 mins / 60 mins/hour = 0.75 hours
-    reason: "Session Completed: Illustration Basics",
-    timestamp: "2025-04-10T12:00:00Z", // After the session time
-  },
-  {
-    // New Transaction 3 (from new booking 4)
-    id: 6,
-    amount: -1.0, // Spent 60 mins / 60 mins/hour = 1 hour
-    reason: "Session Completed: Beginner Piano Lessons",
-    timestamp: "2025-04-12T17:00:00Z", // After the session time
-  },
-  {
-    // New Transaction 4 (from new booking 4)
-    id: 7,
-    amount: 1.0, // Earned 60 mins / 60 mins/hour = 1 hour
-    reason: "Session Completed: Beginner Piano Lessons",
-    timestamp: "2025-04-22T17:00:00Z", // After the session time
-  },
-];
+// export const mockTransactions: WalletTransaction[] = [
+//   {
+//     id: 1,
+//     amount: 2.5, // Positive amount means earned
+//     reason: "Session Completed: JavaScript Programming",
+//     timestamp: "2025-11-15T16:30:00Z",
+//   },
+//   {
+//     id: 2,
+//     amount: -1.5, // Negative amount means spent
+//     reason: "Session Completed: UI/UX Design Basics",
+//     timestamp: "2025-01-10T14:45:00Z",
+//   },
+//   {
+//     id: 3,
+//     amount: 1.0,
+//     reason: "Reward: First Session Completed",
+//     timestamp: "2025-02-25T11:20:00Z",
+//   },
+//   {
+//     // New Transaction 1 (from new booking 3)
+//     id: 4,
+//     amount: -0.75, // Spent 45 mins / 60 mins/hour = 0.75 hours
+//     reason: "Session Completed: Illustration Basics",
+//     timestamp: "2025-03-10T12:00:00Z", // After the session time
+//   },
+//   {
+//     // New Transaction 2 (from new booking 3)
+//     id: 5,
+//     amount: 0.75, // Earned 45 mins / 60 mins/hour = 0.75 hours
+//     reason: "Session Completed: Illustration Basics",
+//     timestamp: "2025-04-10T12:00:00Z", // After the session time
+//   },
+//   {
+//     // New Transaction 3 (from new booking 4)
+//     id: 6,
+//     amount: -1.0, // Spent 60 mins / 60 mins/hour = 1 hour
+//     reason: "Session Completed: Beginner Piano Lessons",
+//     timestamp: "2025-04-12T17:00:00Z", // After the session time
+//   },
+//   {
+//     // New Transaction 4 (from new booking 4)
+//     id: 7,
+//     amount: 1.0, // Earned 60 mins / 60 mins/hour = 1 hour
+//     reason: "Session Completed: Beginner Piano Lessons",
+//     timestamp: "2025-04-22T17:00:00Z", // After the session time
+//   },
+// ];
 
 export const mockLeaderboard: LeaderboardEntry[] = [
   {
