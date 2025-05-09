@@ -2,16 +2,14 @@ import React, { useState, useEffect, useCallback } from "react";
 import Button from "../../components/ui/Button";
 import { Input, Label, Textarea } from "../../components/ui/Form";
 import {
-  AnnouncementResponse,
-  SendAnnouncementRequest,
   fetchAnnouncements,
   sendAnnouncement,
 } from "../../services/groups";
-import { Group } from "../../services/groups";
+import { GroupAnnouncement, GroupDetail, SendAnnouncementRequest } from "../../store/types";
 import { useAuthStore } from "../../store/authStore";
 
 interface AnnouncementsSectionProps {
-  group: Group | null;
+  group: GroupDetail | null;
 }
 
 const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
@@ -21,7 +19,6 @@ const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
 
   const [isFormVisible, setIsFormVisible] = useState(false);
   const [formData, setFormData] = useState<SendAnnouncementRequest>({
-    group: group!.id,
     title: "",
     message: "",
   });
@@ -30,7 +27,7 @@ const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   const [announcementData, setAnnouncementData] = useState<
-    AnnouncementResponse[] | null
+  GroupAnnouncement[] | null
   >(null);
   const [isLoadingAnnouncements, setIsLoadingAnnouncements] = useState(false);
   const [errorAnnouncements, setErrorAnnouncements] = useState<string | null>(
@@ -98,14 +95,13 @@ const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
       }
 
       const announcementRequest: SendAnnouncementRequest = {
-        group: group.id,
         title: formData.title,
         message: formData.message,
       };
 
       await sendAnnouncement(group.id, announcementRequest);
       setSuccessMessage("Announcement created successfully");
-      setFormData({ title: "", message: "", group: group.id });
+      setFormData({ title: "", message: "" });
       setIsFormVisible(false);
 
       loadAnnouncements();
@@ -254,7 +250,7 @@ const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
         announcementData,
         (announcements) => (
           <div className="space-y-4">
-            {announcements.map((announcement) => (
+            {announcements.map((announcement: GroupAnnouncement) => (
               <div
                 key={announcement.id}
                 className="p-6 rounded-lg shadow-md border
@@ -271,7 +267,7 @@ const AnnouncementsSection: React.FC<AnnouncementsSectionProps> = ({
                   }}
                 ></p>
                 <div className="flex justify-between items-center text-sm text-muted-foreground dark:text-muted-foreground-dark">
-                  <span>Posted by: {announcement.posted_by}</span>
+                  <span>Posted by: {announcement.posted_by.username}</span>
                   <span>{formatTimestamp(announcement.created_at)}</span>
                 </div>
               </div>

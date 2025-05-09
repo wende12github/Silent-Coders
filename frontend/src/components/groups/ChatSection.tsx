@@ -5,10 +5,10 @@ import Button from "../../components/ui/Button";
 import { ChatMessage } from "../../store/types";
 import { useAuthStore } from "../../store/authStore";
 import { getGroupMessages, sendMessage } from "../../services/message";
-import { Group } from "../../services/groups";
+import { GroupDetail } from "../../store/types";
 
 interface ChatSectionProps {
-  group: Group | null;
+  group: GroupDetail | null;
 }
 
 const ChatSection: React.FC<ChatSectionProps> = ({ group }) => {

@@ -71,7 +71,7 @@ const LeaderboardSection: React.FC<LeaderboardSectionProps> = ({
             </thead>
             <tbody>
               {Array.isArray(leaderboardData) &&
-                leaderboardData.map((entry, index) => (
+                leaderboardData.map((entry: LeaderboardEntry, index) => (
                   <tr
                     key={entry.user.id}
                     className="border-t border-border dark:border-border-dark hover:bg-muted/50 dark:hover:bg-muted-dark/50"

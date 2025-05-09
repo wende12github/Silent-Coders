@@ -1,8 +1,8 @@
 import React from "react";
-import { Group } from "../../services/groups";
+import { GroupDetail } from "../../store/types";
 
 interface GroupHeaderProps {
-  group: Group | null;
+  group: GroupDetail | null;
 }
 
 const GroupHeader: React.FC<GroupHeaderProps> = ({ group }) => {
