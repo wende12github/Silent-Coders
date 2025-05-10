@@ -75,10 +75,42 @@ export default function PrivateChat({
   }, [user?.id, other_user_id, accessToken, isValidChat]);
 
   useEffect(() => {
+    const wsUrl = `ws://localhost:8000/ws/chat/user_${user?.id}_${other_user_id}/`;
+    const socket = new WebSocket(wsUrl);
+
+    socket.onopen = () => {
+      console.log("WebSocket connected");
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const newMessage: PrivateMessageResponse = {
+        id: data.id,
+        message: data.message,
+        created_at: data.created_at,
+        is_group_chat: false,
+        other_user_id: data.sender_id,
+      };
+      setMessages((prev) => [...prev, newMessage]);
+    };
+
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    socket.onerror = (error) => {
+      console.error("WebSocket error:", error);
+    };
+
+    return () => {
+      socket.close();
+    };
+  }, [user?.id, other_user_id]);
+
+  useEffect(() => {
     if (!isLoading && messages.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    } else if (!isLoading && messages.length === 0) {
-    }
+    } else if (!isLoading && messages.length === 0) { /* empty */ }
   }, [messages, isLoading]);
 
   const handleSendMessage = async () => {
@@ -181,6 +213,7 @@ export default function PrivateChat({
         hour: "2-digit",
         minute: "2-digit",
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       return "Invalid Time";
     }

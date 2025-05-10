@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState, useCallback } from "react";
 import { Calendar } from "lucide-react";
 import UserSkillCard from "../components/users/UserSkillCard.tsx";
@@ -139,6 +140,7 @@ const HomePage = () => {
     }
   };
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleSelectAvailability = (availability: any) => {
     setSelectedAvailabilitySlot(availability);
     const maxDuration = calculateDurationInMinutes(
@@ -157,7 +159,7 @@ const HomePage = () => {
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const value = e.target.value;
-    setBookingDuration(value === "" ? "" : Number(value));
+    setBookingDuration(value === "" ? "" : Number('value'));
   };
 
   const handleInitialMessageChange = (
