@@ -1,4 +1,5 @@
 import json
+from .models import ChatMessage, PrivateChatMessage
 from channels.generic.websocket import AsyncWebsocketConsumer
 from django.contrib.auth import get_user_model
 from groups.models import Group, GroupMembership
@@ -61,14 +62,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
         # Save the message
         if self.is_group_chat:
             group = await database_sync_to_async(Group.objects.get)(name=self.room_name)
-            await database_sync_to_async(ChatMessage.objects.create)(
+            chat_message = await database_sync_to_async(ChatMessage.objects.create)(
                 user=self.user,
                 room=group,
                 message=message,
                 message_tyep=message_type
             )
         else:
-            await database_sync_to_async(PrivateChatMessage.objects.create)(
+            private_message = await database_sync_to_async(PrivateChatMessage.objects.create)(
                 sender=self.user,
                 receiver=self.other_user,
                 message=message,

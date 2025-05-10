@@ -1,9 +1,9 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from .models import PrivateChatMessage
+from .models import ChatMessage
 from notifications.services import notify_user
 
-@receiver(post_save, sender=PrivateChatMessage)
+@receiver(post_save, sender=ChatMessage)
 def message_sent(sender, instance, created, **kwargs):
     if not created:
         user = instance.user

@@ -14,6 +14,7 @@ from datetime import timedelta
 from pathlib import Path
 import environ
 import os
+import dj_database_url
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,7 +44,8 @@ DEBUG = env.bool('DEBUG', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '127.0.0.1').split(',')
 
 
 # Application definition
@@ -114,10 +116,23 @@ ASGI_APPLICATION = 'timebank.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+# DATABASES['default'] = dj_database_url.parse("postgresql://time_bank_fi02_user:zxTMTOcbeZ7wSBdGqUx8UyfFqF2z4rDj@dpg-d0f4i4ruibrs739622g0-a.oregon-postgres.render.com/time_bank_fi02")
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '5432'),
     }
 }
 
@@ -249,7 +264,6 @@ SWAGGER_SETTINGS = {
         }
     }
 }
-
 
 CHANNEL_LAYERS = {
     'default': {

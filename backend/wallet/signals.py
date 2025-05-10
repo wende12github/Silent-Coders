@@ -7,13 +7,13 @@ from .models import Wallet, Transaction
 
 User = get_user_model()
 
-# 🔹 Auto-create Wallet when a new user is created
+# Auto-create Wallet when a new user is created
 @receiver(post_save, sender=User)
 def create_user_wallet(sender, instance, created, **kwargs):
     if created and not hasattr(instance, 'wallet'):
         Wallet.objects.create(user=instance)
 
-# 🔹 Send email notification when a new transaction is created
+# Send email notification when a new transaction is created
 @receiver(post_save, sender=Transaction)
 def send_transfer_notification(sender, instance, created, **kwargs):
     if created and instance.receiver and instance.sender:
