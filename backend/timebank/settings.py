@@ -44,8 +44,8 @@ DEBUG = env.bool('DEBUG', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 
 
-# ALLOWED_HOSTS = []
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'timebank-39ps.onrender.com').split(',')
+ALLOWED_HOSTS = ["timebank-39ps.onrender.com", "localhost", "127.0.0.1"]
+# ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'timebank-39ps.onrender.com').split(',')
 
 
 # Application definition
