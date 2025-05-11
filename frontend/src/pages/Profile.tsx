@@ -40,7 +40,7 @@ const UserProfile = () => {
   const [newSkill, setNewSkill] = useState("");
   const [skillType, setSkillType] = useState<"offered" | "wanted">("offered");
 
-  const [transactions, setTransactions] = useState<Transaction[]>([
+  const [transactions] = useState<Transaction[]>([
     {
       id: "1",
       date: "2025-04-27",

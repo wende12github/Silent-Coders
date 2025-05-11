@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
 import {
   Calendar,
@@ -209,7 +210,11 @@ export default function Sessions() {
     const participantIdentifierForChat = participantUsername; 
 
     return (
-      <Card key={session.id} className="flex flex-col">
+      <Card key={session.id}
+        className={`flex flex-col ${
+          isPast ? "bg-gray-100 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
+        }`}
+      >
         <CardHeader className="pb-2">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div className="space-y-1">
