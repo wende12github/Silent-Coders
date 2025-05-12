@@ -9,33 +9,76 @@ type Message = {
 type ChatState = {
   messages: Message[];
   isLoading: boolean;
-  sendMessage: (msg: string) => Promise<void>;
+  connectToWebSocket: (roomName: string) => void;
+  sendMessage: (msg: string, isAI?: boolean) => Promise<void>;
 };
 
-export const useChatStore = create<ChatState>((set) => ({
-  messages: [],
-  isLoading: false,
+export const useChatStore = create<ChatState>((set) => {
+  let socket: WebSocket | null = null;
 
-  sendMessage: async (msg: string) => {
-    const userMsg: Message = { role: "user", content: msg };
-    set((state) => ({
-      messages: [...state.messages, userMsg],
-      isLoading: true,
-    }));
+  return {
+    messages: [],
+    isLoading: false,
 
-    try {
-      const res = await apiClient.post("/chatbot/ask/", { message: msg });
+    connectToWebSocket: (roomName: string) => {
+      const wsUrl = `ws://localhost:8000/ws/chat/${roomName}/`; // Replace with your backend WebSocket URL
+      socket = new WebSocket(wsUrl);
 
-      const data = res.data;
-      const botMsg: Message = { role: "assistant", content: data.reply };
+      socket.onopen = () => {
+        console.log("WebSocket connected");
+      };
 
+      socket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        const newMessage: Message = {
+          role: data.user === "assistant" ? "assistant" : "user",
+          content: data.message,
+        };
+        set((state) => ({
+          messages: [...state.messages, newMessage],
+        }));
+      };
+
+      socket.onclose = () => {
+        console.log("WebSocket disconnected");
+      };
+
+      socket.onerror = (error) => {
+        console.error("WebSocket error:", error);
+      };
+    },
+
+    sendMessage: async (msg: string, isAI = false) => {
+      const userMsg: Message = { role: "user", content: msg };
       set((state) => ({
-        messages: [...state.messages, botMsg],
-        isLoading: false,
+        messages: [...state.messages, userMsg],
+        isLoading: true,
       }));
-    } catch (err) {
-      console.error("ChatBot Error:", err);
-      set({ isLoading: false });
-    }
-  },
-}));
+
+      if (isAI) {
+        // Handle AI Chat Assistant
+        try {
+          const res = await apiClient.post("/chatbot/ask/", { message: msg });
+          const data = res.data;
+          const botMsg: Message = { role: "assistant", content: data.reply };
+
+          set((state) => ({
+            messages: [...state.messages, botMsg],
+            isLoading: false,
+          }));
+        } catch (err) {
+          console.error("ChatBot Error:", err);
+          set({ isLoading: false });
+        }
+      } else {
+        // Handle WebSocket Chat
+        if (socket && socket.readyState === WebSocket.OPEN) {
+          socket.send(JSON.stringify({ message: msg, message_type: "text" }));
+        } else {
+          console.error("WebSocket is not connected");
+        }
+        set({ isLoading: false });
+      }
+    },
+  };
+});

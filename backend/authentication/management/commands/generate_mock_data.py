@@ -1,10 +1,13 @@
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
 from authentication.models import UserSkill, EmailNotificationPreference
-from groups.models import Group
-from chat.models import ChatMessage
+from groups.models import Group, GroupMembership, GroupAnnouncement
+from chat.models import ChatMessage, PrivateChatMessage
 from wallet.models import Wallet, Transaction
 from leaderboard.models import UserStats
+from notifications.models import Notification
+from bookings.models import Booking, Review, AvailabilitySlot
+from skills.models import Skill
 from random import randint, choice
 import random
 from faker import Faker
@@ -16,16 +19,15 @@ SKILLS = ['Python', 'Cooking', 'Writing', 'Django', 'Photography', 'Design', 'Pr
 LEVELS = ['Beginner', 'Intermediate', 'Expert']
 
 class Command(BaseCommand):
-    help = 'Generate mock users, skills, email prefs, wallets, transactions, leaderboards, groups, and messages'
+    help = 'Generate mock data for users, skills, bookings, groups, chat messages, notifications, wallets, and transactions'
 
     def handle(self, *args, **kwargs):
         users = []
 
-        uniqname = random.randint(1000, 9999)  # To be Ensure username/email uniqueness
-
+        # Create mock users
         for i in range(10):
-            email = f"user{uniqname}{i}@example.com"
-            username = f"user_{uniqname}{i}"
+            email = f"user{randint(1000, 9999)}{i}@example.com"
+            username = f"user_{randint(1000, 9999)}{i}"
             if User.objects.filter(username=username).exists():
                 continue  
 
@@ -38,6 +40,7 @@ class Command(BaseCommand):
             )
             users.append(user)
 
+            # Email notification preferences
             EmailNotificationPreference.objects.create(
                 user=user,
                 newsletter=choice([True, False]),
@@ -45,6 +48,7 @@ class Command(BaseCommand):
                 skill_match_alerts=choice([True, False])
             )
 
+            # User skills
             for _ in range(randint(1, 3)):
                 skill_name = choice(SKILLS)
                 hours = random.uniform(10, 120)
@@ -60,11 +64,12 @@ class Command(BaseCommand):
             wallet.balance = randint(20, 200)
             wallet.save()
 
-            # Transactions data generate
+            # Transactions
             for _ in range(randint(2, 5)):
                 receiver = choice(users) if users else None
                 if receiver and receiver != user:
                     Transaction.objects.create(
+                        wallet=wallet,
                         sender=user,
                         receiver=receiver,
                         transaction_type=choice(["debit", "credit"]),
@@ -84,13 +89,45 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Created users with wallets, transactions, skills, email prefs, leaderboard stats."))
 
-        # Groups and Chat
+        # Ensure all skills in SKILLS are created
+        for skill_name in SKILLS:
+            Skill.objects.get_or_create(name=skill_name)
+        self.stdout.write(self.style.SUCCESS("Created mock skills."))
+
+        # Generate mock bookings
+        for _ in range(20):
+            user = choice(users)
+            skill_name = choice(SKILLS)
+            skill_instance = Skill.objects.get(name=skill_name)
+            other_user = choice(users)
+            hours = random.uniform(1, 5)
+            availability_slot = AvailabilitySlot.objects.create(
+                booked_for=other_user,
+                weekday=randint(0, 6),
+                start_time=fake.time(),
+                end_time=fake.time(),
+                is_booked=False
+            )
+            Booking.objects.create(
+                skill=skill_instance,
+                booked_by=user,
+                booked_for=other_user,
+                status=choice(["pending", "confirmed", "completed", "cancelled"]),
+                scheduled_time=fake.future_datetime(),
+                duration=hours * 60,
+                cancel_reason=fake.sentence() if random.choice([True, False]) else None,
+                availability=availability_slot
+            )
+
+        self.stdout.write(self.style.SUCCESS("Created mock bookings."))
+
+        # Generate groups and chat messages
         for i in range(3):
             owner = random.choice(users)
-            group = Group.objects.create(name=f"group_{uniqname}_{i}", owner=owner)
+            group = Group.objects.create(name=f"group_{randint(1000, 9999)}_{i}", owner=owner)
             group_members = random.sample(users, k=3)
             for member in group_members:
-                group.members.add(member)
+                GroupMembership.objects.create(group=group, user=member)
 
             for _ in range(5):
                 sender = random.choice(group_members)
@@ -101,29 +138,38 @@ class Command(BaseCommand):
                     message_tyep="text"
                 )
 
-            self.stdout.write(self.style.SUCCESS(f"Group '{group.name}' created with members and messages."))
+            GroupAnnouncement.objects.create(
+                group=group,
+                title=fake.sentence(),
+                message=fake.paragraph(),
+                posted_by=owner
+            )
 
-        # Leaderboards
-        self.stdout.write(self.style.MIGRATE_HEADING("\nLeaderboards"))
+            self.stdout.write(self.style.SUCCESS(f"Group '{group.name}' created with members, messages, and announcements."))
 
-        top_wallets = Wallet.objects.select_related('user').order_by('-balance')[:5]
-        self.stdout.write(self.style.SUCCESS("Top Wallet Balances:"))
-        for w in top_wallets:
-            self.stdout.write(f"{w.user.username}: {w.balance} credits")
+        # Generate private chat messages
+        for _ in range(20):
+            sender = random.choice(users)
+            receiver = random.choice([u for u in users if u != sender])
+            PrivateChatMessage.objects.create(
+                sender=sender,
+                receiver=receiver,
+                message=fake.sentence(),
+                message_type="text"
+            )
 
-        top_skills = {}
-        for skill in UserSkill.objects.select_related('user'):
-            top_skills.setdefault(skill.user.username, 0)
-            top_skills[skill.user.username] += skill.experience_hours
+        self.stdout.write(self.style.SUCCESS("Created private chat messages."))
 
-        sorted_skills = sorted(top_skills.items(), key=lambda x: x[1], reverse=True)[:5]
-        self.stdout.write(self.style.SUCCESS("🎓 Top Skill Hours:"))
-        for username, hours in sorted_skills:
-            self.stdout.write(f"{username}: {round(hours, 1)} hrs")
+        # Generate notifications
+        for user in users:
+            for _ in range(randint(1, 5)):
+                Notification.objects.create(
+                    user=user,
+                    type=choice(['booking_request', 'booking_status', 'message', 'review']),
+                    content=fake.sentence(),
+                    is_read=choice([True, False])
+                )
 
-        top_stats = UserStats.objects.select_related('user').order_by('-total_hours_given')[:5]
-        self.stdout.write(self.style.SUCCESS("Top Contributors (hours given):"))
-        for stat in top_stats:
-            self.stdout.write(f"{stat.user.username}: {stat.total_hours_given}h given, {stat.sessions_completed} sessions")
+        self.stdout.write(self.style.SUCCESS("Created notifications."))
 
         self.stdout.write(self.style.SUCCESS("Mock data generation complete!"))

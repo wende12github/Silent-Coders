@@ -328,6 +328,7 @@ export default function PrivateChat({
         hour: "2-digit",
         minute: "2-digit",
       });
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (e) {
       console.error("PrivateChat: Error formatting time:", e);
       return "Invalid Time";

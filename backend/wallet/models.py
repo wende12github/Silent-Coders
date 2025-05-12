@@ -8,6 +8,8 @@ User = settings.AUTH_USER_MODEL
 class Wallet(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='wallet')
     balance = models.DecimalField(max_digits=10, decimal_places=2, default=10.00)
+    created_at = models.DateTimeField(default=now)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def has_sufficient_balance(self, amount):
         # Ensure amount is Decimal for comparison
@@ -53,6 +55,7 @@ class Transaction(models.Model):
     # Increased max_digits for amount to allow larger transactions
     amount = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))]) # Amount should always be positive, type indicates debit/credit
     reason = models.CharField(max_length=255, blank=True)
+    status = models.CharField(max_length=10, choices=[('pending', 'Pending'), ('completed', 'Completed'), ('failed', 'Failed')], default='completed')
     booking = models.ForeignKey('bookings.Booking', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
