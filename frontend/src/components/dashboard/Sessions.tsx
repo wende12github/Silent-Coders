@@ -10,36 +10,36 @@ import {
   Star,
 } from "lucide-react";
 import { format, isPast } from "date-fns";
-import Tabs, { TabItem } from "../ui/Tabs"; 
+import Tabs, { TabItem } from "../ui/Tabs";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "../ui/Card"; 
-import { Badge } from "../ui/Badge"; 
-import Button from "../ui/Button"; 
-import { Select, SelectItem } from "../ui/Select"; 
-import { Booking, Skill } from "../../store/types"; 
+} from "../ui/Card";
+import { Badge } from "../ui/Badge";
+import Button from "../ui/Button";
+import { Select, SelectItem } from "../ui/Select";
+import { Booking, Review } from "../../store/types";
 
-import { fetchMyBookings, updateBookingStatus } from "../../services/booking"; 
-import { useAuthStore } from "../../store/authStore"; 
+import { fetchMyBookings, updateBookingStatus } from "../../services/booking";
+import { useAuthStore } from "../../store/authStore";
 import {
   Dialog,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "../ui/Dialog"; 
-import { Input, Textarea } from "../ui/Form"; 
-import { toast } from "sonner"; 
+} from "../ui/Dialog";
+import { Input, Textarea } from "../ui/Form";
+import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
-import { apiClient } from "../../services/api"; 
+import { giveReview, fetchBookingReviews } from "../../services/booking";
 
 export default function Sessions() {
-  const [sessions, setSessions] = useState<Booking<Skill>[]>([]);
+  const [sessions, setSessions] = useState<Booking[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [isCancelDialogOpen, setIsCancelDialogOpen] = useState(false);
   const [sessionToCancelId, setSessionToCancelId] = useState<number | null>(
@@ -55,14 +55,39 @@ export default function Sessions() {
   const [reviewText, setReviewText] = useState("");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
 
+  const [sessionReviews, setSessionReviews] = useState<Map<number, Review>>(
+    new Map()
+  );
+
   const { user } = useAuthStore();
 
   const loadSessions = async () => {
     try {
       const data = await fetchMyBookings();
       setSessions(data);
-
       console.log("sessions loaded");
+
+      const completedSessionIds = data
+        .filter((s) => s.status?.toLowerCase() === "completed")
+        .map((s) => s.id);
+
+      const reviewsMap = new Map<number, Review>();
+
+      for (const bookingId of completedSessionIds) {
+        try {
+          const reviews = await fetchBookingReviews({ booking_id: bookingId });
+
+          if (reviews && reviews.length > 0) {
+            reviewsMap.set(bookingId, reviews[0]);
+          }
+        } catch (reviewError) {
+          console.error(
+            `Failed to load review for booking ${bookingId}:`,
+            reviewError
+          );
+        }
+      }
+      setSessionReviews(reviewsMap);
     } catch (error) {
       console.error("Failed to load sessions:", error);
       toast.error("Failed to load sessions.");
@@ -87,7 +112,7 @@ export default function Sessions() {
   );
 
   const formatDate = (date: string) =>
-    format(new Date(date), "EEEE, MMMM d, yyyy"); 
+    format(new Date(date), "EEEE, MMMM d, yyyy");
   const formatTime = (date: string) => format(new Date(date), "h:mm a");
 
   const getStatusBadge = (status?: string) => {
@@ -163,30 +188,26 @@ export default function Sessions() {
 
     setIsSubmittingReview(true);
     try {
-      const response = await apiClient.post(
-        `/bookings/bookings/${sessionToReviewId}/review/`,
-        {
-          rating: reviewRating,
-          comment: reviewText.trim(),
-        }
+      const submittedReview = await giveReview(
+        sessionToReviewId,
+        reviewRating,
+        reviewText.trim()
       );
 
-      if (response.status >= 200 && response.status < 300) {
-        toast.success("Review submitted successfully!");
+      setSessionReviews((prevReviews) => {
+        const newReviewsMap = new Map(prevReviews);
+        newReviewsMap.set(sessionToReviewId, submittedReview);
+        return newReviewsMap;
+      });
 
-        await loadSessions();
-        setIsReviewDialogOpen(false);
-        setSessionToReviewId(null);
-        setReviewRating(null);
-        setReviewText("");
-      } else {
-        toast.error("Failed to submit review. Please try again.");
-        console.error(
-          "Review submission failed with status:",
-          response.status,
-          response.data
-        );
-      }
+      toast.success("Review submitted successfully!");
+
+      await loadSessions();
+
+      setIsReviewDialogOpen(false);
+      setSessionToReviewId(null);
+      setReviewRating(null);
+      setReviewText("");
     } catch (error: any) {
       console.error("Error submitting review:", error);
 
@@ -200,14 +221,31 @@ export default function Sessions() {
     }
   };
 
-  const renderSessionCard = (session: Booking<Skill>, isPast: boolean) => {
-    const isProvider = session.booked_for === user?.username;
+  const renderStars = (rating: number) => {
+    const stars = [];
+    for (let i = 0; i < 5; i++) {
+      stars.push(
+        <Star
+          key={i}
+          className={`h-4 w-4 ${
+            i < rating
+              ? "fill-current text-yellow-500 dark:text-yellow-400"
+              : "text-muted-foreground/50 dark:text-muted-foreground-dark/50"
+          }`}
+        />
+      );
+    }
+    return <div className="flex items-center">{stars}</div>;
+  };
 
-    const participantUsername = isProvider
-      ? session.booked_by
-      : session.booked_for;
+  const renderSessionCard = (session: Booking) => {
+    const isProvider = session.booked_for.username === user?.username;
 
-    const participantIdentifierForChat = participantUsername; 
+    const participantUser = isProvider ? session.booked_by : session.booked_for;
+    const participantUsername = participantUser?.username;
+    const participantUserId = participantUser?.id;
+
+    const existingReview = sessionReviews.get(session.id);
 
     return (
       <Card key={session.id}
@@ -253,10 +291,9 @@ export default function Sessions() {
         </CardHeader>
         <CardContent className="flex justify-between items-center flex-wrap gap-4 pt-0">
           {" "}
-          
           <div className="text-sm">
             <div className="text-foreground dark:text-foreground-dark font-medium">
-              {participantUsername}
+              {participantUser?.first_name || participantUser?.username}
             </div>
 
             <div className="text-muted-foreground dark:text-muted-foreground-dark">
@@ -289,7 +326,7 @@ export default function Sessions() {
                 className="text-destructive dark:text-destructive-dark border-destructive dark:border-destructive-dark hover:bg-destructive/10 dark:hover:bg-destructive-dark/10"
                 onClick={() => openCancelDialog(session.id)}
               >
-                Decline
+                Cancel
               </Button>
             )}
 
@@ -305,31 +342,28 @@ export default function Sessions() {
                 </Button>
                 {session.skill.location === "remote" && (
                   <Button variant="outline" size="sm">
-                      <Video className="mr-2 h-4 w-4" /> Join Online
+                    <Video className="mr-2 h-4 w-4" /> Join Online
                   </Button>
                 )}
                 {session.skill.location === "local" && (
-                  <Button variant="outline" size="sm" asChild>
-                    <button>
-                      <MapPin className="mr-2 h-4 w-4" /> Get Directions
-                    </button>
+                  <Button variant="outline" size="sm">
+                    <MapPin className="mr-2 h-4 w-4" /> Get Directions
                   </Button>
                 )}
               </>
             )}
 
-            {session.status !== "cancelled" && (
+            {session.status !== "cancelled" && participantUserId != null && (
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => goToChat(participantIdentifierForChat)}
+                onClick={() => goToChat(participantUserId)}
               >
                 <MessageSquare className="mr-2 h-4 w-4" /> Chat
               </Button>
             )}
 
-            {(session.status === "pending" ||
-              session.status === "confirmed") && session.booked_by !== user?.username && (
+            {session.status === "confirmed" && !isProvider && (
               <Button
                 variant="outline"
                 size="sm"
@@ -340,7 +374,8 @@ export default function Sessions() {
             )}
 
             {session.status === "completed" &&
-              session.booked_by === user?.username && ( 
+              !isProvider &&
+              !existingReview && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -351,7 +386,23 @@ export default function Sessions() {
                 </Button>
               )}
 
-            
+            {session.status === "completed" && existingReview && (
+              <div className="flex sm:flex-row flex-col items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                <span className="font-medium text-foreground dark:text-foreground-dark">
+                  Your Review:
+                </span>
+                {renderStars(existingReview.rating)}
+                <span className="italic">"{existingReview.comment}"</span>
+              </div>
+            )}
+            {session.status === "cancelled" && session.cancel_reason && (
+              <div className="flex sm:flex-row flex-col items-center gap-2 text-sm text-muted-foreground dark:text-muted-foreground-dark">
+                <span className="font-medium text-foreground dark:text-foreground-dark">
+                  Cancel Reason:
+                </span>
+                <span className="italic">"{session.cancel_reason}"</span>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -364,7 +415,7 @@ export default function Sessions() {
       label: "Upcoming",
       content: upcomingSessions.length ? (
         <div className="space-y-4">
-          {upcomingSessions.map((s) => renderSessionCard(s, false))}
+          {upcomingSessions.map((s) => renderSessionCard(s))}
         </div>
       ) : (
         <Card className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
@@ -382,7 +433,7 @@ export default function Sessions() {
       label: "Past",
       content: pastSessions.length ? (
         <div className="space-y-4">
-          {pastSessions.map((s) => renderSessionCard(s, true))}
+          {pastSessions.map((se) => renderSessionCard(se))}
         </div>
       ) : (
         <Card className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
@@ -429,7 +480,7 @@ export default function Sessions() {
       <Tabs defaultValue="upcoming" items={sessionTabs} />
 
       <Dialog open={isCancelDialogOpen} onOpenChange={setIsCancelDialogOpen}>
-        <div className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
+        <div className="bg-card text-card-foreground border border-border dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark p-6 rounded-lg shadow-lg">
           <DialogHeader>
             <DialogTitle>Cancel Session</DialogTitle>
             <DialogDescription>
@@ -470,7 +521,7 @@ export default function Sessions() {
       </Dialog>
 
       <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <div className="bg-card text-card-foreground dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark">
+        <div className="bg-card text-card-foreground  dark:bg-card-dark dark:text-card-foreground-dark p-2 rounded-lg ">
           <DialogHeader>
             <DialogTitle>Add Review</DialogTitle>
             <DialogDescription>

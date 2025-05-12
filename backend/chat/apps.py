@@ -6,7 +6,4 @@ class ChatConfig(AppConfig):
     name = 'chat'
 
     def ready(self):
-        try:
-            import chat.signals
-        except ImportError:
-            pass
+        pass

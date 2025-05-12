@@ -21,7 +21,7 @@ function Layout() {
     <div className="min-h-screen flex flex-col">
       {!hideLayout && (isAuthenticated ? <Header /> : <LandingHeader />)}
       <AppRoutes />
-      {!hideLayout && isAuthenticated && <LandingFooter />}
+      {!hideLayout || !isAuthenticated && <LandingFooter />}
       <Toaster />
     </div>
   );

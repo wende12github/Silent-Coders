@@ -9,13 +9,9 @@ import {
 } from "../ui/Dialog";
 import { Input, Textarea, Label } from "../ui/Form";
 import Button from "../ui/Button";
+import { Availability } from "../../store/types";
 
-interface Availability {
-  id: number;
-  weekday: number;
-  start_time: string;
-  end_time: string;
-}
+
 
 interface BookingModalProps {
   open: boolean;

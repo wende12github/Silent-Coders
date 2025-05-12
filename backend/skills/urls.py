@@ -1,13 +1,14 @@
 from django.urls import path
-from . import views
-from .views import SkillTagsView
+from .views import MySkillsListView, SkillListCreateView, SkillDetailView, EndorseSkillView
+
+app_name = "skills"
 
 urlpatterns = [
-    path('skills/', views.SkillListCreateView.as_view(), name='skill-list-create'),
-    path('skills/<int:pk>/', views.SkillRetrieveUpdateDestroyView.as_view(), name='skill-detail'),
-    path('skills/offered/', views.OfferedSkillsView.as_view(), name='offered-skills'),
-    path('skills/requested/', views.RequestedSkillsView.as_view(), name='requested-skills'),
-    path('skills/me/', views.MySkillsView.as_view(), name='my-skills'),
-    path('skills/search/', views.SkillSearchView.as_view(), name='skill-search'),
-     path('skills/tags/', SkillTagsView.as_view(), name='skill-tags'),
+    # GET: List skills (with search/filter), POST: Create a new skill
+    path("", SkillListCreateView.as_view(), name="skill-list-create"),
+    path("my/", MySkillsListView.as_view(), name="my-skills"),
+    path(
+        "<int:pk>/", SkillDetailView.as_view(), name="skill-detail"
+    ),  # GET, PUT, PATCH, DELETE
+    path("<int:pk>/endorse/", EndorseSkillView.as_view(), name="endorse-skill"),  # POST
 ]

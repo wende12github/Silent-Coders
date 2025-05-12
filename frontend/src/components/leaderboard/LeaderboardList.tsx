@@ -4,10 +4,12 @@ import { LeaderboardEntry } from "../../store/types";
 
 interface LeaderboardListProps {
   rankedUsers: LeaderboardEntry[] | null;
+  page: number;
 }
 
 const LeaderboardList: React.FC<LeaderboardListProps> = ({
   rankedUsers: leaderboardEntries,
+  page,
 }) => {
   if (!leaderboardEntries) return null;
 
@@ -27,7 +29,7 @@ const LeaderboardList: React.FC<LeaderboardListProps> = ({
         <LeaderboardItem
           key={entry.user.username}
           entry={entry}
-          rank={index + 1}
+          rank={page === 1 ? index + 1 : index + 1 + (page - 1) * 10}
         />
       ))}
     </div>

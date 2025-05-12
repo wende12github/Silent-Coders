@@ -5,7 +5,7 @@ import { useAuthStore } from "../store/authStore";
 import { Booking, Skill, LeaderboardEntry } from "../store/types";
 import { fetchMyBookings } from "../services/booking";
 import { fetchMySkills } from "../services/skill";
-import { fetchLeaderboard } from "../services/leaderboard";
+import { fetchGlobalLeaderboard } from "../services/leaderboard";
 import { useEffect, useState } from "react";
 import { useWallet } from "../hooks/useWallet";
 
@@ -19,7 +19,7 @@ export default function DashboardPage() {
     error: errorWallet,
   } = useWallet();
 
-  const [bookings, setBookings] = useState<Booking<Skill>[] | null>(null);
+  const [bookings, setBookings] = useState<Booking[] | null>(null);
   const [mySkills, setMySkills] = useState<Skill[] | null>(null);
   const [leaderboardData, setLeaderboardData] = useState<LeaderboardEntry[]>();
 
@@ -32,9 +32,6 @@ export default function DashboardPage() {
   const [isLoadingLeaderboard, setIsLoadingLeaderboard] = useState(false);
   const [errorLeaderboard, setErrorLeaderboard] = useState<string | null>(null);
 
-  if (!user) {
-    return null;
-  }
 
   useEffect(() => {
     const loadBookings = async () => {
@@ -58,7 +55,7 @@ export default function DashboardPage() {
       setIsLoadingSkills(true);
       try {
         const data = await fetchMySkills();
-        setMySkills(data);
+        setMySkills(data.results);
       } catch (error) {
         console.error("Error fetching skills:", error);
         setErrorSkills("Failed to fetch skills.");
@@ -74,7 +71,7 @@ export default function DashboardPage() {
     const loadLeaderboard = async () => {
       setIsLoadingLeaderboard(true);
       try {
-        const data = await fetchLeaderboard();
+        const data = await fetchGlobalLeaderboard();
         setLeaderboardData(data.results);
       } catch (error) {
         console.error("Error fetching leaderboard:", error);
@@ -122,7 +119,7 @@ export default function DashboardPage() {
 
   const topEntries = (leaderboardData || [])
     .sort(
-      (a, b) => parseFloat(b.net_contribution) - parseFloat(a.net_contribution)
+      (a, b) => b.net_contribution - a.net_contribution
     )
     .slice(0, 5);
 
@@ -178,10 +175,10 @@ export default function DashboardPage() {
               className="relative flex shrink-0 overflow-hidden rounded-full h-16 w-16 border
                            border-border dark:border-border-dark"
             >
-              {user.profile_picture ? (
+              {user!.profile_picture ? (
                 <img
-                  src={user.profile_picture}
-                  alt={user.first_name}
+                  src={user!.profile_picture}
+                  alt={user!.first_name}
                   className="object-cover w-full h-full"
                 />
               ) : (
@@ -189,18 +186,18 @@ export default function DashboardPage() {
                   className="flex items-center justify-center h-full w-full
                                bg-muted text-muted-foreground dark:bg-muted-dark dark:text-muted-foreground-dark text-lg font-semibold"
                 >
-                  {user.first_name?.charAt(0) ||
-                    user.username?.charAt(0) ||
+                  {user!.first_name?.charAt(0) ||
+                    user!.username?.charAt(0) ||
                     "U"}
                 </div>
               )}
             </div>
             <div>
               <h2 className="text-xl font-bold text-foreground dark:text-foreground-dark">
-                {user.first_name}
+                {user!.first_name}
               </h2>
               <p className="text-muted-foreground dark:text-muted-foreground-dark">
-                @{user.username}
+                @{user!.username}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {renderContent(
@@ -244,7 +241,7 @@ export default function DashboardPage() {
                 <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                   Time Balance
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 text-primary dark:text-primary-dark" />
                   <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                     {renderContent(
@@ -262,7 +259,7 @@ export default function DashboardPage() {
                 <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                   Skills
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3">
                   <BookOpen className="h-4 w-4 text-primary dark:text-primary-dark" />
                   <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                     {renderContent(
@@ -283,7 +280,7 @@ export default function DashboardPage() {
                 <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                   Sessions
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-primary dark:text-primary-dark" />
                   <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
                     {renderContent(
@@ -306,7 +303,7 @@ export default function DashboardPage() {
                 <span className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                   Rank
                 </span>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-3">
                   <TrendingUp className="h-4 w-4 text-primary dark:text-primary-dark" />
                   {renderContent(
                     isLoadingLeaderboard,
@@ -315,7 +312,7 @@ export default function DashboardPage() {
                     (leaderboard) => {
                       if (Array.isArray(leaderboard)) {
                         const userRankEntry = leaderboard.find(
-                          (entry) => entry.user.id === user.id
+                          (entry) => entry.user.id === user!.id
                         );
                         return (
                           <span className="text-2xl font-bold text-foreground dark:text-foreground-dark">
@@ -358,7 +355,7 @@ export default function DashboardPage() {
               (sessions) => (
                 <div className="space-y-4">
                   {Array.isArray(sessions) &&
-                    sessions.filter(se => se.status !== "completed").map((session) => (
+                    sessions.filter(se => se.status !== "completed").map((session: Booking) => (
                       <div
                         key={session.id}
                         className="flex items-start gap-4 rounded-lg border p-4
@@ -368,7 +365,7 @@ export default function DashboardPage() {
                           className="flex h-10 w-10 items-center justify-center rounded-full
                                        bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark"
                         >
-                          {session.booked_by === user.username ? (
+                          {session.booked_by.username === user!.username ? (
                             <BookOpen className="h-5 w-5" />
                           ) : (
                             <Users className="h-5 w-5" />
@@ -381,14 +378,12 @@ export default function DashboardPage() {
                                 {session.skill?.name || "Skill Name"}
                               </h4>
                               <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
-                                {session.booked_by === user.username
+                                {session.booked_by.username === user!.username
                                   ? `Learning from ${
-                                      session.booked_for_user?.first_name ||
-                                      session.booked_for
+                                      session.booked_for.first_name
                                     }`
                                   : `Teaching ${
-                                      session.booked_by_user?.first_name ||
-                                      session.booked_by
+                                      session.booked_by.first_name
                                     }`}
                               </p>
                             </div>

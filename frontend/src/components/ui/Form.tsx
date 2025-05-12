@@ -1,3 +1,4 @@
+import clsx from "clsx";
 import React from "react";
 import { forwardRef } from "react";
 
@@ -74,3 +75,36 @@ export const Label = forwardRef<HTMLLabelElement, LabelProps>(
     );
   }
 );
+
+export interface RadioButtonProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {}
+
+const RadioButton = React.forwardRef<HTMLInputElement, RadioButtonProps>(
+  ({ className, children, ...props }, ref) => {
+    return (
+      <label
+        className={clsx(
+          "flex items-center cursor-pointer text-sm font-medium text-foreground dark:text-foreground-dark",
+          props.disabled && "cursor-not-allowed opacity-50",
+          className
+        )}
+      >
+        <input
+          type="radio"
+          className={clsx(
+            "peer h-4 w-4 rounded-full border border-input text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+            "dark:border-input-dark dark:text-primary-dark dark:ring-offset-background-dark dark:focus-visible:ring-ring-dark",
+            className
+          )}
+          ref={ref}
+          {...props}
+        />
+
+        {children && <span className="ml-2">{children}</span>}
+      </label>
+    );
+  }
+);
+RadioButton.displayName = "RadioButton";
+
+export { RadioButton };

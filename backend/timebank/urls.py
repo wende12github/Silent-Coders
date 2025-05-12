@@ -1,4 +1,3 @@
-
 from django.contrib import admin
 from rest_framework import permissions
 from django.urls import path, include
@@ -12,10 +11,10 @@ from rest_framework_simplejwt.views import (
 )
 
 schema_view = get_schema_view(
-   openapi.Info(
-      title="TimeBank API",
-      default_version='v1',
-      description="""Welcome to the **TimeBank API** documentation!
+    openapi.Info(
+        title="TimeBank API",
+        default_version="v1",
+        description="""Welcome to the **TimeBank API** documentation!
 
 This API allows students to exchange skills and services using **time as currency**. Below you'll find all available endpoints categorized by functionality.
 
@@ -24,34 +23,36 @@ This API allows students to exchange skills and services using **time as currenc
 - Wallet management
 - Group collaboration
 - Authentication & token-based security""",
-      terms_of_service="https://www.google.com/policies/terms/",
-      contact=openapi.Contact(email="contact@timebank.com"),
-      license=openapi.License(name="MIT License"),
-   ),
-   public=True,
-   permission_classes=(permissions.AllowAny,),
+        terms_of_service="https://www.google.com/policies/terms/",
+        contact=openapi.Contact(email="contact@timebank.com"),
+        license=openapi.License(name="MIT License"),
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
 )
 
 urlpatterns = [
- 
-    path('', include('skills.urls')), 
-    path('admin/', admin.site.urls),
-    path('', include('authentication.urls')),
+    path("admin/", admin.site.urls),
+    path("auth/", include("authentication.urls")),
+    path("users/", include("users.urls")),
+    path("skills/", include("skills.urls")),
+    path("bookings/", include("bookings.urls")),
+    path("groups/", include("groups.urls")),
+    path("leaderboard/", include("leaderboard.urls")),
+    path("wallet/", include("wallet.urls")),
+    path("messages/", include("message.urls")),
+    path("notifications/", include("notifications.urls")),
     path("chatbot/", include("chat.urls")),
-    path('notifications/', include('notifications.urls')),
-
-    path('wallet/', include('wallet.urls')),
-    path('bookings/', include('bookings.urls')),
-    path('leaderboard/', include('leaderboard.urls')),
-    path('groups/', include('groups.urls')),
-
-    path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('swagger.json/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
-    path('redoc/', schema_view.with_ui('redoc', cache_timeout=0), name='schema-redoc'),
-
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path(
+        "swagger/",
+        schema_view.with_ui("swagger", cache_timeout=0),
+        name="schema-swagger-ui",
+    ),
+    path("swagger.json/", schema_view.without_ui(cache_timeout=0), name="schema-json"),
+    path("redoc/", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"),
+    path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
 ]
 
-urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
+urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

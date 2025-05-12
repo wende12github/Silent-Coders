@@ -34,7 +34,9 @@ const Tabs: React.FC<TabsProps> = ({
   return (
     <div className={`w-full ${className || ""}`}>
       <div
-        className={`flex rounded-md bg-muted p-1 dark:bg-muted-dark ${tabsListClassName || ""}`}
+        className={`flex rounded-md bg-muted p-1 dark:bg-muted-dark ${
+          tabsListClassName || ""
+        }`}
       >
         {items.map((item) => (
           <button
@@ -58,7 +60,7 @@ const Tabs: React.FC<TabsProps> = ({
         {items.map(
           (item) =>
             activeTab === item.value && (
-              <div key={item.value}>{item.content}</div>
+              <React.Fragment key={item.value}>{item.content}</React.Fragment>
             )
         )}
       </div>

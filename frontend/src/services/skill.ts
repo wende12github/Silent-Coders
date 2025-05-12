@@ -1,122 +1,184 @@
-import { AxiosResponse } from "axios";
-import { apiClient, fetchCurrentUser, PaginatedResponse } from "./api";
-import { Skill } from "../store/types";
+import { AxiosError } from "axios";
+import { Skill, PaginatedResponse, Tag } from "../store/types";
+import { apiClient } from "./api";
 
-export interface FetchSkillsParams {
-  searchTerm?: string | null;
-  page?: number | null;
-  type?: "requested" | "offered" | null;
+export interface CreateSkillPayload {
+  name: string;
+  description?: string;
+  is_offered?: boolean;
+  location: "local" | "remote";
+  address?: string | null;
+  tags?: string[] | any;
+  is_visible?: boolean;
+  level?: "Beginner" | "Intermediate" | "Expert";
+}
+
+export interface UpdateSkillPayload {
+  name?: string;
+  description?: string;
+  is_offered?: boolean;
+  location?: "local" | "remote";
+  address?: string | null;
+  tags?: string[] | any;
+  is_visible?: boolean;
 }
 
 /**
- * Fetch skills with optional filters for type, search, and pagination.
- * @param params - Filtering options.
- * @returns {Promise<Skill[]>}
+ * Fetches a list of skills with optional search and filters.
+ * Backend uses SkillListCreateView at /skills/.
+ * @param params Optional query parameters for search, tags, user_id, is_offered, pagination.
+ * @returns A promise resolving to a PaginatedResponse containing an array of Skill objects.
+ * @throws AxiosError if the API call fails.
  */
-
-export const fetchSkills = async ({
-  searchTerm = null,
-  page = 1,
-  type = null,
-}: FetchSkillsParams): Promise<PaginatedResponse<Skill>> => {
+export const fetchSkills = async (params?: {
+  search?: string | null;
+  tags?: string | string[] | null;
+  user_id?: number | null;
+  is_offered?: boolean | null;
+  page?: number;
+  page_size?: number;
+}): Promise<PaginatedResponse<Skill>> => {
   try {
-    let endpoint = "/skills/";
-    if (type === "requested") {
-      endpoint = "/skills/requested/";
-    } else if (type === "offered") {
-      endpoint = "/skills/offered/";
-    }
-    console.log("endpoint:", endpoint);
-
-    const response = await apiClient.get<PaginatedResponse<Skill>>(endpoint, {
+    const response = await apiClient.get<PaginatedResponse<Skill>>("/skills/", {
       params: {
-        q: searchTerm || undefined,
-        page: page || undefined,
+        ...params,
+
+        tags: Array.isArray(params?.tags)
+          ? params?.tags.join(",")
+          : params?.tags,
       },
     });
-
+    console.log("Fetched skills:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching skills:", error);
-    throw error;
+    throw error as AxiosError;
   }
 };
 
+/**
+ * Creates a new skill for the authenticated user.
+ * Backend uses SkillListCreateView (POST) at /skills/.
+ * @param skillData The payload for the new skill.
+ * @returns A promise resolving to the created Skill object.
+ * @throws AxiosError if the API call fails.
+ */
 export const createSkill = async (
-  skillData: Omit<Skill, "id" | "user">
+  skillData: CreateSkillPayload
 ): Promise<Skill> => {
   try {
-    const response = await apiClient.post(
-      "/skills/",
-      skillData
-    );
-    const data = response.data;
-    return data as Skill;
+    const response = await apiClient.post<Skill>("/skills/", skillData);
+    console.log("Created skill:", response.data);
+    return response.data;
   } catch (error) {
-    console.error("Error creating skill:", error);
-    throw error;
+    console.error("Error creating skill:", skillData, error);
+    throw error as AxiosError;
   }
 };
 
+/**
+ * Fetches details of a specific skill by ID.
+ * Backend uses SkillDetailView at /skills/{pk}/.
+ * @param skillId The ID of the skill to fetch.
+ * @returns A promise resolving to a Skill object.
+ * @throws AxiosError if the API call fails (e.g., 404 if not found/visible).
+ */
+export const fetchSkillById = async (skillId: number): Promise<Skill> => {
+  try {
+    const response = await apiClient.get<Skill>(`/skills/${skillId}/`);
+    console.log(`Fetched skill ${skillId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching skill ${skillId}:`, error);
+    throw error as AxiosError;
+  }
+};
+
+/**
+ * Updates details of a specific skill. Only the owner can update.
+ * Backend uses SkillDetailView (PUT/PATCH) at /skills/{pk}/.
+ * @param skillId The ID of the skill to update.
+ * @param updateData The payload with fields to update.
+ * @returns A promise resolving to the updated Skill object.
+ * @throws AxiosError if the API call fails.
+ */
+export const updateSkill = async (
+  skillId: number,
+  updateData: UpdateSkillPayload
+): Promise<Skill> => {
+  try {
+    const response = await apiClient.patch<Skill>(
+      `/skills/${skillId}/`,
+      updateData
+    );
+    console.log(`Updated skill ${skillId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating skill ${skillId}:`, updateData, error);
+    throw error as AxiosError;
+  }
+};
+
+/**
+ * Deletes a specific skill. Only the owner can delete.
+ * Backend uses SkillDetailView (DELETE) at /skills/{pk}/.
+ * @param skillId The ID of the skill to delete.
+ * @returns A promise resolving when the deletion is successful.
+ * @throws AxiosError if the API call fails.
+ */
 export const deleteSkill = async (skillId: number): Promise<void> => {
   try {
     await apiClient.delete(`/skills/${skillId}/`);
-    console.log(`Skill with ID ${skillId} deleted successfully.`);
+    console.log(`Deleted skill ${skillId}`);
   } catch (error) {
-    console.error(`Error deleting skill with ID ${skillId}:`, error);
-    throw error;
+    console.error(`Error deleting skill ${skillId}:`, error);
+    throw error as AxiosError;
   }
 };
 
-export const updateSkill = async (
-  skillId: number,
-  skillData: Partial<Omit<Skill, "id" | "user">>
-): Promise<Skill> => {
+/**
+ * Endorses a specific skill. Authenticated users can endorse a skill only once.
+ * Backend uses EndorseSkillView (POST) at /skills/{pk}/endorse/.
+ * @param skillId The ID of the skill to endorse.
+ * @returns A promise resolving to the updated Skill object.
+ * @throws AxiosError if the API call fails.
+ */
+export const endorseSkill = async (skillId: number): Promise<Skill> => {
   try {
-    const response: AxiosResponse<Skill> = await apiClient.put(
-      `/skills/${skillId}/`,
-      skillData
-    );
+    const response = await apiClient.post<Skill>(`/skills/${skillId}/endorse/`);
+    console.log(`Endorsed skill ${skillId}:`, response.data);
     return response.data;
   } catch (error) {
-    console.error(`Error updating skill with ID ${skillId}:`, error);
-    throw error;
+    console.error(`Error endorsing skill ${skillId}:`, error);
+    throw error as AxiosError;
   }
 };
 
-export const fetchSkill = async (skillId: number): Promise<Skill> => {
+/**
+ * Fetches a list of skills offered by the authenticated user.
+ * Backend uses MySkillsListView at /skills/my/.
+ * @returns A promise resolving to a PaginatedResponse containing an array of Skill objects.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchMySkills = async (): Promise<PaginatedResponse<Skill>> => {
   try {
-    const response: AxiosResponse<Skill> = await apiClient.get(
-      `/skills/${skillId}/`
+    const response = await apiClient.get<PaginatedResponse<Skill>>(
+      "/skills/my/"
     );
-    const data = response.data;
-    return data;
-  } catch (error) {
-    console.error("Error fetching skill request:", error);
-    throw error;
-  }
-};
-
-export const fetchMySkills = async (): Promise<Skill[]> => {
-  try {
-    const response: AxiosResponse<PaginatedResponse<Skill>> = await apiClient.get("/skills/me/");
-    const user = await fetchCurrentUser();
-    console.log(user);
-    return response.data.results;
+    console.log("Fetched my skills:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Error fetching my skills:", error);
-    throw error;
+    throw error as AxiosError;
   }
 };
 
-
-export const fetchAllSkills = async (): Promise<Skill[]> => {
+export const fetchAllTags = async (): Promise<Tag[]> => {
   try {
-    const response: AxiosResponse<PaginatedResponse<Skill>> = await apiClient.get("/skills/");
-    console.log("Fetch all skills response:", response.data);
-    return response.data.results;
-  } catch (error: any) {
-    console.error("Error fetching all skills:", error);
-    throw error;
+    const response = await apiClient.get("/bookings/tags/");
+    console.log("Fetched all tags:", response.data.results);
+    return response.data.results as Tag[];
+  } catch (error) {
+    throw error as AxiosError;
   }
 };

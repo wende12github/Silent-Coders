@@ -57,25 +57,23 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
-
     'corsheaders',
     'drf_yasg',
     'django_filters',
     'channels',
-
     'authentication',
     'bookings',
     'chat',
+    'message',
+    'users',
     'notifications',
     'wallet',
     'skills',
     'leaderboard',
     'groups',
-
 ]
 
 MIDDLEWARE = [
@@ -87,7 +85,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    
 ]
 
 ROOT_URLCONF = 'timebank.urls'
@@ -178,14 +175,12 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-AUTH_USER_MODEL = 'authentication.User'
+AUTH_USER_MODEL = 'users.User'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
-    ),
+    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAuthenticated',),
 }
 
 MEDIA_URL = '/media/'
@@ -219,7 +214,8 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',]
+        'rest_framework.filters.SearchFilter',
+    ],
 }
 
 # Email settings
@@ -257,19 +253,17 @@ CORS_ORIGIN_ALLOW_ALL = True
 SWAGGER_SETTINGS = {
     'USE_SESSION_AUTH': False,
     'SECURITY_DEFINITIONS': {
-        'Bearer': {
-            'type': 'apiKey',
-            'name': 'Authorization',
-            'in': 'header'
-        }
-    }
+        'Bearer': {'type': 'apiKey', 'name': 'Authorization', 'in': 'header'}
+    },
 }
 
+# for actual deploayment
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
         'CONFIG': {
-            "hosts": [('127.0.0.1', 6379)],
+            'hosts': [('127.0.0.1', 6379)], # Redis server
         },
     },
 }
+# CHANNEL_LAYERS = {'default': {'BACKEND': 'channels.layers.InMemoryChannelLayer'}} # for local development

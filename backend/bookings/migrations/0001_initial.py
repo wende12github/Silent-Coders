@@ -6,53 +6,156 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
-        ('skills', '0001_initial'),
+        ("skills", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AvailabilitySlot',
+            name="AvailabilitySlot",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('weekday', models.IntegerField(choices=[(0, 'Monday'), (1, 'Tuesday'), (2, 'Wednesday'), (3, 'Thursday'), (4, 'Friday'), (5, 'Saturday'), (6, 'Sunday')])),
-                ('start_time', models.TimeField()),
-                ('end_time', models.TimeField()),
-                ('is_booked', models.BooleanField(default=False)),
-                ('booked_for', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='availability_slots', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "weekday",
+                    models.IntegerField(
+                        choices=[
+                            (0, "Monday"),
+                            (1, "Tuesday"),
+                            (2, "Wednesday"),
+                            (3, "Thursday"),
+                            (4, "Friday"),
+                            (5, "Saturday"),
+                            (6, "Sunday"),
+                        ]
+                    ),
+                ),
+                ("start_time", models.TimeField()),
+                ("end_time", models.TimeField()),
+                ("is_booked", models.BooleanField(default=False)),
+                (
+                    "booked_for",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="availability_slots",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('booked_for', 'weekday', 'start_time', 'end_time')},
+                "unique_together": {
+                    ("booked_for", "weekday", "start_time", "end_time")
+                },
             },
         ),
         migrations.CreateModel(
-            name='Booking',
+            name="Booking",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('status', models.CharField(choices=[('pending', 'Pending'), ('confirmed', 'Confirmed'), ('completed', 'Completed'), ('cancelled', 'Cancelled')], default='pending', max_length=10)),
-                ('scheduled_time', models.DateTimeField()),
-                ('duration', models.PositiveIntegerField(help_text='Duration in minutes')),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('cancel_reason', models.TextField(blank=True, null=True)),
-                ('availability', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='bookings.availabilityslot')),
-                ('booked_by', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings_made', to=settings.AUTH_USER_MODEL)),
-                ('booked_for', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings_received', to=settings.AUTH_USER_MODEL)),
-                ('skill', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='bookings', to='skills.skill')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("pending", "Pending"),
+                            ("confirmed", "Confirmed"),
+                            ("completed", "Completed"),
+                            ("cancelled", "Cancelled"),
+                        ],
+                        default="pending",
+                        max_length=10,
+                    ),
+                ),
+                ("scheduled_time", models.DateTimeField()),
+                (
+                    "duration",
+                    models.PositiveIntegerField(help_text="Duration in minutes"),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("cancel_reason", models.TextField(blank=True, null=True)),
+                (
+                    "availability",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="bookings",
+                        to="bookings.availabilityslot",
+                    ),
+                ),
+                (
+                    "booked_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="bookings_made",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "booked_for",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="bookings_received",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
+                    "skill",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="bookings",
+                        to="skills.skill",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Review',
+            name="Review",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('rating', models.IntegerField()),
-                ('comment', models.TextField(blank=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('booking', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, related_name='review', to='bookings.booking')),
-                ('reviewer', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("rating", models.IntegerField()),
+                ("comment", models.TextField(blank=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "booking",
+                    models.OneToOneField(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="review",
+                        to="bookings.booking",
+                    ),
+                ),
+                (
+                    "reviewer",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
         ),
     ]

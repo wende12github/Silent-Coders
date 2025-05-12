@@ -1,10 +1,11 @@
 import ChatListItem from "./ChatListItem";
-import { User } from "../../store/types";
+
+import { ChatUser } from "../../store/types";
 import { Loader2 } from "lucide-react";
 import Button from "../ui/Button";
 
 interface ChatListProps {
-  conversations: User[];
+  conversations: ChatUser[] | null;
   selectedUserId: number | null;
   onSelectConversation: (userId: number) => void;
   isLoading: boolean;
@@ -20,31 +21,41 @@ export default function ChatList({
   error,
   onRetry,
 }: ChatListProps) {
+  const hasItems = conversations && conversations.length > 0;
+
   return (
     <div className="flex flex-col h-full bg-background dark:bg-background-dark overflow-y-auto">
-      {isLoading ? (
+      {isLoading && (
         <div className="flex flex-col items-center justify-center h-full text-muted-foreground dark:text-muted-foreground-dark">
           <Loader2 className="h-8 w-8 animate-spin mb-2 text-primary dark:text-primary-dark" />
           <p>Loading chats...</p>
         </div>
-      ) : error ? (
+      )}
+
+      {!isLoading && error && (
         <div className="flex flex-col items-center justify-center h-full text-destructive dark:text-destructive-dark text-center p-4">
           <p className="mb-2">{error}</p>
+
           <Button onClick={onRetry} variant="outline">
             Retry Loading Chats
           </Button>
         </div>
-      ) : conversations.length === 0 ? (
+      )}
+
+      {!isLoading && !error && !hasItems && (
         <div className="text-center text-muted-foreground dark:text-muted-foreground-dark py-10 px-5">
-          No conversations yet. Book sessions to start chatting!
+          No conversations yet. Book sessions or interact with users to start
+          chatting!
         </div>
-      ) : (
+      )}
+
+      {!isLoading && !error && hasItems && (
         <div className="flex-1 overflow-y-auto">
-          {conversations.map((user) => (
+          {conversations!.map((chatUser) => (
             <ChatListItem
-              key={user.id}
-              user={user}
-              isSelected={selectedUserId === user.id}
+              key={chatUser.id}
+              chatUser={chatUser}
+              isSelected={selectedUserId === chatUser.id}
               onSelect={onSelectConversation}
             />
           ))}

@@ -1,5 +1,13 @@
 import { useEffect, useState } from "react";
-import { BookOpen, Edit, Plus, Trash2, MapPin, Clock } from "lucide-react";
+import {
+  BookOpen,
+  Edit,
+  Plus,
+  Trash2,
+  MapPin,
+  Clock,
+  Video,
+} from "lucide-react";
 
 import Tabs, { TabItem } from "../ui/Tabs";
 import Button from "../ui/Button";
@@ -21,18 +29,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "../ui/Dialog";
-import { Input, Label, Textarea } from "../ui/Form";
-import { Skill } from "../../store/types";
+import { Input, Label, RadioButton, Textarea } from "../ui/Form";
+import { Availability, Skill, Tag } from "../../store/types";
 import { TagInput } from "../skills/TagSelectInput";
 import {
   createSkill,
   fetchMySkills,
   updateSkill,
   deleteSkill,
+  fetchAllTags,
 } from "../../services/skill";
 import { toast } from "sonner";
 import {
-  Availability,
   fetchMyAvailability,
   createAvailability,
   updateAvailability,
@@ -79,7 +87,7 @@ const MySkills = () => {
   useEffect(() => {
     fetchMySkills()
       .then((fetchedSkills) => {
-        setSkills(fetchedSkills);
+        setSkills(fetchedSkills.results);
       })
       .catch((error) => {
         console.error("Error fetching skills:", error);
@@ -100,19 +108,20 @@ const MySkills = () => {
         setMyAvailability([]);
       });
   }, []);
+  const [initialTags, setInitialTags] = useState<Tag[]>([]);
 
-  const initialTags = [
-    "All",
-    "Tech",
-    "Fitness",
-    "Music",
-    "Languages",
-    "Design",
-    "Business",
-    "Art",
-    "Cooking",
-    "Health",
-  ];
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const fetchedTags = await fetchAllTags();
+        setInitialTags(fetchedTags);
+        console.log("Fetched tags:", fetchedTags);
+      } catch (error) {
+        console.error("Error fetching tags:", error);
+      }
+    };
+    fetchTags();
+  }, [skills]);
 
   const offeredSkills = skills.filter((skill) => skill.is_offered);
   const neededSkills = skills.filter((skill) => !skill.is_offered);
@@ -171,9 +180,9 @@ const MySkills = () => {
       return;
     }
 
-    if (myAvailability.length === 0 && editingSkill.is_offered) {
+    if (myAvailability.length === 0) {
       toast.error(
-        "Please add at least one availability slot before offering a skill."
+        "Please add at least one availability slot before adding a skill."
       );
       return;
     }
@@ -230,7 +239,7 @@ const MySkills = () => {
         );
 
         fetchMySkills()
-          .then(setSkills)
+          .then((r) => setSkills(r.results))
           .catch(() => setSkills(skills));
       });
   };
@@ -241,6 +250,13 @@ const MySkills = () => {
   };
 
   const openAddSkillDialog = () => {
+    if (myAvailability.length === 0) {
+      toast.error(
+        "Please add at least one availability slot before adding a skill."
+      );
+      return;
+    }
+
     setEditingSkill(null);
 
     setNewSkill({
@@ -382,10 +398,16 @@ const MySkills = () => {
                       </CardTitle>
 
                       <CardDescription className="flex items-center text-muted-foreground dark:text-muted-foreground-dark">
-                        <MapPin className="mr-1 h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
-                        {skill.location === "local"
-                          ? `Local${skill.address ? ` (${skill.address})` : ""}`
-                          : "Remote"}
+                          {skill.location === "remote" ? (
+                            <Video className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                          ) : (
+                            <MapPin className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                          )}
+                          {skill.location === "remote"
+                            ? "Online Meeting"
+                            : skill.address && skill.address?.length > 0
+                            ? skill.address
+                            : "Local"}
                       </CardDescription>
                     </div>
 
@@ -397,7 +419,7 @@ const MySkills = () => {
                           : "bg-secondary text-secondary-foreground dark:bg-secondary-dark dark:text-secondary-foreground-dark"
                       }
                     >
-                      {skill.is_offered ? "Offering" : "Learning"}
+                      {skill.is_offered ? "Offering" : "Seeking"}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -407,7 +429,7 @@ const MySkills = () => {
                   </p>
 
                   <div className="flex flex-wrap gap-1">
-                    {skill.tags.map((tag) => (
+                    {skill.tags?.map((tag) => (
                       <Badge key={tag} variant="secondary">
                         {tag}
                       </Badge>
@@ -469,10 +491,14 @@ const MySkills = () => {
                       </CardTitle>
 
                       <CardDescription className="flex items-center text-muted-foreground dark:text-muted-foreground-dark">
-                        <MapPin className="mr-1 h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
-                        {skill.location === "local"
-                          ? `Local${skill.address ? ` (${skill.address})` : ""}`
-                          : "Remote"}
+                        {skill.location === "remote" ? (
+                          <Video className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                        ) : (
+                          <MapPin className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                        )}
+                        {skill.location === "remote"
+                          ? "Online Meeting"
+                          : skill.address}
                       </CardDescription>
                     </div>
 
@@ -490,15 +516,14 @@ const MySkills = () => {
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                     {skill.description || "No description provided."}
                   </p>
+                  <div className="flex flex-wrap gap-1">
+                    {skill.tags?.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
                 </CardContent>
-
-                <CardFooter className="flex flex-wrap gap-1 justify-end">
-                  {skill.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </CardFooter>
 
                 <CardFooter className="flex justify-between">
                   <Button
@@ -554,10 +579,14 @@ const MySkills = () => {
                       </CardTitle>
 
                       <CardDescription className="flex items-center text-muted-foreground dark:text-muted-foreground-dark">
-                        <MapPin className="mr-1 h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
-                        {skill.location === "local"
-                          ? `Local${skill.address ? ` (${skill.address})` : ""}`
-                          : "Remote"}
+                        {skill.location === "remote" ? (
+                          <Video className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                        ) : (
+                          <MapPin className="mr-2 h-4 w-4 text-primary dark:text-primary-dark" />
+                        )}
+                        {skill.location === "remote"
+                          ? "Online Meeting"
+                          : skill.address}
                       </CardDescription>
                     </div>
 
@@ -575,15 +604,14 @@ const MySkills = () => {
                   <p className="text-sm text-muted-foreground dark:text-muted-foreground-dark">
                     {skill.description || "No description provided."}
                   </p>
+                  <div className="flex flex-wrap gap-1">
+                    {skill.tags?.map((tag) => (
+                      <Badge key={tag} variant="secondary">
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
                 </CardContent>
-
-                <CardFooter className="flex flex-wrap gap-1 justify-end">
-                  {skill.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </CardFooter>
 
                 <CardFooter className="flex justify-between">
                   <Button
@@ -667,8 +695,9 @@ const MySkills = () => {
                     <p className="text-xs text-muted-foreground dark:text-muted-foreground-dark">
                       {avail.start_time} - {avail.end_time}
                     </p>
-                    <Badge variant={avail.is_booked ? "success" : "secondary"}
-                    >{avail.is_booked ? "Booked" : "Free"}</Badge>
+                    <Badge variant={avail.is_booked ? "success" : "secondary"}>
+                      {avail.is_booked ? "Booked" : "Free"}
+                    </Badge>
                   </div>
                   <div className="flex space-x-2">
                     <Button
@@ -765,28 +794,59 @@ const MySkills = () => {
             </div>
 
             <div className="flex items-center space-x-2">
-              <Switch
-                id="skill-type"
-                checked={
-                  editingSkill
-                    ? editingSkill.is_offered
-                    : newSkill.is_offered || false
-                }
-                onCheckedChange={(checked) =>
-                  editingSkill
-                    ? setEditingSkill({ ...editingSkill, is_offered: checked })
-                    : setNewSkill({ ...newSkill, is_offered: checked })
-                }
-              />
-              <Label htmlFor="skill-type">
-                {editingSkill
-                  ? editingSkill.is_offered
-                    ? "I offer this skill"
-                    : "I want to learn this skill"
-                  : newSkill.is_offered
-                  ? "I offer this skill"
-                  : "I want to learn this skill"}
-              </Label>
+              <div>
+                <div className="flex items-center space-x-2">
+                  <RadioButton
+                    id="skill-type-offer"
+                    name="skillType"
+                    value="offer"
+                    checked={
+                      editingSkill
+                        ? editingSkill.is_offered === true
+                        : newSkill.is_offered === true
+                    }
+                    onChange={(e) => {
+                      const isOffered = e.target.value === "offer";
+                      if (editingSkill) {
+                        setEditingSkill({
+                          ...editingSkill,
+                          is_offered: isOffered,
+                        });
+                      } else {
+                        setNewSkill({ ...newSkill, is_offered: isOffered });
+                      }
+                    }}
+                  />
+                  <Label htmlFor="skill-type-offer">I offer this skill</Label>
+                </div>
+
+                <div className="flex items-center space-x-2 mt-2">
+                  <RadioButton
+                    id="skill-type-learn"
+                    name="skillType"
+                    value="learn"
+                    checked={
+                      editingSkill
+                        ? editingSkill.is_offered === false
+                        : newSkill.is_offered === false
+                    }
+                    onChange={(e) => {
+                      const isOffered = e.target.value === "offer";
+                      if (editingSkill) {
+                        setEditingSkill({
+                          ...editingSkill,
+                          is_offered: isOffered,
+                        });
+                      } else {
+                        setNewSkill({ ...newSkill, is_offered: isOffered });
+                      }
+                    }}
+                  />
+                  <Label htmlFor="skill-type-learn">
+                    I want to learn this skill
+                  </Label>
+                </div>
+              </div>
             </div>
 
             <div className="grid gap-2">
@@ -844,10 +904,11 @@ const MySkills = () => {
             <div className="">
               <Label htmlFor="tags">Tags</Label>
               <TagInput
-                initialTags={initialTags}
+                initialTags={initialTags ? initialTags.map((t) => t.name) : []}
                 selectedTags={
                   editingSkill ? editingSkill.tags : newSkill.tags || []
                 }
+                showAddTag={editingSkill ? false : true}
                 onSelectedTagsChange={(tags: string[]) =>
                   editingSkill
                     ? setEditingSkill({ ...editingSkill, tags })

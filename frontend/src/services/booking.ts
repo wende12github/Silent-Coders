@@ -1,83 +1,98 @@
-import { Booking, Skill } from "../store/types";
-import { apiClient, PaginatedResponse } from "./api";
-interface CreateBookingPayload {
+import { AxiosError } from "axios";
+import { Booking, Availability, PaginatedResponse, Review } from "../store/types";
+import { apiClient } from "./api";
+
+export interface CreateBookingPayload {
   booked_for: number;
   skill: number;
   scheduled_time: string;
   duration: number;
+  availability_id: number;
 }
 
 /**
  * Creates a new booking.
  * @param bookingData The payload for the booking request.
- * @returns A promise resolving when the booking is created (or null/void depending on API).
+ * @returns A promise resolving to the created Booking object.
  * @throws AxiosError if the API call fails.
  */
 export const createBooking = async (
   bookingData: CreateBookingPayload
-): Promise<void> => {
+): Promise<Booking> => {
   try {
-    await apiClient.post("/bookings/", bookingData);
+    const response = await apiClient.post<Booking>("/bookings/", bookingData);
+    console.log("Created booking:", response.data);
+    return response.data;
   } catch (error) {
     console.error("Failed to create booking:", bookingData, error);
-
     throw error as AxiosError;
   }
 };
 
-export const fetchMyBookings = async (): Promise<Booking<Skill>[]> => {
+/**
+ * Fetches all bookings related to the authenticated user (booked_by or booked_for).
+ * Backend uses BookingDetailSerializer and pagination.
+ * @returns A promise resolving to an array of Booking objects.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchMyBookings = async (): Promise<Booking[]> => {
   try {
-    const response = await apiClient.get("/bookings/my/bookings/");
+    const response = await apiClient.get<PaginatedResponse<Booking>>(
+      "/bookings/list/"
+    );
     console.log("Fetch my bookings response:", response.data);
-    return response.data;
+    return response.data.results;
   } catch (error) {
     console.error("Error fetching my bookings:", error);
-    throw error;
+    throw error as AxiosError;
   }
 };
 
-export const fetchBooking = async (id: number): Promise<Booking<Skill>> => {
+/**
+ * Fetches details for a single booking by ID.
+ * Backend uses BookingDetailSerializer.
+ * @param id The ID of the booking to fetch.
+ * @returns A promise resolving to the Booking object.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchBooking = async (id: number): Promise<Booking> => {
   try {
-    const response = await apiClient.get(`/bookings/${id}/`);
+    const response = await apiClient.get<Booking>(`/bookings/${id}/`);
     console.log("Fetch booking response:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching booking:", error);
-    throw error;
+    throw error as AxiosError;
   }
 };
 
-interface BookingStatusReturn {
-  id: number;
-  status: "pending" | "confirmed" | "canceled";
-}
+type UpdateBookingStatusType = "confirmed" | "cancelled" | "completed";
+
+/**
+ * Updates the status of a booking (confirm, cancel, complete).
+ * Backend uses a single /status/ endpoint with PATCH.
+ * @param bookingId The ID of the booking to update.
+ * @param status The new status for the booking.
+ * @param cancelReason Optional reason for cancellation.
+ * @returns A promise resolving to the updated Booking object.
+ * @throws AxiosError if the API call fails.
+ */
 export const updateBookingStatus = async (
   bookingId: number,
-  status:  "confirmed" | "cancelled" | "completed",
+  status: UpdateBookingStatusType,
   cancelReason?: string
-): Promise<BookingStatusReturn> => {
-  let statusEndpoint = "";
+): Promise<Booking> => {
   try {
-    switch (status) {
-      case "confirmed":
-        statusEndpoint = "confirm";
-        break;
-      case "cancelled":
-        statusEndpoint = "cancel";
-        break;
-      case "completed":
-        statusEndpoint = "complete";
-        break;
+    const endpoint = `/bookings/${bookingId}/status/`;
+    console.log("Endpoint:", endpoint);
+
+    const payload: { status: UpdateBookingStatusType; cancel_reason?: string } =
+      { status };
+    if (status === "cancelled" && cancelReason !== undefined) {
+      payload.cancel_reason = cancelReason;
     }
 
-    const endpoint = `/bookings/${bookingId}/${statusEndpoint}/`;
-    console.log("encpoint: " ,endpoint)
-    const payload =
-      status === "cancelled"
-        ? { status, cancel_reason: cancelReason }
-        : { status };
-
-    const response = await apiClient.patch(endpoint, payload);
+    const response = await apiClient.patch<Booking>(endpoint, payload);
     console.log(
       `${
         status.charAt(0).toUpperCase() + status.slice(1)
@@ -87,17 +102,26 @@ export const updateBookingStatus = async (
     return response.data;
   } catch (error) {
     console.error(`Error updating booking ${bookingId} to ${status}:`, error);
-    throw error;
+    throw error as AxiosError;
   }
 };
 
+/**
+ * Reschedules a booking.
+ * Backend uses /reschedule/ endpoint with PATCH.
+ * @param bookingId The ID of the booking to reschedule.
+ * @param scheduledTime The new scheduled time (ISO 8601 string).
+ * @param duration The new duration in minutes.
+ * @returns A promise resolving to the updated Booking object.
+ * @throws AxiosError if the API call fails.
+ */
 export const reScheduleBooking = async (
   bookingId: number,
   scheduledTime: string,
   duration: number
-): Promise<BookingStatusReturn> => {
+): Promise<Booking> => {
   try {
-    const response = await apiClient.patch(
+    const response = await apiClient.patch<Booking>(
       `/bookings/${bookingId}/reschedule/`,
       {
         scheduled_time: scheduledTime,
@@ -108,38 +132,16 @@ export const reScheduleBooking = async (
     return response.data;
   } catch (error) {
     console.error(`Error rescheduling booking ${bookingId}:`, error);
-    throw error;
+    throw error as AxiosError;
   }
 };
-
-export const getBookingById = async (bookingId: number) => {
-  try {
-    const response = await apiClient.get(
-      `/bookings/${bookingId}`
-    );
-    console.log(`Get booking by id ${bookingId} response:`, response.data);
-    return response.data as Booking<Skill>;
-  } catch (error) {
-    console.error(`Error getting booking by id ${bookingId}:`, error);
-    throw error;
-  }
-};
-
-import { AxiosError } from "axios";
-
-export interface Availability {
-  id: number;
-  booked_for: number;
-  weekday: number;
-  start_time: string;
-  end_time: string;
-  is_booked: boolean;
-}
 
 /**
- * Fetches availability slots for a specific user.
+ * Fetches availability slots for a specific user by their ID.
+ * Backend uses pagination.
  * @param userId The ID of the user whose availability to fetch.
  * @returns A promise resolving to an array of Availability objects.
+ * @throws AxiosError if the API call fails.
  */
 export const fetchUserAvailability = async (
   userId: number
@@ -152,21 +154,21 @@ export const fetchUserAvailability = async (
     return response.data.results;
   } catch (error) {
     console.error(`Failed to fetch availability for user ${userId}:`, error);
-
     throw error as AxiosError;
   }
 };
 
 /**
- * Fetches availability slots for a specific user.
+ * Fetches availability slots for the authenticated user.
+ * Backend uses pagination.
  * @returns A promise resolving to an array of Availability objects.
+ * @throws AxiosError if the API call fails.
  */
 export const fetchMyAvailability = async (): Promise<Availability[]> => {
   try {
     const response = await apiClient.get<PaginatedResponse<Availability>>(
-      `/bookings/availability/`
+      "/bookings/availability/"
     );
-
     return response.data.results;
   } catch (error) {
     console.error(`Failed to fetch availability for Current User:`, error);
@@ -175,13 +177,13 @@ export const fetchMyAvailability = async (): Promise<Availability[]> => {
 };
 
 export interface CreateAvailabilityPayload {
-  // weekday: number;
+  weekday: number;
   start_time: string;
   end_time: string;
 }
 
 export interface UpdateAvailabilityPayload {
-  // weekday?: number;
+  weekday?: number;
   start_time?: string;
   end_time?: string;
 }
@@ -196,11 +198,11 @@ export const createAvailability = async (
   availabilityData: CreateAvailabilityPayload
 ): Promise<Availability> => {
   try {
-    const response = await apiClient.post(
+    const response = await apiClient.post<Availability>(
       "/bookings/availability/",
       availabilityData
     );
-    return response.data; // Assuming the API returns the created object
+    return response.data;
   } catch (error) {
     console.error("Failed to create availability:", availabilityData, error);
     throw error as AxiosError;
@@ -219,7 +221,7 @@ export const updateAvailability = async (
   updateData: UpdateAvailabilityPayload
 ): Promise<Availability> => {
   try {
-    const response = await apiClient.patch(
+    const response = await apiClient.patch<Availability>(
       `/bookings/availability/${availabilityId}/`,
       updateData
     );
@@ -251,6 +253,63 @@ export const deleteAvailability = async (
   }
 };
 
+/**
+ * Posts a review for a specific booking.
+ * @param bookingId The ID of the booking being reviewed.
+ * @param rating The rating (0-5).
+ * @param comment The review comment.
+ * @returns A promise resolving to the newly created review.
+ * @throws AxiosError if the API call fails.
+ */
+export const giveReview = async (
+  bookingId: number,
+  rating: number,
+  comment: string
+): Promise<Review> => {
+  try {
+    const response = await apiClient.post(`/bookings/${bookingId}/review/`, {
+      booking_id: bookingId,
+      rating,
+      comment,
+    });
+
+    console.log("Review posted:", response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Failed to post review for booking ${bookingId}:`, error);
+    throw error as AxiosError;
+  }
+};
+
+/**
+ * Fetches booking reviews with optional filters like search term, pagination, booking ID, and reviewed user ID.
+ * @param params Query parameters for filtering reviews.
+ * @returns A promise resolving to an array of Review objects.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchBookingReviews = async (
+  params: {
+    search?: string;
+    page?: number;
+    booking_id?: number;
+    reviewed_user_id?: number;
+  }
+): Promise<Review[]> => {
+  try {
+    const response = await apiClient.get<PaginatedResponse<Review>>(
+      "/bookings/reviews/",
+      { params }
+    );
+    
+    console.log("Fetched reviews:", response.data.results);
+    return response.data.results;
+  } catch (error) {
+    console.error("Failed to fetch booking reviews:", error);
+    throw error as AxiosError;
+  }
+};
+
+
 export const getNextAvailabilityDateTime = (
   weekdayIndex: number,
   time: string
@@ -259,7 +318,6 @@ export const getNextAvailabilityDateTime = (
   const [hours, minutes] = time.split(":").map(Number);
 
   const currentDayOfWeek = now.getDay();
-
   const adjustedCurrentDayOfWeek =
     currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1;
 
@@ -272,13 +330,14 @@ export const getNextAvailabilityDateTime = (
   nextDate.setDate(now.getDate() + daysUntilNext);
   nextDate.setHours(hours, minutes, 0, 0);
 
-  const nowTime = now.getHours() * 60 + now.getMinutes();
-  const selectedTime = hours * 60 + minutes;
-  if (daysUntilNext === 0 && selectedTime < nowTime) {
+  const nowTimeInMinutes = now.getHours() * 60 + now.getMinutes();
+  const selectedTimeInMinutes = hours * 60 + minutes;
+
+  if (daysUntilNext === 0 && selectedTimeInMinutes < nowTimeInMinutes) {
     nextDate.setDate(nextDate.getDate() + 7);
   }
-  console.log("Next date:", formatToISOStringUTC(nextDate));
 
+  console.log("Calculated next availability date:", nextDate.toISOString());
   return nextDate;
 };
 
@@ -286,7 +345,6 @@ export const formatToISOStringUTC = (date: Date): string => {
   return date.toISOString();
 };
 
-// Function to calculate duration in seconds from HH:MM time strings
 export const calculateDurationInMinutes = (
   startTime: string,
   endTime: string
@@ -297,11 +355,12 @@ export const calculateDurationInMinutes = (
   const startTotalMinutes = startHours * 60 + startMinutes;
   let endTotalMinutes = endHours * 60 + endMinutes;
 
-  // Handle overnight times (e.g., 22:00 - 02:00)
   if (endTotalMinutes < startTotalMinutes) {
-    endTotalMinutes += 24 * 60; // Add 24 hours in minutes
+    endTotalMinutes += 24 * 60;
   }
 
   const durationMinutes = endTotalMinutes - startTotalMinutes;
-  return durationMinutes; // Return duration in minutes
+
+  return Math.max(0, durationMinutes);
 };
+

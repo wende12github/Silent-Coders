@@ -76,7 +76,7 @@ const SkillSearchAndFilters: React.FC<SkillSearchAndFiltersProps> = ({
                 value={selectedCategory}
                 onValueChange={onCategoryChange}
               >
-                <SelectItem value="">All Categories</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
                 {tags.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
@@ -99,7 +99,7 @@ const SkillSearchAndFilters: React.FC<SkillSearchAndFiltersProps> = ({
                   <MapPin className="h-4 w-4 text-muted-foreground dark:text-muted-foreground-dark" />
                 }
               >
-                <SelectItem value="">All Locations</SelectItem>
+                <SelectItem value="all">All Locations</SelectItem>
                 <SelectItem value="remote">Remote Only</SelectItem>
                 <SelectItem value="local">In-Person Only</SelectItem>
               </Select>
