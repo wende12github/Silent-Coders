@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
 import { toast } from "sonner";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 import { Availability, SendMessagePayload, Skill } from "../store/types";
 import {

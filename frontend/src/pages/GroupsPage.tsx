@@ -176,6 +176,7 @@ const GroupsPage = () => {
       } else {
         errorMessage = error.message || String(error);
       }
+      console.error(errorMessage);
       setJoinStates((prev) => ({ ...prev, [groupId]: "error" }));
     }
   };
