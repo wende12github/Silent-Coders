@@ -10,19 +10,21 @@ import {
 
 interface TagInputProps {
   initialTags: string[];
-  selectedTags: string[];
+  selectedTags?: string[] | null;
   onSelectedTagsChange: (tags: string[]) => void;
+  showAddTag: boolean;
 }
 
 export const TagInput: FC<TagInputProps> = ({
   initialTags,
   selectedTags,
   onSelectedTagsChange,
+  showAddTag,
 }) => {
   const [inputValue, setInputValue] = useState<string>("");
 
   const [availableTags, setAvailableTags] = useState<string[]>(() => {
-    const combinedTags = new Set([...initialTags, ...selectedTags]);
+    const combinedTags = new Set([...initialTags, ...(selectedTags || [])]);
     return Array.from(combinedTags);
   });
 
@@ -33,14 +35,15 @@ export const TagInput: FC<TagInputProps> = ({
   const suggestionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const combinedTags = new Set([...initialTags, ...selectedTags]);
+    const combinedTags = new Set([...initialTags, ...(selectedTags || [])]);
+
     setAvailableTags(Array.from(combinedTags));
   }, [initialTags, selectedTags]);
 
   const filteredSuggestions = availableTags.filter(
     (tag) =>
       tag.toLowerCase().includes(inputValue.toLowerCase()) &&
-      !selectedTags.includes(tag)
+      !selectedTags?.includes(tag)
   );
 
   useEffect(() => {
@@ -68,8 +71,8 @@ export const TagInput: FC<TagInputProps> = ({
   };
 
   const handleSelectTag = (tag: string) => {
-    if (!selectedTags.includes(tag)) {
-      const newSelectedTags = [...selectedTags, tag];
+    if (!selectedTags?.includes(tag)) {
+      const newSelectedTags = [...(selectedTags || []), tag];
       onSelectedTagsChange(newSelectedTags);
 
       if (!availableTags.includes(tag)) {
@@ -83,8 +86,8 @@ export const TagInput: FC<TagInputProps> = ({
   const handleAddTag = () => {
     const trimmedTag = inputValue.trim();
 
-    if (trimmedTag && !selectedTags.includes(trimmedTag)) {
-      const newSelectedTags = [...selectedTags, trimmedTag];
+    if (trimmedTag && !selectedTags?.includes(trimmedTag)) {
+      const newSelectedTags = [...(selectedTags || []), trimmedTag];
       onSelectedTagsChange(newSelectedTags);
 
       if (!availableTags.includes(trimmedTag)) {
@@ -97,8 +100,8 @@ export const TagInput: FC<TagInputProps> = ({
   };
 
   const handleRemoveTag = (tagToRemove: string) => {
-    const newSelectedTags = selectedTags.filter((tag) => tag !== tagToRemove);
-    onSelectedTagsChange(newSelectedTags);
+    const newSelectedTags = selectedTags?.filter((tag) => tag !== tagToRemove);
+    onSelectedTagsChange(newSelectedTags || []);
     if (inputValue) {
       setShowSuggestions(true);
     }
@@ -143,20 +146,33 @@ export const TagInput: FC<TagInputProps> = ({
             </div>
           ))}
 
-          {filteredSuggestions.length === 0 && inputValue.trim() !== "" && (
-            <div
-              className="px-3 py-2 cursor-pointer transition-colors font-medium
+          {filteredSuggestions.length === 0 &&
+            inputValue.trim() !== "" &&
+            showAddTag && (
+              <div
+                className="px-3 py-2 cursor-pointer transition-colors font-medium
                          text-primary hover:bg-accent hover:text-primary-foreground
                          dark:text-primary-dark dark:hover:bg-accent-dark dark:hover:text-primary-foreground-dark"
-              onClick={handleAddTag}
-            >
-              Add "{inputValue.trim()}"
-            </div>
-          )}
+                onClick={handleAddTag}
+              >
+                Add "{inputValue.trim()}"
+              </div>
+            )}
+          {filteredSuggestions.length === 0 &&
+            inputValue.trim() !== "" &&
+            !showAddTag && (
+              <div
+                className="px-3 py-2 transition-colors font-medium
+                         text-primary hover:bg-accent hover:text-primary-dark
+                         dark:text-primary-dark dark:hover:bg-accent-dark dark:hover:text-primary-foreground-dark"
+              >
+                No Tag "{inputValue.trim()}" Available
+              </div>
+            )}
         </div>
       )}
       <div id="selected-tags-container" className="mt-3 flex flex-wrap gap-2">
-        {selectedTags.map((tag) => (
+        {selectedTags?.map((tag) => (
           <span
             key={tag}
             className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium

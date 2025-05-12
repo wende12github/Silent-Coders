@@ -32,7 +32,6 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
                       : "border-border hover:bg-muted/50 dark:border-border-dark dark:hover:bg-muted-dark/50"
                   }`}
     >
-      {/* Rank Indicator */}
       <div className="flex-shrink-0 mb-2 sm:mb-0 sm:mr-4">
         <div
           className={`flex items-center justify-center h-8 w-8 rounded-full ${rankColorClass}`}
@@ -41,13 +40,12 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
         </div>
       </div>
 
-      {/* User Info */}
       <div className="flex-1 min-w-0">
         <Link
           to={
             entry.user.id === user?.id
               ? "/dashboard/settings"
-              : `/profile/${entry.user.username}`
+              : `/users/${entry.user.username}`
           }
           className="group"
         >
@@ -86,11 +84,9 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
         </Link>
       </div>
 
-      {/* Credits and Badges */}
       <div className="mt-2 sm:mt-0 sm:ml-4 sm:text-right flex-shrink-0">
         <div className="text-lg font-bold text-foreground dark:text-foreground-dark">
-          {parseFloat(entry.net_contribution).toFixed(2)}{" "}
-          
+          {entry.net_contribution}{" "}
           <span className="text-xs font-normal text-muted-foreground dark:text-muted-foreground-dark">
             credits
           </span>
@@ -105,7 +101,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
               Top
             </Badge>
           )}
-          {parseFloat(entry.net_contribution) >= expertScore && (
+          {entry.net_contribution >= expertScore && (
             <Badge
               size="lg"
               variant="ghost"
@@ -114,7 +110,7 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ entry, rank }) => {
               Exp
             </Badge>
           )}
-          {parseFloat(entry.net_contribution) >= 50 && (
+          {entry.net_contribution >= 50 && (
             <Badge
               size="lg"
               variant="ghost"

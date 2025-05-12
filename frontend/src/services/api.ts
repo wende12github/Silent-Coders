@@ -25,7 +25,6 @@ export interface PaginatedResponse<T> {
   results: T[];
 }
 
-
 export async function fetchPaginatedData<T>(
   endpoint: string,
   page: number = 1
@@ -114,10 +113,12 @@ apiClient.interceptors.response.use(
           }
         );
 
-        const { access, refresh } = response.data;
+        const { access } = response.data;
 
-        if (access && refresh) {
-          authStore.setTokens(access, refresh);
+        console.log("Refresh token and ACcess token", response.data);
+
+        if (access) {
+          authStore.setTokens(access, refreshToken);
           setAuthToken(access);
 
           processQueue(access);
@@ -186,34 +187,13 @@ export const fetchCurrentUser = async (): Promise<User> => {
 };
 
 /**
- * Updates the current user's profile.
- * @param {Partial<User>} profileData - The updated profile data (can be partial).
- * @returns {Promise<User>} - The updated user profile data.
- */
-export const updateCurrentUser = async (
-  profileData: Partial<User>
-): Promise<User> => {
-  try {
-    const response: AxiosResponse<User> = await apiClient.put(
-      "/users/me/",
-      profileData
-    );
-    console.log("Update current user response:", response.data);
-    return response.data;
-  } catch (error: any) {
-    console.error("Error updating current user:", error);
-    throw error;
-  }
-};
-
-/**
  * Fetches the current user's wallet balance.
  * @returns {Promise<WalletBalanceResponse>} - The wallet data (e.g., { balance }).
  */
 export const fetchWalletBalance = async (): Promise<WalletBalanceResponse> => {
   try {
     const response: AxiosResponse<WalletBalanceResponse> = await apiClient.get(
-      "/wallet/wallet/"
+      "/wallet/"
     );
     console.log("Fetch wallet balance response:", response.data);
     return response.data;

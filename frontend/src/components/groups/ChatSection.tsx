@@ -4,8 +4,10 @@ import Avatar from "../../components/ui/Avatar";
 import Button from "../../components/ui/Button";
 import { ChatMessage } from "../../store/types";
 import { useAuthStore } from "../../store/authStore";
-import { getGroupMessages, sendMessage } from "../../services/message";
+import { getGroupMessages } from "../../services/message";
 import { GroupDetail } from "../../store/types";
+import { useWebSocketStore } from "../../store/webSocketStore";
+import { toast } from "sonner";
 
 interface ChatSectionProps {
   group: GroupDetail | null;
@@ -19,10 +21,19 @@ const ChatSection: React.FC<ChatSectionProps> = ({ group }) => {
   const [newMessageText, setNewMessageText] = useState("");
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
 
+  const {
+    connect,
+    disconnect,
+    sendMessage: sendWebSocketMessage,
+    addHandler,
+    removeHandler,
+    isConnected,
+  } = useWebSocketStore();
+
   const messagesRef = useRef<ChatMessage[]>([]);
   messagesRef.current = messages;
 
-  const loadMessages = useCallback(async () => {
+  const loadInitialMessages = useCallback(async () => {
     if (!group?.id) return;
 
     setIsLoadingMessages(true);
@@ -30,102 +41,136 @@ const ChatSection: React.FC<ChatSectionProps> = ({ group }) => {
       const fetchedMessages = await getGroupMessages(group.id);
       setMessages(fetchedMessages);
     } catch (error) {
-      console.error("Failed to load messages:", error);
+      console.error("Failed to load initial messages:", error);
+      toast.error("Failed to load initial messages.");
     } finally {
       setIsLoadingMessages(false);
     }
   }, [group?.id]);
 
   useEffect(() => {
-    if (group?.id) {
-      loadMessages();
-
-      const interval = setInterval(async () => {
-        try {
-          const fetchedMessages = await getGroupMessages(group.id);
-
-          if (
-            JSON.stringify(messagesRef.current) !==
-            JSON.stringify(fetchedMessages)
-          ) {
-            setMessages(fetchedMessages);
-          }
-        } catch (error) {
-          console.error("Failed to load messages:", error);
-        }
-      }, 5000);
-
-      return () => clearInterval(interval);
+    if (!group?.id || !currentUser?.id) {
+      disconnect();
+      setMessages([]);
+      return;
     }
-  }, [group?.id, loadMessages]);
+
+    loadInitialMessages();
+
+    connect("group", group.id);
+
+    const handleWebSocketMessage = (event: MessageEvent) => {
+      try {
+        const data = JSON.parse(event.data);
+
+        if (data.type === "chat_message") {
+          const receivedMessage: ChatMessage = {
+            id: data.id,
+            user: {
+              id: data.user_id,
+              username: data.user,
+              first_name: data.user_first_name,
+              last_name: data.user_last_name,
+              profile_picture: data.user_profile_picture,
+            },
+            message: data.message,
+            message_type: data.message_type || "text",
+            created_at: data.created_at,
+          };
+
+          setMessages((prevMessages) => {
+            const existingMessageIndex = prevMessages.findIndex(
+              (msg) => msg.id === receivedMessage.id
+            );
+
+            if (existingMessageIndex > -1) {
+              const updatedMessages = [...prevMessages];
+              updatedMessages[existingMessageIndex] = receivedMessage;
+              return updatedMessages;
+            } else {
+              return [...prevMessages, receivedMessage];
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error processing WebSocket message:", error);
+        toast.error("Error receiving message.");
+      }
+    };
+
+    addHandler(handleWebSocketMessage);
+
+    return () => {
+      removeHandler(handleWebSocketMessage);
+      disconnect();
+    };
+  }, [
+    group?.id,
+    currentUser?.id,
+    connect,
+    disconnect,
+    addHandler,
+    removeHandler,
+    loadInitialMessages,
+  ]);
 
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
-    }
+    const timeoutId = setTimeout(() => {
+      if (messagesEndRef.current) {
+        messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+      }
+    }, 0);
+
+    return () => clearTimeout(timeoutId);
   }, [messages]);
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
       handleSendMessage();
     }
   };
 
   const handleSendMessage = async () => {
-    if (newMessageText.trim() === "") return;
-    if (!group?.id || !currentUser?.id) return;
+    const messageText = newMessageText.trim();
+    if (messageText === "") return;
+    if (!group?.id || !currentUser?.id || !isConnected) {
+      console.warn("Cannot send message: not connected or missing info.");
+      toast.warning("Cannot send message: not connected.");
+      return;
+    }
 
-    const tempId = Date.now();
+    const tempId = `temp-${Date.now()}`;
 
-    const newMessage: ChatMessage = {
-      id: tempId,
+    const tempMessage: ChatMessage = {
+      id: parseInt(tempId),
       user: currentUser,
-      message: newMessageText,
+      message: messageText,
       message_type: "text",
       created_at: new Date().toISOString(),
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((prev) => [...prev, tempMessage]);
     setNewMessageText("");
 
     try {
-      const response = await sendMessage({
-        is_group_chat: true,
-        message: newMessageText,
-        group_id: group.id,
+      sendWebSocketMessage({
+        type: "send_message",
+        message: messageText,
       });
-
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === tempId
-            ? {
-                ...msg,
-                id: response.id,
-                created_at: response.created_at,
-              }
-            : msg
-        )
-      );
     } catch (error) {
-      console.error("Failed to send message:", error);
+      console.error("Failed to send message via WebSocket:", error);
+      toast.error("Failed to send message.");
 
-      setMessages((prev) =>
-        prev.map((msg) =>
-          msg.id === tempId
-            ? {
-                ...msg,
-              }
-            : msg
-        )
-      );
+      setMessages((prev) => prev.filter((msg) => msg.id !== parseInt(tempId)));
     }
   };
 
   return (
     <div
       className="flex flex-col h-full max-h-[650px] rounded-lg shadow-sm border min-h-1/2
-                   bg-card text-card-foreground border-border
-                   dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark flex-grow"
+                 bg-card text-card-foreground border-border
+                 dark:bg-card-dark dark:text-card-foreground-dark dark:border-border-dark flex-grow"
     >
       <div
         ref={messagesEndRef}
@@ -148,14 +193,20 @@ const ChatSection: React.FC<ChatSectionProps> = ({ group }) => {
               }`}
             >
               <Avatar
-                fallback={message.user.first_name?.charAt(0) || "U"}
+                fallback={
+                  message.user.first_name?.charAt(0) ||
+                  message.user.username?.charAt(0) ||
+                  "U"
+                }
                 src={
                   message.user.profile_picture ||
-                  `https://placehold.co/100x100?text=${message.user.first_name?.charAt(
-                    0
-                  )}`
+                  `https://placehold.co/100x100?text=${
+                    message.user.first_name?.charAt(0) ||
+                    message.user.username?.charAt(0) ||
+                    "U"
+                  }`
                 }
-                alt={message.user.first_name}
+                alt={message.user.first_name || message.user.username || "User"}
                 className="w-8 h-8 rounded-full object-cover"
               />
               <div
@@ -181,11 +232,16 @@ const ChatSection: React.FC<ChatSectionProps> = ({ group }) => {
                       : "text-left"
                   }`}
                 >
-                  {message.user.first_name || message.user.username} •{" "}
-                  {new Date(message.created_at).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                  {message.user.first_name ||
+                    message.user.username ||
+                    "Unknown User"}{" "}
+                  •{" "}
+                  {message.created_at
+                    ? new Date(message.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "Sending..."}
                 </span>
               </div>
             </div>
@@ -209,7 +265,7 @@ const ChatSection: React.FC<ChatSectionProps> = ({ group }) => {
         <Button
           className="rounded-full p-2"
           onClick={handleSendMessage}
-          disabled={newMessageText.trim() === ""}
+          disabled={newMessageText.trim() === "" || !isConnected}
           size="icon"
         >
           <Send className="h-5 w-5" />

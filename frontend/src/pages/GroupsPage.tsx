@@ -197,7 +197,7 @@ const GroupsPage = () => {
             <img
               src={group.image}
               alt={group.name}
-              className="w-full md  :h-32 h-20 object-cover rounded-md mb-4"
+              className="w-full md:h-52 h-20 object-cover rounded-md mb-4"
             />
           )}
           <h3 className="text-xl font-semibold text-foreground dark:text-foreground-dark mb-2">

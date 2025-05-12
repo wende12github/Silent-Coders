@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Tabs, { TabItem } from "../components/ui/Tabs";
-import { fetchGroupById, getGroupLeaderboard, Group } from "../services/groups";
-import { LeaderboardEntry } from "../store/types";
+import { fetchGroupDetail, getGroupLeaderboard } from "../services/groups";
+import { LeaderboardEntry, GroupDetail } from "../store/types";
 
 import GroupHeader from "../components/groups/GroupHeader";
 import AnnouncementsSection from "../components/groups/AnnouncementsSection";
@@ -13,7 +13,7 @@ import LeaderboardSection from "../components/groups/LeaderboardSection";
 const GroupPage = () => {
   const { groupId } = useParams<{ groupId: string }>();
 
-  const [group, setGroup] = useState<Group | null>(null);
+  const [group, setGroup] = useState<GroupDetail | null>(null);
   const [groupLeaderboard, setGroupLeaderboard] = useState<
     LeaderboardEntry[] | null
   >(null);
@@ -30,7 +30,7 @@ const GroupPage = () => {
     const loadGroup = async () => {
       setIsLoadingGroup(true);
       try {
-        const data = await fetchGroupById(groupId);
+        const data = await fetchGroupDetail(Number(groupId));
         setGroup(data);
       } catch (error: any) {
         console.error(`Error fetching group ${groupId}:`, error);
@@ -49,7 +49,7 @@ const GroupPage = () => {
     const loadLeaderboard = async () => {
       setIsLoadingLeaderboard(true);
       try {
-        const data = await getGroupLeaderboard(groupId);
+        const data = await getGroupLeaderboard(Number(groupId));
         setGroupLeaderboard(data);
       } catch (error: any) {
         console.error(
@@ -125,10 +125,8 @@ const GroupPage = () => {
   return (
     <div className="p-6 space-y-6 flex flex-grow flex-shrink-0 bg-background text-foreground dark:bg-background-dark dark:text-foreground-dark ">
       <div className="max-w-7xl mx-auto min-h-full flex flex-col flex-grow">
-        {/* Render Group Header */}
         <GroupHeader group={group} />
 
-        {/* Render Tabs with content from child components */}
         <Tabs
           tabsContentClassName={"flex-grow"}
           className="mt-6 flex-grow flex flex-col"

@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { MapPin } from "lucide-react";
 import Button from "../ui/Button";
 import { Badge } from "../ui/Badge";
 import clsx from "clsx";
-import { Skill, User } from "../../store/types";
-import { fetchUser } from "../../services/user";
+import { Skill } from "../../store/types";
 import Avatar from "../ui/Avatar";
+import { Link } from "react-router-dom";
 
 interface UserSkillCardProps {
   skill: Skill;
@@ -18,34 +18,7 @@ const UserSkillCard: React.FC<UserSkillCardProps> = ({
 }) => {
   const isOffering = skill.is_offered;
 
-  const [userData, setUserData] = useState<User | null>(null);
-
-  const [isLoading, setIsLoading] = useState(true);
-  const [, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const loadUser = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const user = await fetchUser(skill.user);
-        setUserData(user);
-      } catch (err) {
-        console.error("Failed to fetch user:", err);
-        setError("Failed to load user data.");
-        setUserData(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (skill.user) {
-      loadUser();
-    } else {
-      setIsLoading(false);
-      setUserData(null);
-    }
-  }, [skill.user]);
+  const userData = skill.user;
 
   return (
     <div
@@ -61,18 +34,20 @@ const UserSkillCard: React.FC<UserSkillCardProps> = ({
             : "bg-blue-50 dark:bg-blue-900/30"
         )}
       >
-        {!isLoading && userData ? (
-          <div className="flex items-center">
-            <Avatar
-              src={userData.profile_picture}
-              alt={userData.first_name}
-              fallback={userData.first_name}
-              className="h-8 w-8 rounded-full object-cover"
-            />
-            <span className="ml-2 text-sm font-medium text-foreground dark:text-foreground-dark">
-              {userData.first_name}
-            </span>
-          </div>
+        {userData ? (
+          <Link to={"/users/" + userData.id}>
+            <div className="flex items-center">
+              <Avatar
+                src={userData.profile_picture}
+                alt={userData.first_name}
+                fallback={userData.first_name}
+                className="h-8 w-8 rounded-full object-cover"
+              />
+              <span className="ml-2 text-sm font-medium text-foreground dark:text-foreground-dark">
+                {userData.first_name}
+              </span>
+            </div>
+          </Link>
         ) : (
           <div className="flex items-center">
             <div className="h-8 w-8 rounded-full bg-muted dark:bg-muted-dark animate-pulse"></div>
@@ -101,14 +76,16 @@ const UserSkillCard: React.FC<UserSkillCardProps> = ({
             {skill.description}
           </p>
           <div className="flex items-center text-sm text-muted-foreground dark:text-muted-foreground-dark mb-3">
-            <MapPin className="h-4 w-4 mr-1" />
-            <div className="flex gap-3">
-              <span>{skill.location}</span>{" "}
+            <div className="flex gap-3 flex-wrap">
+              <div className="flex items-center">
+                <MapPin className="h-4 w-4 mr-1" />
+                <span>{skill.location}</span>{" "}
+              </div>
               <span>{skill.location === "local" && skill.address}</span>
             </div>
           </div>
           <div className="flex flex-wrap gap-1 mb-4">
-            {skill.tags.map((tag, index) => (
+            {skill.tags?.map((tag, index) => (
               <Badge variant="secondary" key={index}>
                 {tag}
               </Badge>

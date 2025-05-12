@@ -1,10 +1,56 @@
 from django.utils.timezone import now
 from datetime import timedelta, timezone
-from bookings.models import AvailabilitySlot, Booking, BookingStatus,Review
 from rest_framework import serializers
-from datetime import timedelta
+from django.contrib.auth import get_user_model
+from django.core.validators import MinValueValidator, MaxValueValidator
 
-from skills.serializers import SkillSerializer
+from .models import AvailabilitySlot, Booking, BookingStatus, Review, Skill, Tag
+from users.serializers import SkillSerializer
+
+User = get_user_model()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["id", "username", "first_name", "last_name", "email"]
+        read_only_fields = fields
+        ref_name = "BookingUser"
+
+
+class TagSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Tag
+        fields = "__all__"
+
+
+class AvailabilitySlotSerializer(serializers.ModelSerializer):
+    is_booked = serializers.BooleanField(read_only=True)
+    weekday_display = serializers.CharField(
+        source="get_weekday_display", read_only=True
+    )
+
+    class Meta:
+        model = AvailabilitySlot
+        fields = [
+            "id",
+            "booked_for",
+            "weekday",
+            "weekday_display",
+            "start_time",
+            "end_time",
+            "is_booked",
+        ]
+        read_only_fields = ["booked_for", "is_booked"]
+
+    def create(self, validated_data):
+        validated_data["booked_for"] = self.context["request"].user
+        return super().create(validated_data)
+
+    def validate(self, data):
+        if data["start_time"] >= data["end_time"]:
+            raise serializers.ValidationError("End time must be after start time.")
+        return data
 
 
 class BookingCreateSerializer(serializers.ModelSerializer):
@@ -12,180 +58,239 @@ class BookingCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Booking
-        fields = ['id', 'booked_for', 'skill', 'scheduled_time', 'duration', 'availability_id']
+        fields = [
+            "id",
+            "booked_for",
+            "skill",
+            "scheduled_time",
+            "duration",
+            "availability_id",
+        ]
+        read_only_fields = ["id"]
 
     def validate(self, data):
-        scheduled_time = data['scheduled_time']
-        duration = data['duration']
-        booked_for = data['booked_for']
+        scheduled_time = data.get("scheduled_time")
+        duration = data.get("duration")
+        booked_for = data.get("booked_for")
+        availability_id = data.get("availability_id")
 
-        if scheduled_time <= now():
+        if scheduled_time and scheduled_time <= now():
             raise serializers.ValidationError("Scheduled time must be in the future.")
 
-        end_time = scheduled_time + timedelta(minutes=duration)
-        # weekday = scheduled_time.weekday()
-
-        # # Force UTC extraction
-        # start_clock = scheduled_time.astimezone(timezone.utc).time()
-        # end_clock = end_time.astimezone(timezone.utc).time()
-
-        # available = AvailabilitySlot.objects.filter(
-        #     booked_for=booked_for,
-        #     weekday=weekday,
-        #     start_time__lte=start_clock,
-        #     end_time__gte=end_clock
-        # ).exists()
-
-        # if not available:
-        #     raise serializers.ValidationError("booked_for is not available during the selected time.")
-
-        # Prevent overlapping bookings
-        # overlap = Booking.objects.filter(
-        #     booked_for=booked_for,
-        #     scheduled_time__lt=end_time,
-        #     status__in=[BookingStatus.PENDING, BookingStatus.CONFIRMED]
-        # ).filter(
-        #     scheduled_time__gte=scheduled_time - timedelta(minutes=duration)
-        # ).exists()
-
-        # if overlap:
-        #     raise serializers.ValidationError("booked_for has another booking that overlaps with this time.")
-
-        availability_id = data.get('availability_id')
         try:
-            availability = AvailabilitySlot.objects.get(id=availability_id, is_booked=False)
-        except AvailabilitySlot.DoesNotExist:
-            raise serializers.ValidationError("Invalid or already booked availability slot.")
+            availability = AvailabilitySlot.objects.get(
+                id=availability_id, is_booked=False
+            )
 
-        data['availability'] = availability
+        except AvailabilitySlot.DoesNotExist:
+            raise serializers.ValidationError(
+                "Invalid or already booked availability slot."
+            )
+
+        if availability.booked_for != booked_for:
+            raise serializers.ValidationError(
+                "Availability slot does not belong to the specified booked_for user."
+            )
+
+        data["availability"] = availability
         return data
 
     def create(self, validated_data):
-        booked_by = self.context['request'].user
-        validated_data.pop("booked_by", None)
-        availability = validated_data.pop('availability')
-        booking = Booking.objects.create(booked_by=booked_by, status=BookingStatus.PENDING, **validated_data)
-        availability.is_booked = True
-        availability.save()
-        return booking
-        
+        booked_by = self.context["request"].user
 
-class BookingActionSerializer(serializers.ModelSerializer):
-    cancel_reason = serializers.CharField(required=False, allow_blank=True)
+        availability = validated_data.pop("availability")
+
+        validated_data.pop("booked_by", None)
+
+        booking = Booking.objects.create(
+            booked_by=booked_by,
+            status=BookingStatus.PENDING,
+            availability=availability,
+            **validated_data,
+        )
+
+        return booking
+
+
+class BookingDetailSerializer(serializers.ModelSerializer):
+    booked_by = UserSerializer(read_only=True)
+    booked_for = UserSerializer(read_only=True)
+    skill = SkillSerializer(read_only=True)
+    availability = AvailabilitySlotSerializer(read_only=True)
+    review = serializers.SerializerMethodField()
 
     class Meta:
         model = Booking
-        fields = ['id', 'status', 'cancel_reason']
+        fields = "__all__"
+
+    def get_review(self, obj):
+        review = getattr(obj, "review", None)
+        if review:
+            return ReviewSerializer(review).data
+        return None
+
+
+class BookingStatusUpdateSerializer(serializers.ModelSerializer):
+    cancel_reason = serializers.CharField(
+        required=False, allow_blank=True, allow_null=True
+    )
+    status = serializers.ChoiceField(choices=BookingStatus.CHOICES)
+
+    class Meta:
+        model = Booking
+        fields = ["id", "status", "cancel_reason"]
+        read_only_fields = ["id"]
 
     def validate(self, data):
-        status = data.get('status')
+        status = data.get("status")
+        cancel_reason = data.get("cancel_reason")
+        instance = self.instance
 
-        if status == BookingStatus.CANCELLED and not data.get('cancel_reason'):
-            raise serializers.ValidationError({"cancel_reason": "This field is required when cancelling a booking."})
-        elif status != BookingStatus.CANCELLED and 'cancel_reason' in data:
-            raise serializers.ValidationError({"cancel_reason": "This field is only allowed when cancelling."})
+        if not instance:
+            raise serializers.ValidationError("Booking instance not provided.")
 
+        user = self.context["request"].user
+
+        if status == BookingStatus.CONFIRMED and user != instance.booked_for:
+            raise serializers.ValidationError(
+                {"status": "Only the person booked for can confirm a booking."}
+            )
+
+        if status == BookingStatus.COMPLETED and user == instance.booked_for:
+            raise serializers.ValidationError(
+                {
+                    "status": "Only the person that booked the session can mark a booking as completed."
+                }
+            )
+
+        if status == BookingStatus.CANCELLED and user not in [
+            instance.booked_by,
+            instance.booked_for,
+        ]:
+            raise serializers.ValidationError(
+                {
+                    "status": "Only the person booked by or booked for can cancel a booking."
+                }
+            )
+
+        if status == BookingStatus.CANCELLED and not cancel_reason:
+            raise serializers.ValidationError(
+                {"cancel_reason": "Cancel reason is required when cancelling."}
+            )
+
+        if instance.status in [
+            BookingStatus.CANCELLED,
+            BookingStatus.COMPLETED,
+        ] and status not in [instance.status]:
+            raise serializers.ValidationError(
+                {"status": f"Cannot change status from {instance.status}."}
+            )
+
+        if (
+            status == BookingStatus.CONFIRMED
+            and instance.status != BookingStatus.PENDING
+        ):
+            raise serializers.ValidationError(
+                {"status": "Only pending bookings can be confirmed."}
+            )
+
+        if (
+            status == BookingStatus.COMPLETED
+            and instance.status != BookingStatus.CONFIRMED
+        ):
+            raise serializers.ValidationError(
+                {"status": "Only confirmed bookings can be marked as completed."}
+            )
 
         return data
 
     def update(self, instance, validated_data):
-        new_status = validated_data['status']
-        instance.status = new_status
-
-        if new_status == BookingStatus.CANCELLED:
-            instance.cancel_reason = validated_data.get('cancel_reason', '')
-        else:
-            # Clear any existing cancel reason if status is not CANCELLED
-            instance.cancel_reason = None
-
-        instance.save()
-        return instance
-
-class BookingDetailSerializer(serializers.ModelSerializer):
-    booked_by = serializers.StringRelatedField()
-    booked_for = serializers.StringRelatedField()
-    skill = SkillSerializer(read_only=True)
-
-
-    class Meta:
-        model = Booking
-        fields = '__all__'
+        return super().update(instance, validated_data)
 
 
 class BookingRescheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        fields = ['scheduled_time', 'duration']
+        fields = ["scheduled_time", "duration"]
 
     def validate(self, data):
-        if self.instance.status not in [BookingStatus.PENDING, BookingStatus.CONFIRMED]:
-            raise serializers.ValidationError("Only pending or confirmed bookings can be rescheduled.")
-        if data['scheduled_time'] <= now():
+        instance = self.instance
+        user = self.context["request"].user
+
+        if not instance:
+            raise serializers.ValidationError("Booking instance not provided.")
+
+        if user not in [instance.booked_by, instance.booked_for]:
+            raise serializers.ValidationError(
+                "Only the person booked by or booked for can reschedule the booking."
+            )
+
+        if instance.status not in [BookingStatus.PENDING, BookingStatus.CONFIRMED]:
+            raise serializers.ValidationError(
+                "Only pending or confirmed bookings can be rescheduled."
+            )
+
+        scheduled_time = data.get("scheduled_time")
+        if scheduled_time and scheduled_time <= now():
             raise serializers.ValidationError("Scheduled time must be in the future.")
+
         return data
 
     def update(self, instance, validated_data):
-        instance.scheduled_time = validated_data.get('scheduled_time', instance.scheduled_time)
-        instance.duration = validated_data.get('duration', instance.duration)
-        instance.save()
-        return instance
+        return super().update(instance, validated_data)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    reviewer = UserSerializer(read_only=True)
+
+    booking_id = serializers.PrimaryKeyRelatedField(
+        queryset=Booking.objects.all(), source="booking", write_only=True
+    )
+
+    rating = serializers.IntegerField(
+        validators=[MinValueValidator(0), MaxValueValidator(5)]
+    )
+
     class Meta:
         model = Review
-        fields = ['id', 'booking', 'reviewer', 'rating', 'comment', 'created_at']
-        read_only_fields = ['id', 'reviewer', 'created_at', 'booking']
+        fields = ["id", "booking_id", "reviewer", "rating", "comment", "created_at"]
+        read_only_fields = ["id", "reviewer", "created_at"]
 
-class ReviewListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Review
-        fields = ['id', 'booking', 'reviewer', 'rating', 'comment', 'created_at']
-        read_only_fields = ['id', 'booking', 'reviewer', 'created_at']
+    def validate(self, data):
+        booking = data.get("booking")
 
-class AvailabilitySlotSerializer(serializers.ModelSerializer):
-    is_booked = serializers.BooleanField(read_only=True)
+        if not booking:
+            raise serializers.ValidationError({"booking_id": "Booking not found."})
 
-    class Meta:
-        model = AvailabilitySlot
-        fields = ['id', 'booked_for', 'weekday', 'start_time', 'end_time', 'is_booked']
-        read_only_fields = ['booked_for', 'is_booked']
+        user = self.context["request"].user
+
+        if booking.booked_by != user:
+            raise serializers.ValidationError(
+                {"booking_id": "You can only review bookings you made."}
+            )
+
+        if booking.status != BookingStatus.COMPLETED:
+            raise serializers.ValidationError(
+                {"booking_id": "You can only review completed bookings."}
+            )
+
+        if hasattr(booking, "review"):
+            raise serializers.ValidationError(
+                {"booking_id": "This booking already has a review."}
+            )
+
+        return data
 
     def create(self, validated_data):
-        validated_data['booked_for'] = self.context['request'].user
         return super().create(validated_data)
 
 
-class BookingCancelSerializer(serializers.ModelSerializer):
-    cancel_reason = serializers.CharField(required=True)
+class ReviewListSerializer(serializers.ModelSerializer):
+    reviewer = UserSerializer(read_only=True)
+
+    booking_id = serializers.IntegerField(source="booking.id", read_only=True)
 
     class Meta:
-        model = Booking
-        fields = ['id', 'status', 'cancel_reason']
-
-    def validate(self, data):
-        if data.get('status') != BookingStatus.CANCELLED:
-            raise serializers.ValidationError({"status": "Status must be CANCELLED when cancelling."})
-        return data
-
-    def update(self, instance, validated_data):
-        instance.status = BookingStatus.CANCELLED
-        instance.cancel_reason = validated_data.get('cancel_reason')
-        instance.save()
-        return instance
-
-class BookingStatusOnlySerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Booking
-        fields = ['id', 'status']
-
-    def validate(self, data):
-        if data.get('status') == BookingStatus.CANCELLED:
-            raise serializers.ValidationError({"status": "Use the cancel endpoint to cancel a booking."})
-        return data
-
-    def update(self, instance, validated_data):
-        instance.status = validated_data.get('status', instance.status)
-        instance.cancel_reason = None  # Clear any existing cancel reason
-        instance.save()
-        return instance
+        model = Review
+        fields = ["id", "booking_id", "reviewer", "rating", "comment", "created_at"]
+        read_only_fields = ["id", "booking_id", "reviewer", "created_at"]

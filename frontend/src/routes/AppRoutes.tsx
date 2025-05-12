@@ -1,4 +1,4 @@
-import { Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import Dashboard from "../pages/Dashboard";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
@@ -18,6 +18,8 @@ import GroupsPage from "../pages/GroupsPage";
 import Notifications from "../pages/Notifications";
 import ChatBotWidget from "../components/ChatBotWidget";
 import ChatLayout from "../components/privateChat/ChatLayout";
+import NotFoundPage from "../notFound/NotFoundPage";
+import UserProfile from "../pages/Profile";
 
 function AppRoutes() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -25,6 +27,8 @@ function AppRoutes() {
   return (
     <>
       <Routes>
+        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="/not-found" element={<NotFoundPage />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
         <Route path="/register" element={<Register />} />
@@ -34,6 +38,7 @@ function AppRoutes() {
         />
         <Route path="/leaderboard" element={<Leaderboard />} />
         <Route element={<ProtectedRoute />}>
+          <Route path="/users/:userId" element={<UserProfile />} />
           <Route path="/groups" element={<GroupsPage />} />
           <Route path="/groups/:groupId" element={<GroupPage />} />
           <Route element={<DashboarLayot />}>
@@ -48,11 +53,12 @@ function AppRoutes() {
               element={<Notifications />}
             />
             <Route path="/dashboard/chat" element={<ChatLayout />} />
-            <Route path="/dashboard/chat" element={<ChatLayout />} />
           </Route>
         </Route>
       </Routes>
-      {isAuthenticated &&  location.pathname !== "/dashboard/chat" && <ChatBotWidget />}
+      {isAuthenticated && location.pathname !== "/dashboard/chat" && (
+        <ChatBotWidget />
+      )}
     </>
   );
 }

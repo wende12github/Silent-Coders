@@ -81,7 +81,9 @@ export const Select: React.FC<SelectProps> = ({
               {icon}
             </span>
           )}
-          <span>{displayedValue}</span>
+          <span className="flex justify-center items-center">
+            {displayedValue}
+          </span>
         </div>
         <ChevronDown
           className={`h-4 w-4 opacity-50 transition-transform duration-200

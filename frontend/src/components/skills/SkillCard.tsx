@@ -47,15 +47,6 @@ const SkillCard: React.FC<SkillCardProps> = ({ skill, onClick }) => {
       </div>
 
       <p className="text-sm text-gray-600 mb-3">{description}</p>
-
-      {/* Removed the section displaying "credits/hour"
-          because 'credits' is not in the provided Skill interface. */}
-      {/*
-      <div className="flex items-center text-sm text-gray-500">
-        <Clock className="h-4 w-4 mr-1" />
-        <span>{skill.credits} credits/hour</span>
-      </div>
-      */}
     </div>
   );
 };

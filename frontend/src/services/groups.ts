@@ -1,276 +1,292 @@
-import { LeaderboardEntry } from "../store/types";
+import { AxiosError } from "axios";
+import {
+  CreateGroupRequest,
+  GroupListItem,
+  PaginatedResponse,
+  GroupDetail,
+  UpdateGroupRequest,
+  LeaderboardEntry,
+  GroupAnnouncement,
+  SendAnnouncementRequest,
+} from "../store/types";
 import { apiClient } from "./api";
-import axios, { AxiosResponse } from "axios";
-import { fetchUser } from "./user";
 
-export interface Group {
-  id: number;
-  name: string;
-  description: string;
-  owner: number;
-  created_at: string;
-  members: {
-    email: string;
-    name: string;
-  }[];
+interface FetchGroupsParams {
+  search?: string;
+  page?: number;
+  page_size?: number;
 }
 
-export interface CreateGroupRequest {
-  name: string;
-  description: string;
-}
-
-export interface GroupResponse {
-  id: number;
-  name: string;
-  description: string;
-  owner: number;
-  created_at: string;
-  members: {
-    email: string;
-    name: string;
-  }[];
-}
-
-export interface GroupListResponse {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: Omit<GroupResponse, "members">[] | GroupResponse[];
-}
-
+/**
+ * Creates a new group.
+ * Backend uses GroupCreateView (POST).
+ * @param groupData The payload for the new group (including image file).
+ * @returns A promise resolving to the created GroupDetail object (or GroupListItem if serializer differs).
+ * @throws AxiosError if the API call fails.
+ */
 export const createGroup = async (
   groupData: CreateGroupRequest
-): Promise<GroupResponse> => {
+): Promise<GroupDetail | GroupListItem> => {
   try {
-    const response = await apiClient.post<GroupResponse>("/groups/create/", groupData);
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const serverMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        JSON.stringify(error.response?.data);
-      throw new Error(serverMessage || "Failed to create group");
+    const formData = new FormData();
+    formData.append("name", groupData.name);
+    formData.append("description", groupData.description);
+    if (groupData.image) {
+      formData.append("image", groupData.image);
     }
-    throw new Error("Network error - could not connect to server");
-  }
-};
 
-export const fetchMyGroups = async (
-  search?: string,
-  page: number = 1
-): Promise<AllGroups[]> => {
-  try {
-    const response = await apiClient.get("/groups/my-groups/", {
-      params: {
-        search,
-        page,
-      },
-    });
-    return response.data.results;
+    const response = await apiClient.post<GroupDetail | GroupListItem>(
+      "/groups/create/",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    console.log("Created group:", response.data);
+    return response.data;
   } catch (error) {
-    console.error("Error fetching groups:", error);
-    throw error;
+    console.error("Error creating group:", groupData, error);
+    throw error as AxiosError;
   }
 };
 
-export const fetchGroupById = async (id: string): Promise<Group> => {
+/**
+ * Fetches a list of groups the authenticated user is a member of.
+ * Backend uses MyGroupsListView at /groups/my/.
+ * @param params Optional query parameters for search and pagination.
+ * @returns A promise resolving to a PaginatedResponse containing an array of GroupListItem objects.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchMyGroups = async (
+  params?: FetchGroupsParams
+): Promise<PaginatedResponse<GroupListItem>> => {
   try {
-    const response: AxiosResponse<Group> = await apiClient.get(
-      `/groups/${id}/`
+    const response = await apiClient.get<PaginatedResponse<GroupListItem>>(
+      "/groups/my/",
+      {
+        params: params,
+      }
     );
-    console.log(`Fetch group ${id} response:`, response.data);
+    console.log("Fetch my groups response:", response.data);
     return response.data;
-  } catch (error: any) {
-    console.error(`Error fetching group ${id}:`, error);
-    throw error;
+  } catch (error) {
+    console.error("Error fetching my groups:", error);
+    throw error as AxiosError;
   }
 };
 
-export const joinGroup = async (id: number): Promise<{ message: string }> => {
+/**
+ * Fetches a list of all groups (publicly accessible).
+ * Backend uses GroupListCreateView at /groups/.
+ * @param params Optional query parameters for search and pagination.
+ * @returns A promise resolving to a PaginatedResponse containing an array of GroupListItem objects.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchAllGroups = async (
+  params?: FetchGroupsParams
+): Promise<PaginatedResponse<GroupListItem>> => {
   try {
-    const response = await apiClient.post<{ message: string }>(
-      `/groups/${id}/join/`,
-      { id: Number(id) }
+    const response = await apiClient.get<PaginatedResponse<GroupListItem>>(
+      "/groups/",
+      {
+        params: params,
+      }
     );
+    console.log("Fetch all groups response:", response.data);
     return response.data;
-  } catch (error: any) {
-    console.error(`Error joining group ${id}:`, error);
-    throw error;
+  } catch (error) {
+    console.error("Error fetching all groups:", error);
+    throw error as AxiosError;
   }
 };
 
+/**
+ * Joins a specific group.
+ * Backend uses JoinGroupView (POST) at /groups/{pk}/join/.
+ * @param groupId The ID of the group to join.
+ * @returns A promise resolving when the join is successful (backend might return status or GroupDetail).
+ * @throws AxiosError if the API call fails (e.g., already a member, group not found).
+ */
+export const joinGroup = async (groupId: number): Promise<void> => {
+  try {
+    await apiClient.post(`/groups/${groupId}/join/`);
+    console.log(`Joined group ${groupId}`);
+  } catch (error) {
+    console.error(`Error joining group ${groupId}:`, error);
+    throw error as AxiosError;
+  }
+};
+
+/**
+ * Fetches details of a specific group.
+ * Backend uses GroupDetailView at /groups/{pk}/.
+ * @param groupId The ID of the group to fetch.
+ * @returns A promise resolving to a GroupDetail object.
+ * @throws AxiosError if the API call fails.
+ */
+export const fetchGroupDetail = async (
+  groupId: number
+): Promise<GroupDetail> => {
+  try {
+    const response = await apiClient.get<GroupDetail>(`/groups/${groupId}/`);
+    console.log(`Fetched group ${groupId} details:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching group ${groupId} details:`, error);
+    throw error as AxiosError;
+  }
+};
+
+/**
+ * Updates details of a specific group. Only the group owner can update.
+ * Backend uses GroupDetailView (PUT/PATCH) at /groups/{pk}/.
+ * @param groupId The ID of the group to update.
+ * @param updateData The payload with fields to update.
+ * @returns A promise resolving to the updated GroupDetail object.
+ * @throws AxiosError if the API call fails.
+ */
+export const updateGroup = async (
+  groupId: number,
+  updateData: UpdateGroupRequest
+): Promise<GroupDetail> => {
+  try {
+    const formData = new FormData();
+
+    if (updateData.name !== undefined) {
+      formData.append("name", updateData.name);
+    }
+    if (updateData.description !== undefined) {
+      formData.append("description", updateData.description);
+    }
+
+    if (updateData.image !== undefined) {
+      if (updateData.image === null) {
+        formData.append("image", "");
+      } else {
+        formData.append("image", updateData.image);
+      }
+    }
+
+    const response = await apiClient.patch<GroupDetail>(
+      `/groups/${groupId}/`,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    console.log(`Updated group ${groupId}:`, response.data);
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating group ${groupId}:`, updateData, error);
+    throw error as AxiosError;
+  }
+};
+
+/**
+ * Fetches members of a specific group.
+ * Backend might have a separate endpoint like /groups/{pk}/members/.
+ * @param groupId The ID of the group to fetch members for.
+ * @returns A promise resolving to an array of GroupMember objects.
+ * @throws AxiosError if the API call fails.
+ */
+
+/**
+ * Fetches the leaderboard for a specific group. User must be an active member.
+ * Backend uses GroupLeaderboardSerializer and pagination (though ViewSet handles top_n manually).
+ * @param groupId The ID of the group.
+ * @param top Optional number of top members to return.
+ * @param sortBy Optional field to sort by ('given', 'received', 'sessions', 'net').
+ * @returns A promise resolving to an array of LeaderboardEntry objects.
+ * @throws AxiosError if the API call fails.
+ */
 export const getGroupLeaderboard = async (
-  groupId: string,
-  limit: number = 10
+  groupId: number,
+  top: number = 10,
+  sortBy: "given" | "received" | "sessions" | "net" = "given"
 ): Promise<LeaderboardEntry[]> => {
   try {
-    const response = await apiClient.get(`/groups/${groupId}/leaderboard/`, {
-      params: {
-        limit,
-      },
-    });
-    return response.data.results;
-  } catch (error) {
-    console.error("Error fetching group leaderboard:", error);
-    throw error;
-  }
-};
+    const response = await apiClient.get<LeaderboardEntry[]>(
+      `/groups/${groupId}/leaderboard/`,
+      {
+        params: {
+          top: top,
+          sort_by: sortBy,
+        },
+      }
+    );
+    console.log(`Fetch group ${groupId} leaderboard response:`, response.data);
 
-export interface AllGroups {
-  id: number;
-  name: string;
-  description: string;
-  owner: string;
-  member_count: number;
-  created_at: string;
-}
-
-export const fetchAllGroups = async (
-  search?: string,
-  page: number = 1
-): Promise<AllGroups[]> => {
-  try {
-    const response = await apiClient.get("/groups/", {
-      params: {
-        search,
-        page,
-      },
-    });
-    return response.data.results;
-  } catch (error) {
-    console.error("Error fetching groups:", error);
-    throw error;
-  }
-};
-
-
-interface SendMessageRequest {
-  is_group_chat: boolean;
-  message: string;
-  room_name: string;
-}
-
-export interface ChatbotResponse {
-  user: number;
-  room: number;
-  message: string;
-  message_tyep: string;
-  created_at: string;
-}
-
-export interface ChatMessage {
-  id: number;
-  senderId: number;
-  senderName: string;
-  senderAvatar: string;
-  text: string;
-  timestamp: string;
-  isSending?: boolean;
-  status?: 'sending' | 'delivered' | 'failed';
-  error?: string;
-}
-
-export const sendGroupMessage = async (
-  messageData: SendMessageRequest
-): Promise<ChatbotResponse> => {
-  try {
-    const response = await apiClient.post<ChatbotResponse>("/chatbot/sendMessage/", messageData);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const serverMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        JSON.stringify(error.response?.data);
-      throw new Error(serverMessage || "Failed to create group");
-    }
-    throw new Error("Network error - could not connect to server");
+    console.error("Error fetching group leaderboard:", error);
+    throw error as AxiosError;
   }
 };
 
-export const fetchGroupMessages = async (groupName: string): Promise<ChatMessage[]> => {
-  try {
-    const response = await apiClient.get(`/chatbot/group/${groupName}/`);
-    
-    const messages = await Promise.all(
-      response.data.map(async (msg: any) => {
-        const user = await fetchUser(msg.user);
-        
-        return {
-          id: `${msg.user}-${msg.created_at}`,
-          senderId: msg.user,
-          senderName: user.username, // Now using actual username
-          senderAvatar: user.profile_picture || `https://placehold.co/100x100?text=${user.username.charAt(0)}`,
-          text: msg.message,
-          timestamp: msg.created_at,
-          status: 'delivered' as const,
-        };
-      })
-    );
-    
-    return messages;
-  } catch (error) {
-    console.error(`Error fetching messages:`, error);
-    throw error;
-  }
-};
-
-export interface createAnnouncementRequest {
-  title: string;
-  message: string;
-}
-
-export interface SendAnnouncementRequest {
-  group: number;
-  title: string;
-  message: string;
-}
-
-export interface AnnouncementResponse {
-  id: number;
-  group: number;
-  title: string;
-  message: string;
-  created_at: string;
-  posted_by: string;
-}
-
+/**
+ * Sends an announcement to a specific group. Only the group owner can post.
+ * Backend uses /announcements/ endpoint with POST.
+ * @param groupId The ID of the group to post the announcement to.
+ * @param messageData The payload for the announcement (title, message).
+ * @returns A promise resolving to the created GroupAnnouncement object.
+ * @throws AxiosError if the API call fails.
+ */
 export const sendAnnouncement = async (
   groupId: number,
   messageData: SendAnnouncementRequest
-): Promise<AnnouncementResponse> => {
+): Promise<GroupAnnouncement> => {
   try {
-    const response = await apiClient.post<AnnouncementResponse>(`groups/${groupId}/announcements/`, messageData);
+    const response = await apiClient.post<GroupAnnouncement>(
+      `/groups/${groupId}/announcements/`,
+      messageData
+    );
+    console.log(`Sent announcement to group ${groupId}:`, response.data);
     return response.data;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      const serverMessage =
-        error.response?.data?.message ||
-        error.response?.data?.error ||
-        JSON.stringify(error.response?.data);
-      throw new Error(serverMessage || "Failed to create group");
-    }
-    throw new Error("Network error - could not connect to server");
+    console.error(
+      `Failed to send announcement to group ${groupId}:`,
+      messageData,
+      error
+    );
+    throw error as AxiosError;
   }
 };
 
+/**
+ * Fetches announcements for a specific group. User must be an active member.
+ * Backend uses /announcements/ endpoint with GET and pagination.
+ * @param groupId The ID of the group.
+ * @param search Optional search query (if backend supports it).
+ * @param page Page number for pagination.
+ * @returns A promise resolving to an array of GroupAnnouncement objects.
+ * @throws AxiosError if the API call fails.
+ */
 export const fetchAnnouncements = async (
   groupId: number,
   search?: string,
   page: number = 1
-): Promise<AnnouncementResponse[]> => {
+): Promise<GroupAnnouncement[]> => {
   try {
-    const response = await apiClient.get(`/groups/${groupId}/announcements`, {
-      params: {
-        search,
-        page,
-      },
-    });
+    const response = await apiClient.get<PaginatedResponse<GroupAnnouncement>>(
+      `/groups/${groupId}/announcements/`,
+      {
+        params: {
+          search,
+          page,
+        },
+      }
+    );
+    console.log(
+      `Fetched announcements for group ${groupId}:`,
+      response.data.results
+    );
     return response.data.results;
   } catch (error) {
-    console.error("Error fetching announcements:", error);
-    throw error;
+    console.error(`Error fetching announcements for group ${groupId}:`, error);
+    throw error as AxiosError;
   }
 };
