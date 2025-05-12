@@ -250,7 +250,7 @@ export default function Sessions() {
     return (
       <Card key={session.id}
         className={`flex flex-col ${
-          isPast ? "bg-gray-100 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
+          isPast(session.scheduled_time) ? "bg-gray-100 dark:bg-gray-800" : "bg-white dark:bg-gray-900"
         }`}
       >
         <CardHeader className="pb-2">
