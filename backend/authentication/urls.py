@@ -3,7 +3,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import (
     RegisterView, LogoutView, CurrentUserView, UserSkillListView, EndorseUserSkillView,
     UpdateProfileView, UpdatePasswordView, UpdateEmailPreferencesView, PublicUserDetailView,
-    VerifyEmailView
+    VerifyEmailView, TokenObtainPairWithThrottleView
 )
 
 app_name = 'authentication'
