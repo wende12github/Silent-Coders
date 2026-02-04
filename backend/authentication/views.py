@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from utils.throttles import LoginRateThrottle, SignupRateThrottle
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import (
@@ -27,6 +29,7 @@ User = get_user_model()
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [SignupRateThrottle]
     @swagger_auto_schema(request_body=UserSerializer)
 
     def post(self, request):
@@ -78,13 +81,12 @@ class VerifyEmailView(APIView):
         ev.delete()
         return Response({"detail": "Email verified."})
 
-class UserLoginView(APIView):
+class TokenObtainPairWithThrottleView(TokenObtainPairView):
+    throttle_classes = [LoginRateThrottle]
+
     @swagger_auto_schema(request_body=LoginSerializer)
-    def post(self, request):
-        serializer = TokenObtainPairSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
     
 
 class LogoutView(APIView):
