@@ -48,6 +48,18 @@ class UserSkill(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.skill} ({self.level})"
+
+
+class UserSkillEndorsement(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='skill_endorsements')
+    skill = models.ForeignKey('UserSkill', on_delete=models.CASCADE, related_name='endorsements_by')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'skill')
+
+    def __str__(self):
+        return f"{self.user.username} endorsed {self.skill_id} at {self.created_at}"
 class EmailNotificationPreference(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='email_preferences')
     newsletter = models.BooleanField(default=True)

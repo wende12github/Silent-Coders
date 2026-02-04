@@ -1,4 +1,4 @@
-from tokenize import TokenError
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework import status, generics, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -29,18 +29,11 @@ class RegisterView(APIView):
     @swagger_auto_schema(request_body=UserSerializer)
 
     def post(self, request):
-        data = request.data
-        username = data.get("username")
-        email = data.get("email")
-        password = data.get("password")
-        first_name = data.get("first_name")
-        last_name = data.get("last_name")
-
-        if User.objects.filter(username=username).exists():
-            return Response({"error": "Username already exists"}, status=400)
-
-        user = User.objects.create_user(username=username, email=email, password=password, first_name=first_name, last_name=last_name)
-        return Response({"message": "User created successfully"}, status=201)
+        serializer = UserSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+            return Response({"message": "User created successfully"}, status=201)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class UserLoginView(APIView):
     @swagger_auto_schema(request_body=LoginSerializer)
@@ -100,15 +93,23 @@ class EndorseUserSkillView(APIView):
     def post(self, request, pk):
         try:
             skill = UserSkill.objects.get(pk=pk)
-            key = f"endorsed:{request.user.id}:{skill.id}"
 
-            if request.session.get(key):
+            if skill.user == request.user:
+                return Response({"detail": "Cannot endorse your own skill."}, status=status.HTTP_400_BAD_REQUEST)
+
+            from django.db import transaction
+            from .models import UserSkillEndorsement
+
+            if UserSkillEndorsement.objects.filter(user=request.user, skill=skill).exists():
                 return Response({"detail": "Already endorsed."}, status=status.HTTP_400_BAD_REQUEST)
 
-            skill.endorsements += 1
-            skill.save()
-            request.session[key] = True
-            notify_user(skill.user, "review", f"Your skill '{skill.skill.name}' was endorsed!")
+            with transaction.atomic():
+                UserSkillEndorsement.objects.create(user=request.user, skill=skill)
+                # Use F() to avoid race, but keep simple increment here
+                skill.endorsements = skill.endorsements + 1
+                skill.save()
+
+            notify_user(skill.user, "review", f"Your skill '{skill.skill}' was endorsed!")
             return Response(UserSkillSerializer(skill).data)
 
         except UserSkill.DoesNotExist:
