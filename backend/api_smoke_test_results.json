@@ -1,0 +1,856 @@
+[
+  {
+    "path": "/skills/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/1/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/1/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/offered/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/offered/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/requested/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/requested/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/me/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/me/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/search/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/search/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/tags/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/tags/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/register/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/register/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/verify-email/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/verify-email/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/login/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/login/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/refresh/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/refresh/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/auth/logout/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/logout/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/update/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/update/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/password/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/password/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/preferences/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/auth/me/preferences/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/1/endorse/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/skills/1/endorse/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/users/1/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/users/1/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/chatbot/ask/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/chatbot/ask/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/chatbot/sendMessage/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/sendMessage/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/group/test/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/group/test/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/private/test/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/private/test/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/private-conversations/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/chatbot/private-conversations/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/notifications/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/notifications/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/notifications/1/mark-read/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/notifications/1/mark-read/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/wallet/wallet/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/wallet/wallet/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/wallet/transactions/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/wallet/transactions/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/list/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/list/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/my/bookings/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/my/bookings/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/reschedule/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/reschedule/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/confirm/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/confirm/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/cancel/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/cancel/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/complete/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/complete/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/review/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/1/review/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/reviews/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/bookings/reviews/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/1/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/1/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/user/1/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/bookings/availability/user/1/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/^$",
+    "method": "GET",
+    "status_unauth": 301,
+    "status_auth": 301,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/^$",
+    "method": "POST",
+    "status_unauth": null,
+    "status_auth": null,
+    "error": "unauth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/%5E$/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings. auth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/%5E$/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings."
+  },
+  {
+    "path": "/leaderboard/^\\.(?Ptest[a-z0-9]+)/?$",
+    "method": "GET",
+    "status_unauth": 404,
+    "status_auth": 404,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/^\\.(?Ptest[a-z0-9]+)/?$",
+    "method": "POST",
+    "status_unauth": 404,
+    "status_auth": 404,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/^(?Ptest[^/.]+)/$",
+    "method": "GET",
+    "status_unauth": 301,
+    "status_auth": 301,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/^(?Ptest[^/.]+)/$",
+    "method": "POST",
+    "status_unauth": null,
+    "status_auth": null,
+    "error": "unauth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/%5E(/?Ptest[%5E/.]+)/$ (note the trailing slash), or set APPEND_SLASH=False in your Django settings. auth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/%5E(/?Ptest[%5E/.]+)/$ (note the trailing slash), or set APPEND_SLASH=False in your Django settings."
+  },
+  {
+    "path": "/leaderboard/^(?Ptest[^/.]+)\\.(?Ptest[a-z0-9]+)/?$",
+    "method": "GET",
+    "status_unauth": 301,
+    "status_auth": 301,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/^(?Ptest[^/.]+)\\.(?Ptest[a-z0-9]+)/?$",
+    "method": "POST",
+    "status_unauth": null,
+    "status_auth": null,
+    "error": "unauth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/%5E(/?Ptest[%5E/.]+)%5C.(?Ptest[a-z0-9]+)/?$ (note the trailing slash), or set APPEND_SLASH=False in your Django settings. auth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/%5E(/?Ptest[%5E/.]+)%5C.(?Ptest[a-z0-9]+)/?$ (note the trailing slash), or set APPEND_SLASH=False in your Django settings."
+  },
+  {
+    "path": "/leaderboard/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/test",
+    "method": "GET",
+    "status_unauth": 301,
+    "status_auth": 301,
+    "error": null
+  },
+  {
+    "path": "/leaderboard/test",
+    "method": "POST",
+    "status_unauth": null,
+    "status_auth": null,
+    "error": "unauth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/test/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings. auth_error: You called this URL via POST, but the URL doesn't end in a slash and you have APPEND_SLASH set. Django can't redirect to the slash URL while maintaining POST data. Change your form to point to testserver/leaderboard/test/ (note the trailing slash), or set APPEND_SLASH=False in your Django settings."
+  },
+  {
+    "path": "/groups/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/create/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/create/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/my-groups/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/my-groups/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/join/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/join/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/leaderboard/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/leaderboard/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/announcements/",
+    "method": "GET",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/groups/1/announcements/",
+    "method": "POST",
+    "status_unauth": 401,
+    "status_auth": 401,
+    "error": null
+  },
+  {
+    "path": "/swagger/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/swagger/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/swagger.json/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/swagger.json/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/redoc/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/redoc/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/token/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/token/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/token/refresh/",
+    "method": "GET",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/token/refresh/",
+    "method": "POST",
+    "status_unauth": 500,
+    "status_auth": 500,
+    "error": null
+  },
+  {
+    "path": "/metrics/",
+    "method": "GET",
+    "status_unauth": 200,
+    "status_auth": 200,
+    "error": null
+  },
+  {
+    "path": "/metrics/",
+    "method": "POST",
+    "status_unauth": 200,
+    "status_auth": 200,
+    "error": null
+  }
+]
