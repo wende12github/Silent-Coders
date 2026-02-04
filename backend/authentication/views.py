@@ -18,6 +18,7 @@ from .serializers import (
     EmailPreferenceSerializer
 )
 from .models import UserSkill, EmailNotificationPreference
+from .models import UserSkill, EmailNotificationPreference, EmailVerification
 from django.contrib.auth import get_user_model
 from notifications.services import notify_user
 
@@ -31,9 +32,51 @@ class RegisterView(APIView):
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response({"message": "User created successfully"}, status=201)
+            user = serializer.save()
+            # mark email unverified and create verification token
+            from django.utils import timezone
+            import uuid
+            from datetime import timedelta
+
+            user.email_verified = False
+            user.save()
+
+            token = uuid.uuid4().hex
+            ev = EmailVerification.objects.create(
+                user=user,
+                token=token,
+                expires_at=timezone.now() + timedelta(days=1)
+            )
+
+            # For now, return token in response for dev; recommend sending via email in production
+            return Response({"message": "User created successfully", "verification_token": token}, status=201)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class VerifyEmailView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        manual_parameters=[openapi.Parameter('token', openapi.IN_QUERY, description="Verification token", type=openapi.TYPE_STRING)]
+    )
+    def get(self, request):
+        token = request.query_params.get('token')
+        if not token:
+            return Response({"detail": "Token required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ev = EmailVerification.objects.get(token=token)
+        except EmailVerification.DoesNotExist:
+            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if ev.is_expired():
+            return Response({"detail": "Token expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = ev.user
+        user.email_verified = True
+        user.save()
+        ev.delete()
+        return Response({"detail": "Email verified."})
 
 class UserLoginView(APIView):
     @swagger_auto_schema(request_body=LoginSerializer)

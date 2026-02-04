@@ -91,7 +91,12 @@ class PublicUserSerializer(serializers.ModelSerializer):
    
 
 class TokenObtainPairSerializer(TokenObtainPairSerializer):
-    pass
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+        if not getattr(user, 'email_verified', False):
+            raise serializers.ValidationError('Email address not verified.')
+        return data
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):
