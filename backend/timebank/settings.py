@@ -336,8 +336,15 @@ CHANNEL_LAYERS = {
 }
 
 # Cache configuration: prefer Redis in production, fall back to local memory for dev/tests.
-REDIS_URL = os.getenv('REDIS_URL')
-if REDIS_URL:
+REDIS_URL = os.getenv('REDIS_URL') or ''
+
+# Validate REDIS_URL before using django_redis. If invalid or not provided,
+# fall back to the local-memory cache to avoid runtime connection errors
+# during tests or dev runs where REDIS_URL may be set to a placeholder.
+def _is_valid_redis_url(url: str) -> bool:
+    return any(url.startswith(scheme) for scheme in ('redis://', 'rediss://', 'unix://'))
+
+if REDIS_URL and _is_valid_redis_url(REDIS_URL):
     CACHES = {
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
@@ -348,6 +355,10 @@ if REDIS_URL:
         }
     }
 else:
+    if REDIS_URL:
+        # Log a warning to stdout/stderr in dev/test environments
+        import warnings
+        warnings.warn(f"Ignoring invalid REDIS_URL='{REDIS_URL}'; falling back to LocMemCache.")
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
