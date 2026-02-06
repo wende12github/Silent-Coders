@@ -4,6 +4,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
+from utils.throttles import LoginRateThrottle, SignupRateThrottle
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
 from .serializers import (
@@ -18,6 +20,7 @@ from .serializers import (
     EmailPreferenceSerializer
 )
 from .models import UserSkill, EmailNotificationPreference
+from .models import UserSkill, EmailNotificationPreference, EmailVerification
 from django.contrib.auth import get_user_model
 from notifications.services import notify_user
 
@@ -26,22 +29,64 @@ User = get_user_model()
 
 class RegisterView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_classes = [SignupRateThrottle]
     @swagger_auto_schema(request_body=UserSerializer)
 
     def post(self, request):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
-            serializer.save()
-            return Response({"message": "User created successfully"}, status=201)
+            user = serializer.save()
+            # mark email unverified and create verification token
+            from django.utils import timezone
+            import uuid
+            from datetime import timedelta
+
+            user.email_verified = False
+            user.save()
+
+            token = uuid.uuid4().hex
+            ev = EmailVerification.objects.create(
+                user=user,
+                token=token,
+                expires_at=timezone.now() + timedelta(days=1)
+            )
+
+            # For now, return token in response for dev; recommend sending via email in production
+            return Response({"message": "User created successfully", "verification_token": token}, status=201)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-class UserLoginView(APIView):
+
+class VerifyEmailView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    @swagger_auto_schema(
+        manual_parameters=[openapi.Parameter('token', openapi.IN_QUERY, description="Verification token", type=openapi.TYPE_STRING)]
+    )
+    def get(self, request):
+        token = request.query_params.get('token')
+        if not token:
+            return Response({"detail": "Token required."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            ev = EmailVerification.objects.get(token=token)
+        except EmailVerification.DoesNotExist:
+            return Response({"detail": "Invalid token."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if ev.is_expired():
+            return Response({"detail": "Token expired."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = ev.user
+        user.email_verified = True
+        user.save()
+        ev.delete()
+        return Response({"detail": "Email verified."})
+
+class TokenObtainPairWithThrottleView(TokenObtainPairView):
+    throttle_classes = [LoginRateThrottle]
+
     @swagger_auto_schema(request_body=LoginSerializer)
-    def post(self, request):
-        serializer = TokenObtainPairSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            return Response(serializer.validated_data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
     
 
 class LogoutView(APIView):

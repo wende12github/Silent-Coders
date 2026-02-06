@@ -44,7 +44,7 @@ DEBUG = env.bool('DEBUG', default=True)
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
 
 
-ALLOWED_HOSTS = ["timebank-39ps.onrender.com", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["timebank-39ps.onrender.com", "localhost", "127.0.0.1", "testserver"]
 # ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'timebank-39ps.onrender.com').split(',')
 
 
@@ -87,6 +87,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Custom middleware
+    'utils.request_logging.RequestLoggingMiddleware',
+    'utils.metrics.PrometheusMiddleware',
     
 ]
 
@@ -188,6 +191,52 @@ REST_FRAMEWORK = {
     ),
 }
 
+# Logging configuration: add a logger for request events
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'json': {
+            '()': 'pythonjsonlogger.jsonlogger.JsonFormatter',
+            'format': '%(asctime)s %(levelname)s %(name)s %(message)s'
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'json'
+        }
+    },
+    'loggers': {
+        '': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'request': {
+            'handlers': ['console'],
+            'level': 'INFO',
+            'propagate': False,
+        }
+    }
+}
+
+# Optional Sentry integration
+SENTRY_DSN = os.getenv('SENTRY_DSN')
+if SENTRY_DSN:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.0')),
+            send_default_pii=True,
+        )
+    except Exception:
+        # If sentry isn't installed or fails, continue without blocking startup
+        pass
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
@@ -215,12 +264,24 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_THROTTLE_CLASSES': (
+        'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
+    ),
+    'EXCEPTION_HANDLER': 'utils.api_exceptions.custom_exception_handler',
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '200/day',
+        'user': '2000/day',
+        'login': '5/min',
+        'signup': '3/min',
+    },
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 10,
     'DEFAULT_FILTER_BACKENDS': [
         'django_filters.rest_framework.DjangoFilterBackend',
         'rest_framework.filters.SearchFilter',]
 }
+
 
 # Email settings
 EMAIL_HOST_USER = env('EMAIL_HOST_USER')
@@ -273,3 +334,33 @@ CHANNEL_LAYERS = {
         },
     },
 }
+
+# Cache configuration: prefer Redis in production, fall back to local memory for dev/tests.
+REDIS_URL = os.getenv('REDIS_URL') or ''
+
+# Validate REDIS_URL before using django_redis. If invalid or not provided,
+# fall back to the local-memory cache to avoid runtime connection errors
+# during tests or dev runs where REDIS_URL may be set to a placeholder.
+def _is_valid_redis_url(url: str) -> bool:
+    return any(url.startswith(scheme) for scheme in ('redis://', 'rediss://', 'unix://'))
+
+if REDIS_URL and _is_valid_redis_url(REDIS_URL):
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': REDIS_URL,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    }
+else:
+    if REDIS_URL:
+        # Log a warning to stdout/stderr in dev/test environments
+        import warnings
+        warnings.warn(f"Ignoring invalid REDIS_URL='{REDIS_URL}'; falling back to LocMemCache.")
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache'
+        }
+    }
